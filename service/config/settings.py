@@ -5,6 +5,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+AUTH_USER_MODEL = 'members.User'
 
 
 # Quick-start development settings - unsuitable for production
@@ -98,11 +99,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('POSTGRES_DB', 'db_name'),
-        'USER': os.getenv('POSTGRES_USER', 'db_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'db_password'),
-        'HOST': os.getenv('POSTGRES_HOST', 'db_account'),
-        'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'NAME': os.getenv('MYSQL_DATABASE', 'db_name'),
+        'USER': os.getenv('MYSQL_USER', 'master'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'db_password'),
+        'HOST': os.getenv('MYSQL_HOST', 'database'),
+        'PORT': os.getenv('MYSQL_PORT', '3306'),
     }
 }
 
