@@ -1,0 +1,41 @@
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: backends
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./:/usr/src/app/
+
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    container_name: database
+    restart: always
+
+    env_file:
+      - ./.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql   # ✅ 여기도
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command: --bind-address=0.0.0.0
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+volumes:
+  mysql_data:  # ✅ 여기도 언더스코어로 통일
