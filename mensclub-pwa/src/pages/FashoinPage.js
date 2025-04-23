@@ -1,5 +1,6 @@
 import '../styles/FashoinPage.css';
 import BottomNav from '../components/BottomNav';
+import React, { useRef, useState } from 'react';
 
 function FashoinPage() {
   return (

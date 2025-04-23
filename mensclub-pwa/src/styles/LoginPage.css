@@ -1,9 +1,9 @@
 
 .login-card {
-    margin-top: 20%;
+    margin-top: 10%;
     background-color: #ffffff7c ;
     border-radius: 24px;
-    padding: 40px 40px;
+    padding: 20px 40px;
     position: relative;
     overflow: hidden;
     box-shadow:
@@ -62,7 +62,7 @@ h1 {
 
 input {
     width: 100%;
-    padding: 16px;
+    padding: 12px;
     background: #ffffff;
     border: 1px solid #dddddd;
     border-radius: 12px;

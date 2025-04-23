@@ -12,6 +12,7 @@
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
       <!-- ☘️ mainfest 연결  -->
+       <!-- - 앱 이름, 아이콘, 배경색, url 등 ... -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -39,6 +40,7 @@
     -->
   </body>
   <!-- ☘️ 서비스 워커 등록 -->
+   <!-- - 서비스워커, 오프라인 기능, 캐시 처리 ..  -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');

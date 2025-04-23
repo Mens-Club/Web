@@ -33,7 +33,7 @@ function AppWithNav() {
         <Route path="signup" element={<SignupPage />} />
         <Route path="/main" element={<MainPage />} />
         <Route path="/camera" element={<CameraPage />} />
-        <Route path="/fashoin" element={<FashionPage />} />
+        <Route path="/fashion" element={<FashionPage />} />
         <Route path="/my" element={<MyPage />} />
       </Routes>
 
