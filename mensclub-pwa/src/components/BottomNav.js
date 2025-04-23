@@ -9,16 +9,19 @@ import './BottomNav.css';
 function BottomNav() {
   return (
     <nav className="bottom-nav">
-      <NavLink to="/main" className="nav-item">
+      {/* <NavLink to="/main" className="nav-item">
         <i className="fas fa-home"></i>
-      </NavLink>
+      </NavLink> */}
       <NavLink to="/camera" className="nav-item">
         <i className="fas fa-camera"></i>
       </NavLink>
-      <img src="./icons/logo.png" alt="Logo" style={{ width: "45px", height: "45px" }} />
-      <NavLink to="/fashoin" className="nav-item">
-        <i className="fas fa-tshirt"></i>
+      
+      <NavLink to ="./main" className="nav-item">
+      <img src="./icons/logo.png" alt="Logo" style={{ width: "40px", height: "40px" }} />
       </NavLink>
+      {/* <NavLink to="/fashoin" className="nav-item">
+        <i className="fas fa-tshirt"></i>
+      </NavLink> */}
       <NavLink to="/my" className="nav-item">
         <i className="fas fa-user"></i>
       </NavLink> 

@@ -64,8 +64,9 @@
     return (
       <div className="container">
         <div className="content">
-          <h1>오늘 입을 옷을 촬영해주세요!</h1>
-
+          <div class="title-wrapper">
+            <h1>오늘 입을 옷을 촬영해주세요!</h1>
+          </div>
           <div className="upload-box">
             {step === 'capture' && (
               <video id="camera-stream" ref={videoRef} autoPlay playsInline />

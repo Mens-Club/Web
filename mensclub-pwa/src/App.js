@@ -1,6 +1,7 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import PageWrapper from './components/PageWrapper'; // ✅ 페이지 감싸는 애니메이션 컴포넌트
 
 import MainPage from './pages/MainPage.js';
 import CameraPage from './pages/CameraPage.js';
@@ -9,7 +10,7 @@ import MyPage from './pages/Mypage.js';
 import BottomNav from './components/BottomNav.js';
 import FirstPage from './pages/FirstPage.js';
 import LoginPage from './pages/LoginPage.js';
-import SignupPage from './pages/SignupPage.js'
+import SignupPage from './pages/SignupPage.js';
 
 function App() {
   return (
@@ -21,23 +22,23 @@ function App() {
 
 function AppWithNav() {
   const location = useLocation();
-  const hideNavOnPaths = ['/', '/signup', '/login']; // 여기서 숨길 경로 지정
-
+  const hideNavOnPaths = ['/', '/signup', '/login'];
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<FirstPage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="signup" element={<SignupPage />} />
-        <Route path="/main" element={<MainPage />} />
-        <Route path="/camera" element={<CameraPage />} />
-        <Route path="/fashion" element={<FashionPage />} />
-        <Route path="/my" element={<MyPage />} />
-      </Routes>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageWrapper><FirstPage /></PageWrapper>} />
+          <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
+          <Route path="/signup" element={<PageWrapper><SignupPage /></PageWrapper>} />
+          <Route path="/main" element={<PageWrapper><MainPage /></PageWrapper>} />
+          <Route path="/camera" element={<PageWrapper><CameraPage /></PageWrapper>} />
+          <Route path="/fashion" element={<PageWrapper><FashionPage /></PageWrapper>} />
+          <Route path="/my" element={<PageWrapper><MyPage /></PageWrapper>} />
+        </Routes>
+      </AnimatePresence>
 
-      {/* 조건부 렌더링 */}
       {!shouldHideNav && <BottomNav />}
     </>
   );
