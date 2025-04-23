@@ -96,6 +96,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('MYSQL_DATABASE', 'mensclub'),
+#         'USER': os.getenv('MYSQL_USER', 'UK'),
+#         'PASSWORD': os.getenv('MYSQL_PASSWORD', '1234'),
+#         'HOST': os.getenv('MYSQL_HOST', '172.16.221.208'),
+#         'PORT': os.getenv('MYSQL_PORT', '3300'),
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -106,7 +116,6 @@ DATABASES = {
         'PORT': os.getenv('MYSQL_PORT', '3306'),
     }
 }
-
 
 
 AUTH_PASSWORD_VALIDATORS = [
