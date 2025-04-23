@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/LoginPage.css';
+import PageWrapper from '../components/PageWrapper';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
