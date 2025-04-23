@@ -1,13 +1,14 @@
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny
-from .serializers import SignupSerializer
+from .serializers import SignupSerializer, LoginSerializer, UpdateSerializer, ChangePasswordSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import LoginSerializer
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -33,4 +34,37 @@ class LoginView(APIView):
                 "access_token": access_token,
                 "refresh_token": str(refresh)
             }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UpdateView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
+
+    @swagger_auto_schema(request_body=UpdateSerializer)
+    def put(self, request):
+        user = request.user  # JWT 토큰을 통해 로그인된 사용자 정보 가져오기
+        serializer = UpdateSerializer(user, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()  # 데이터 업데이트
+            return Response({
+                'message': '회원 정보가 성공적으로 수정되었습니다.',
+                'user': serializer.data
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]  # 로그인된 사용자만 접근 가능
+
+    @swagger_auto_schema(request_body=ChangePasswordSerializer)
+    def put(self, request):
+        user = request.user
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+
+        if serializer.is_valid():
+            # 새 비밀번호로 변경
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({"message": "비밀번호가 성공적으로 변경되었습니다."}, status=status.HTTP_200_OK)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

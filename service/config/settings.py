@@ -95,7 +95,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
+# Local
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
@@ -106,6 +106,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #         'PORT': os.getenv('MYSQL_PORT', '3300'),
 #     }
 # }
+
+#Docker
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -164,3 +166,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': 'JWT Bearer Token',
+        }
+    },
+    'SECURITY': [{'Bearer': []}],
+}
