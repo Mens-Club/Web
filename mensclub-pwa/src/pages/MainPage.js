@@ -1,8 +1,8 @@
 // 📁 src/App.js
 
 import '../styles/MainPage.css';
-import BottomNav from '../components/BottomNav';
 import { useNavigate, Link } from 'react-router-dom';
+import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
 
 function MainPage() {
 
@@ -10,7 +10,6 @@ function MainPage() {
   return (
     <div className="container">
       <main className="main-content">
-
        {/* 날씨 영역 */}
         <div className="header-section">
 

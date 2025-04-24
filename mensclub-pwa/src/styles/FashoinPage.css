@@ -1,28 +1,98 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background-color: #f8f9fa;
-    color: #1a1a1a;
-}
-
-.container {
-    min-height: 100vh;
-    max-width: 800px;
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
-    background-color: #f8f9fa;
-}
-
-.content {
-    flex: 1;
-    padding: 20px;
-    padding-bottom: 32px;
-    background-color: #e6e8f0;
-    width: 100%;
-}
+  .recommendation-container {
+      text-align: center;
+    }
+    
+    .recommendation-container h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 60px;
+      color: #333;
+      letter-spacing: -0.5px;
+      position: relative;
+    }
+    
+    .recommendation-container h2:after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background-color: #333;
+      border-radius: 2px;
+    }
+    
+    .recommend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+      margin-bottom: 70px;
+    }
+    
+    .recommend-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      background-color: #ffffff;
+      transition: transform 0.2s ease-in-out;
+      aspect-ratio: 3/4;
+    }
+    
+    .recommend-card:hover {
+      transform: translateY(-4px);
+    }
+    
+    .recommend-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+    
+    .like-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .like-btn.liked {
+      color: #ff3b5c;
+      background: rgba(255, 255, 255, 0.95);
+      transform: scale(1.1);
+    }
+    
+    .like-btn:hover {
+      color: #ff3b5c;
+      transform: scale(1.1);
+    }
+    
+    @media (max-width: 768px) {
+      .recommend-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+      
+      .recommendation-container h2 {
+        margin-bottom: 40px;
+      }
+    }
+    

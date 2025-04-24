@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "../styles/MyPage.css";
+import "../styles/Layout.css";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 function MyPage() {
   const [userInfo, setUserInfo] = useState({
@@ -10,8 +13,22 @@ function MyPage() {
 
   const [savedOutfits, setSavedOutfits] = useState([]);
 
+  // 찜 취소 (하트 다시 누르면 제거)
+  const handleUnlike = (id) => {
+    setSavedOutfits(savedOutfits.filter((outfit) => outfit.id !== id));
+  };
+
+  // 6개씩 묶어서 슬라이드 단위로 나누는 함수
+  const groupIntoSlides = (data, size = 6) => {
+    const result = [];
+    for (let i = 0; i < data.length; i += size) {
+      result.push(data.slice(i, i + size));
+    }
+    return result;
+  };
+
   useEffect(() => {
-    // ✨ 1. 사용자 정보 불러오기
+    // ✨ 사용자 정보
     async function fetchUserInfo() {
       const mockData = {
         nickname: "바나나님",
@@ -21,7 +38,7 @@ function MyPage() {
       setUserInfo(mockData);
     }
 
-    // ✨ 2. 찜한 아웃핏 불러오기
+    // ✨ 저장된 아웃핏 (임시)
     async function fetchSavedOutfits() {
       const mockOutfits = [
         {
@@ -42,9 +59,33 @@ function MyPage() {
           alt: "soft casual set",
           items: ["핑크 셔츠", "베이지 팬츠", "숄더백"],
         },
+        {
+          id: 4,
+          image: "./images/outfit2.jpg",
+          alt: "cool street look",
+          items: ["블랙 티셔츠", "청바지", "운동화"],
+        },
+        {
+          id: 5,
+          image: "./images/outfit1.jpg",
+          alt: "autumn tone",
+          items: ["베이지 코트", "슬랙스", "부츠"],
+        },
+        {
+          id: 6,
+          image: "./images/outfit3.jpg",
+          alt: "basic fit",
+          items: ["셔츠", "진청바지", "흰색 스니커즈"],
+        },
+        {
+          id: 7,
+          image: "./images/outfit4.jpg",
+          alt: "weekend chill",
+          items: ["맨투맨", "조거 팬츠", "크로스백"],
+        },
       ];
 
-      setSavedOutfits(mockOutfits); // 실제로는 DB에서 가져오기
+      setSavedOutfits(mockOutfits);
     }
 
     fetchUserInfo();
@@ -54,7 +95,6 @@ function MyPage() {
   return (
     <div className="container">
       <div className="content">
-
         {/* ✅ 프로필 */}
         <div className="profile-section">
           <div className="profile-header">
@@ -75,26 +115,45 @@ function MyPage() {
           <h2>
             Saved Outfits <i className="fas fa-heart"></i>
           </h2>
-          <div className="outfit-grid">
-            {savedOutfits.length > 0 ? (
-              savedOutfits.map((outfit) => (
-                <div key={outfit.id} className="outfit-card">
-                  <img src={outfit.image} alt={outfit.alt} />
-                  <div className="outfit-info">
-                    <div className="outfit-items">
-                      {outfit.items.map((item, idx) => (
-                        <span key={idx}>{item}</span>
-                      ))}
-                    </div>
+
+          {savedOutfits.length > 0 ? (
+            <Swiper spaceBetween={20} slidesPerView={1}>
+              {groupIntoSlides(savedOutfits).map((slideGroup, idx) => (
+                <SwiperSlide key={idx}>
+                  <div className="outfit-slide">
+                    {[0, 1].map((row) => (
+                      <div className="outfit-row" key={row}>
+                        {slideGroup
+                          .slice(row * 3, row * 3 + 3)
+                          .map((outfit) => (
+                            <div key={outfit.id} className="outfit-card">
+                              <img src={outfit.image} alt={outfit.alt} />
+                              <div className="outfit-info">
+                                <div className="outfit-items">
+                                  {outfit.items.map((item, i) => (
+                                    <span key={i}>{item}</span>
+                                  ))}
+                                </div>
+                                <button
+                                  className="like-btn liked"
+                                  onClick={() => handleUnlike(outfit.id)}
+                                >
+                                  ♥
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))
-            ) : (
-              <p style={{ color: "#666", padding: "1rem" }}>
-                아직 저장된 아웃핏이 없습니다.
-              </p>
-            )}
-          </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <p style={{ color: "#666", padding: "1rem" }}>
+              아직 저장된 아웃핏이 없습니다.
+            </p>
+          )}
         </div>
       </div>
     </div>

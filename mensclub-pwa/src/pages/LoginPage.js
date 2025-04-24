@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/LoginPage.css';
-import PageWrapper from '../components/PageWrapper';
+import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
 
 function LoginPage() {
   const [email, setEmail] = useState('');

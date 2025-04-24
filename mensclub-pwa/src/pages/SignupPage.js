@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/LoginPage.css'; // 로그인과 동일한 스타일 재사용
 import '../styles/SignupPage.css';
+import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
 
 function SignupPage() {
   const [email, setEmail] = useState('');

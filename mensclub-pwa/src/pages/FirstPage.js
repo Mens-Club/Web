@@ -1,6 +1,8 @@
 import React from 'react';
 import '../styles/FirstPage.css';
 import { Link } from 'react-router-dom';
+import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
+
 function FirstPage() {
   return (
     
