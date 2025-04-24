@@ -3,7 +3,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv("C:/Users/user/Desktop/kitty/react/service/.env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,7 +44,14 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.naver',
     'rest_framework.authtoken',
+    'corsheaders'
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React 개발 서버 주소
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware", 
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 SIMPLE_JWT = {
@@ -218,7 +226,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'METHOD': 'oauth2',
         'VERIFIED_EMAIL': False,
         'APP': {
-            'client_id': os.environ['KAKAO_CLIENT_ID'],
+            # 'client_id': os.environ['KAKAO_CLIENT_ID'],
             'secret': '',
             'key': ''
         }
@@ -227,8 +235,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['name', 'email'],
         'AUTH_PARAMS': {'access_type': 'online'},
         'APP': {
-            'client_id': os.environ['NAVER_CLIENT_ID'],
-            'secret': os.environ['NAVER_SECRET'],
+            # 'client_id': os.environ['NAVER_CLIENT_ID'],
+            # 'secret': os.environ['NAVER_SECRET'],
             'key': ''
         }
     },

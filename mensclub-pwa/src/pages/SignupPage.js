@@ -1,30 +1,56 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/LoginPage.css'; // 로그인과 동일한 스타일 재사용
+import api from '../api/axios'; // ✅ axios 인스턴스 import
+import '../styles/LoginPage.css';
 import '../styles/SignupPage.css';
-import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
+import '../styles/Layout.css';
 
 function SignupPage() {
   const [email, setEmail] = useState('');
+  const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
-  const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
+  const [sex, setSex] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('🟢 회원가입 시도:', {
-      email,
-      password,
-      confirmPw,
-      height,
-      weight,
-      gender
-    });
 
-    // TODO: 비밀번호 확인 및 백엔드 연동
-    // if (password !== confirmPw) { ... }
+    if (password !== confirmPw) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
+    try {
+      const response = await api.post('/api/account/v1/signup/', {
+        email,
+        username,
+        password,
+        height: height ? parseInt(height, 10) : null,
+        weight: weight ? parseInt(weight, 10) : null,
+        age: age ? parseInt(age, 10) : null,
+        sex: sex || null
+      });
+
+      console.log('✅ 회원가입 성공:', response.data);
+      setSuccess(true);
+      setError('');
+    } catch (err) {
+      console.error('❌ 회원가입 실패:', err);
+      if (err.response?.data) {
+        const messages = Object.values(err.response.data)
+          .flat()
+          .join(', ');
+        setError(messages);
+      } else {
+        setError('회원가입 중 오류가 발생했습니다.');
+      }
+      setSuccess(false);
+    }
   };
 
   return (
@@ -45,6 +71,15 @@ function SignupPage() {
             </div>
             <div className="input-group">
               <input
+                type="text"
+                placeholder="Username"
+                required
+                value={username}
+                onChange={(e) => setUserName(e.target.value)}
+              />
+            </div>
+            <div className="input-group">
+              <input
                 type="password"
                 placeholder="Password"
                 required
@@ -61,8 +96,6 @@ function SignupPage() {
                 onChange={(e) => setConfirmPw(e.target.value)}
               />
             </div>
-
-            {/* ✅ 선택 입력: 키 */}
             <div className="input-group">
               <input
                 type="number"
@@ -71,8 +104,6 @@ function SignupPage() {
                 onChange={(e) => setHeight(e.target.value)}
               />
             </div>
-
-            {/* ✅ 선택 입력: 몸무게 */}
             <div className="input-group">
               <input
                 type="number"
@@ -81,18 +112,24 @@ function SignupPage() {
                 onChange={(e) => setWeight(e.target.value)}
               />
             </div>
-
-            {/* ✅ 선택 입력: 성별 */}
             <div className="input-group">
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-              >
+              <input
+                type="number"
+                placeholder="Age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+              />
+            </div>
+            <div className="input-group">
+              <select value={sex} onChange={(e) => setSex(e.target.value)}>
                 <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
               </select>
             </div>
+
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {success && <p style={{ color: 'green' }}>회원가입이 완료되었습니다!</p>}
 
             <button type="submit" className="login-btn2">Sign Up</button>
           </form>
