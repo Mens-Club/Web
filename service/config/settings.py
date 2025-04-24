@@ -1,6 +1,9 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,6 +26,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,7 +36,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
-    'members'
+    'members',
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",    
+    'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.naver',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -43,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "allauth.account.middleware.AccountMiddleware", 
 ]
 
 SIMPLE_JWT = {
@@ -96,28 +108,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Local
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('MYSQL_DATABASE', 'mensclub'),
-#         'USER': os.getenv('MYSQL_USER', 'UK'),
-#         'PASSWORD': os.getenv('MYSQL_PASSWORD', '1234'),
-#         'HOST': os.getenv('MYSQL_HOST', '172.16.221.208'),
-#         'PORT': os.getenv('MYSQL_PORT', '3300'),
-#     }
-# }
-
-#Docker
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE', 'db_name'),
-        'USER': os.getenv('MYSQL_USER', 'master'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'db_password'),
-        'HOST': os.getenv('MYSQL_HOST', 'database'),
-        'PORT': os.getenv('MYSQL_PORT', '3306'),
+        'NAME': os.getenv('MYSQL_DATABASE', 'mensclub'),
+        'USER': os.getenv('MYSQL_USER', 'UK'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', '1234'),
+        'HOST': os.getenv('MYSQL_HOST', '172.16.221.208'),
+        'PORT': os.getenv('MYSQL_PORT', '3300'),
     }
 }
+
+# Docker
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('MYSQL_DATABASE', 'db_name'),
+#         'USER': os.getenv('MYSQL_USER', 'master'),
+#         'PASSWORD': os.getenv('MYSQL_PASSWORD', 'db_password'),
+#         'HOST': os.getenv('MYSQL_HOST', 'database'),
+#         'PORT': os.getenv('MYSQL_PORT', '3306'),
+#     }
+# }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -178,4 +190,46 @@ SWAGGER_SETTINGS = {
         }
     },
     'SECURITY': [{'Bearer': []}],
+}
+
+AUTHENTICATION_BACKENDS = (
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+SITE_ID = 1
+
+LOGIN_REDIRECT_URL = '/accounts/logout'  # 로그인 후 리디렉션할 URL
+LOGOUT_REDIRECT_URL = '/accounts/google/login'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'email',
+            'profile',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,  # Optional: Use PKCE (Proof Key for Code Exchange)
+    },
+    'kakao': {
+        'SCOPE': ['profile_nickname'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'METHOD': 'oauth2',
+        'VERIFIED_EMAIL': False,
+        'APP': {
+            'client_id': os.environ['KAKAO_CLIENT_ID'],
+            'secret': '',
+            'key': ''
+        }
+    },
+    'naver': {
+        'SCOPE': ['name', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'APP': {
+            'client_id': os.environ['NAVER_CLIENT_ID'],
+            'secret': os.environ['NAVER_SECRET'],
+            'key': ''
+        }
+    },
 }
