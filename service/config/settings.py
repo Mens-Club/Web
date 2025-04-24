@@ -1,6 +1,9 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +41,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",    
+    'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.naver',
     'rest_framework.authtoken',
 ]
 
@@ -206,5 +211,25 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         },
         'OAUTH_PKCE_ENABLED': True,  # Optional: Use PKCE (Proof Key for Code Exchange)
-    }
+    },
+    'kakao': {
+        'SCOPE': ['profile_nickname'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'METHOD': 'oauth2',
+        'VERIFIED_EMAIL': False,
+        'APP': {
+            'client_id': os.environ['KAKAO_CLIENT_ID'],
+            'secret': '',
+            'key': ''
+        }
+    },
+    'naver': {
+        'SCOPE': ['name', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'APP': {
+            'client_id': os.environ['NAVER_CLIENT_ID'],
+            'secret': os.environ['NAVER_SECRET'],
+            'key': ''
+        }
+    },
 }
