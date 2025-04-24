@@ -1,108 +1,125 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import '../styles/LoginPage.css'; // 로그인과 동일한 스타일 재사용
+import axios from 'axios';
+import '../styles/LoginPage.css';
 import '../styles/SignupPage.css';
-import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
+import '../styles/Layout.css';
 
 function SignupPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    height: '',
+    weight: '',
+    age: 0,
+    sex: 'M',
+  });
   const [confirmPw, setConfirmPw] = useState('');
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [gender, setGender] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('🟢 회원가입 시도:', {
-      email,
-      password,
-      confirmPw,
-      height,
-      weight,
-      gender
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: name === 'age' ? parseInt(value) : value,
     });
-
-    // TODO: 비밀번호 확인 및 백엔드 연동
-    // if (password !== confirmPw) { ... }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:8000/api/account/v1/signup/', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('회원가입 성공 : ', response.data);
+    } catch (error) {
+      if (error.response) {
+        console.log('회원가입 실패 : ', error.response.data);
+      } else {
+        console.log('회원가입 실패 : ', error.message);
+      }
+    }
+  };
+
+  //   if (password !== confirmPw) {
+  //     setError('비밀번호가 일치하지 않습니다.');
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await api.post('signup/', {
+  //       email,
+  //       username,
+  //       password,
+  //       height: height || null,
+  //       weight: weight || null,
+  //       age,
+  //       sex: gender || null,
+  //     });
+  //     console.log('✅ 회원가입 성공:', response.data);
+  //     setSuccess(true);
+  //     setError('');
+  //   } catch (err) {
+  //     console.error('❌ 회원가입 실패:', err);
+  //     setError('회원가입 중 오류가 발생했습니다.');
+  //     setSuccess(false);
+  //   }
+  // };
+
   return (
-    <div className="container">
-      <div className="content">
-        <div className="login-card">
-          <div className="gradient-circle"></div>
-          <h1>Sign Up</h1>
-          <form className="login-form" onSubmit={handleSubmit}>
-            <div className="input-group">
-              <input
-                type="email"
-                placeholder="Email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                placeholder="Password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                required
-                value={confirmPw}
-                onChange={(e) => setConfirmPw(e.target.value)}
-              />
-            </div>
-
-            {/* ✅ 선택 입력: 키 */}
-            <div className="input-group">
-              <input
-                type="number"
-                placeholder="Height (cm)"
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-              />
-            </div>
-
-            {/* ✅ 선택 입력: 몸무게 */}
-            <div className="input-group">
-              <input
-                type="number"
-                placeholder="Weight (kg)"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
-            </div>
-
-            {/* ✅ 선택 입력: 성별 */}
-            <div className="input-group">
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </div>
-
-            <button type="submit" className="login-btn2">Sign Up</button>
-          </form>
-          <div className="signup-link">
-            Already have an account? <Link to="/login">Login</Link>
-          </div>
-        </div>
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>사용자명:</label>
+        <input type="text" name="username" value={formData.username} onChange={handleChange} required />
       </div>
-    </div>
+      <div>
+        <label>이메일:</label>
+        <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+      </div>
+      <div>
+        <label>비밀번호:</label>
+        <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+      </div>
+      <div>
+        <label>키:</label>
+        <input type="text" name="height" value={formData.height} onChange={handleChange} required />
+      </div>
+      <div>
+        <label>몸무게:</label>
+        <input type="text" name="weight" value={formData.weight} onChange={handleChange} required />
+      </div>
+      <div>
+        <label>나이:</label>
+        <input type="number" name="age" value={formData.age} onChange={handleChange} required />
+      </div>
+      <div>
+        <label>성별:</label>
+        <select name="sex" value={formData.sex} onChange={handleChange} required>
+          <option value="M">남성</option>
+          <option value="F">여성</option>
+        </select>
+      </div>
+      <button type="submit">회원가입</button>
+    </form>
   );
 }
 
+//             {error && <p style={{ color: 'red' }}>{error}</p>}
+//             {success && <p style={{ color: 'green' }}>회원가입이 완료되었습니다!</p>}
+
+//             <button type="submit" className="login-btn2">
+//               Sign Up
+//             </button>
+//           </form>
+//           <div className="signup-link">
+//             Already have an account? <Link to="/login">Login</Link>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 export default SignupPage;
