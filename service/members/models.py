@@ -24,16 +24,18 @@ class User(AbstractUser):
 
     weight = models.CharField(
         max_length=10,
-        null=False,  # DB에서 NOT NULL
-        blank=False  # 폼/유효성검사에서도 필수
+        null=True,  # DB에서 NOT NULL
+        blank=True  # 폼/유효성검사에서도 필수
     )
 
     height = models.CharField(
         max_length=10,
-        null=False,
-        blank=False
+        null=True,
+        blank=True
     )
-    age = models.PositiveIntegerField(null=False, blank=False)
+
+    # 나중에 변경
+    age = models.PositiveIntegerField(null=True, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default='M')
     body_picture = models.ImageField(upload_to='body_pics/', null=True, blank=True)
 
