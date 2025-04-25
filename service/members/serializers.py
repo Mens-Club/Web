@@ -13,26 +13,43 @@ class SignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'email', 'password',
-            'profile_pic', 'body_picture',
-            'height', 'weight', 'age', 'sex'
+            "id",
+            "username",
+            "email",
+            "password",
+            "profile_pic",
+            "body_picture",
+            "height",
+            "weight",
+            "age",
+            "sex",
         )
+
+    def validate_email(self, value):
+        """
+        이메일 중복 검사
+        """
+        User = get_user_model()
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("이미 사용 중인 이메일입니다.")
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            profile_pic=validated_data.get('profile_pic'),
-            body_picture=validated_data.get('body_picture'),
-            height=validated_data['height'],
-            weight=validated_data['weight'],
-            age=validated_data['age'],
-            sex=validated_data['sex'],
-            is_active=True  # 이메일 인증 생략 시 True
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password"],
+            profile_pic=validated_data.get("profile_pic"),
+            body_picture=validated_data.get("body_picture"),
+            height=validated_data["height"],
+            weight=validated_data["weight"],
+            age=validated_data["age"],
+            sex=validated_data["sex"],
+            is_active=True,  # 이메일 인증 생략 시 True
         )
         return user
-    
+
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
@@ -46,7 +63,7 @@ class LoginSerializer(serializers.Serializer):
             if user:
                 if not user.is_active:
                     raise serializers.ValidationError(_("비활성화된 계정입니다."))
-                data['user'] = user
+                data["user"] = user
             else:
                 raise serializers.ValidationError(_("잘못된 로그인 정보입니다."))
         else:
@@ -54,17 +71,21 @@ class LoginSerializer(serializers.Serializer):
 
         return data
 
+
 class UpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'profile_pic', 'height', 'weight', 'age', 'sex']
+        fields = ["email", "profile_pic", "height", "weight", "age", "sex"]
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True)
-    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+    new_password = serializers.CharField(
+        write_only=True, validators=[validate_password]
+    )
 
     def validate_current_password(self, value):
-        user = self.context['request'].user
+        user = self.context["request"].user
         if not user.check_password(value):
             raise serializers.ValidationError("현재 비밀번호가 올바르지 않습니다.")
         return value
