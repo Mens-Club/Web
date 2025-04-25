@@ -1,11 +1,12 @@
-
 .main-section {
     display: flex;
     gap: 24px;
     align-items: center;
-    margin-top:20%;
+    margin-top: 20%;
     margin-bottom: 20px;
     justify-content: center;
+    padding: 0 20px;
+    flex-direction: row;
 }
 
 .text-section {
@@ -15,10 +16,11 @@
 }
 
 .text-section h1 {
-    font-size: 40px;
+    font-size: 36px;
     font-weight: 700;
     line-height: 1.2;
-    margin-bottom: 24px;
+    margin-top: 60px;
+    margin-bottom: 25px;
     color: #1a1a1a;
 }
 
@@ -45,70 +47,205 @@
 }
 
 .login-section {
-    margin-top: 50px;
-    padding: 20px 0;
+    margin-top: 40px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    width: 100%;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 14px;
 }
 
-
 .login-btn,
-.signup-btn {
-  display: inline-block;
-  background-color: #1a1a1a;
-  color: white;
-  text-align: center;
-  padding: 14px 20px;
-  border-radius: 30px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  width: 300%;
-  max-width: 240px;
+.kakao-btn,
+.google-btn,
+.naver-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 44px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    gap: 8px;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    padding: 0 20px;
+}
+
+.social-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.kakao-btn {
+    background-color: #FEE500;
+    color: #000000;
+    border: none;
+}
+
+.google-btn {
+    background-color: white;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.naver-btn {
+    background-color: #03C75A;
+    color: white;
+    border: none;
+}
+
+.kakao-btn:hover {
+    background-color: #FDD700;
+}
+
+.google-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.naver-btn:hover {
+    background-color: #02b350;
 }
 
 .login-btn {
     background-color: #777777;
-    color: #ffffff;
-    border: 1px solid #777777;
-}
-
-.signup-btn {
-    background-color: #777777;
-    color: #ffffff;
-    border: 1px solid #777777;
+    color: white;
+    border: none;
+    text-decoration: none;
 }
 
 .login-btn:hover {
-    background-color: #333;
+    background-color: #3d3d3d;
 }
 
-.signup-btn:hover {
-    background-color: #333;
+
+.divider {
+    width: 100%;
+    text-align: center;
+    border-bottom: 1px solid #969696;
+    line-height: 0.1em;
+    margin: 10px 0;
 }
 
-.guest-link {
+.divider span {
+    background: #e6e8f0;
+    padding: 0 10px;
+    color: #666;
+    font-size: 13px;
+}
+
+.bottom-links {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    width: 100%;
+}
+
+.bottom-links a {
     color: #666;
     text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s ease;
+    font-size: 13px;
+    position: relative;
 }
 
-.guest-link:hover {
-    color: #1a1a1a;
+.bottom-links a:not(:last-child):after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 12px;
+    background-color: #e0e0e0;
 }
 
-/* 데스크탑에서도 모바일 크기 유지 */
+.bottom-links a:hover {
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .main-section {
+        flex-direction: row;
+        gap: 16px;
+        margin-top: 10vh;
+        padding: 0 10px;
+    }
+
+    .text-section h1 {
+        font-size: 28px;
+    }
+
+    .text-section p {
+        font-size: 14px;
+    }
+
+    .image-section {
+        width: 120px;
+        height: 180px;
+        margin-top: 0;
+    }
+
+    .login-section {
+        padding: 20px 16px;
+        max-width: 260px;
+    }
+
+    .bottom-links {
+        gap: 8px;
+    }
+    
+    .bottom-links a {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .main-section {
+        gap: 12px;
+        margin-top: 5vh;
+    }
+
+    .text-section h1 {
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+
+    .text-section p {
+        font-size: 13px;
+    }
+
+    .image-section {
+        width: 100px;
+        height: 160px;
+    }
+}
+
+@media (max-height: 500px) {
+    .main-section {
+        margin-top: 5vh;
+    }
+}
+
 @media (min-width: 769px) {
     .container {
-      max-width: 800px;
+        max-width: 800px;
+        margin: 0 auto;
     }
 
-    .main-content {
-      border-left: 1px solid #eee;
-      border-right: 1px solid #eee;
+    .content {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
-  }
+}

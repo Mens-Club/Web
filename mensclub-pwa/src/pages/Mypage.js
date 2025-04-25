@@ -3,6 +3,8 @@ import "../styles/MyPage.css";
 import "../styles/Layout.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { Link } from 'react-router-dom';  
+import api from '../api/axios';
 
 function MyPage() {
   const [userInfo, setUserInfo] = useState({
@@ -30,12 +32,18 @@ function MyPage() {
   useEffect(() => {
     // ✨ 사용자 정보
     async function fetchUserInfo() {
-      const mockData = {
-        nickname: "바나나님",
-        height: 185,
-        weight: 100,
-      };
-      setUserInfo(mockData);
+      try {
+        const response = await api.get('/api/account/v1/profile/', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        });
+
+        const { username, height, weight } = response.data;
+        setUserInfo({ nickname: username, height, weight });
+      } catch (error) {
+        console.error("사용자 정보 불러오기 실패:", error);
+      }
     }
 
     // ✨ 저장된 아웃핏 (임시)
@@ -104,9 +112,9 @@ function MyPage() {
                 ? `${userInfo.height}cm ${userInfo.weight}kg`
                 : ""}
             </h2>
-            <button className="settings-btn">
+            <Link to="/setting" className="settings-btn">
               <i className="fas fa-gear"></i>
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -118,33 +126,29 @@ function MyPage() {
 
           {savedOutfits.length > 0 ? (
             <Swiper spaceBetween={20} slidesPerView={1}>
-              {groupIntoSlides(savedOutfits).map((slideGroup, idx) => (
+              {groupIntoSlides(savedOutfits, 4).map((slideGroup, idx) => (
                 <SwiperSlide key={idx}>
                   <div className="outfit-slide">
-                    {[0, 1].map((row) => (
-                      <div className="outfit-row" key={row}>
-                        {slideGroup
-                          .slice(row * 3, row * 3 + 3)
-                          .map((outfit) => (
-                            <div key={outfit.id} className="outfit-card">
-                              <img src={outfit.image} alt={outfit.alt} />
-                              <div className="outfit-info">
-                                <div className="outfit-items">
-                                  {outfit.items.map((item, i) => (
-                                    <span key={i}>{item}</span>
-                                  ))}
-                                </div>
-                                <button
-                                  className="like-btn liked"
-                                  onClick={() => handleUnlike(outfit.id)}
-                                >
-                                  ♥
-                                </button>
-                              </div>
+                    <div className="outfit-row">
+                      {slideGroup.map((outfit) => (
+                        <div key={outfit.id} className="outfit-card">
+                          <img src={outfit.image} alt={outfit.alt} />
+                          <div className="outfit-info">
+                            <div className="outfit-items">
+                              {outfit.items.map((item, i) => (
+                                <span key={i}>{item}</span>
+                              ))}
                             </div>
-                          ))}
-                      </div>
-                    ))}
+                            <button
+                              className="like-btn liked"
+                              onClick={() => handleUnlike(outfit.id)}
+                            >
+                              ♥
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </SwiperSlide>
               ))}

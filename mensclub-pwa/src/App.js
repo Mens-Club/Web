@@ -10,7 +10,10 @@ import MyPage from './pages/Mypage.js';
 import BottomNav from './components/BottomNav.js';
 import FirstPage from './pages/FirstPage.js';
 import LoginPage from './pages/LoginPage.js';
+import FindIDPage from './pages/FindidPage.js'; // ✅ 정확한 경로와 대소문자
 import SignupPage from './pages/SignupPage.js';
+import FindPWPage from './pages/FindpwPage.js';
+import SettingPage from './pages/SettingPage.js';
 
 function App() {
   return (
@@ -22,7 +25,7 @@ function App() {
 
 function AppWithNav() {
   const location = useLocation();
-  const hideNavOnPaths = ['/', '/signup', '/login'];
+  const hideNavOnPaths = ['/', '/signup', '/login', '/find-id', '/find-pw'];
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   return (
@@ -36,6 +39,9 @@ function AppWithNav() {
           <Route path="/camera" element={<PageWrapper><CameraPage /></PageWrapper>} />
           <Route path="/fashion" element={<PageWrapper><FashionPage /></PageWrapper>} />
           <Route path="/my" element={<PageWrapper><MyPage /></PageWrapper>} />
+          <Route path='/setting' element={<PageWrapper><SettingPage /></PageWrapper>} />
+          <Route path="/find-id" element={<PageWrapper><FindIDPage /></PageWrapper>} />
+          <Route path="/find-pw" element={<PageWrapper><FindPWPage /></PageWrapper>} />
         </Routes>
       </AnimatePresence>
 

@@ -1,4 +1,3 @@
-/* 프로필 섹션 */
 .profile-section {
   background-color: #fff;
   border-radius: 12px;
@@ -6,6 +5,7 @@
   margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   width: 100%;
+  align-items: center;
 }
 
 .profile-header {
@@ -37,7 +37,7 @@
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   width: 100%;
-  margin-bottom: 50px;
+  margin-bottom: 70px;
 }
 
 .saved-outfits h2 {
@@ -56,96 +56,123 @@
 }
 
 .outfit-info {
-position: relative;
-padding: 6px;
+  position: relative;
+  padding: 6px;
 }
 
 .like-btn {
-position: absolute;
-top: 6px;
-right: 6px;
-background: white;
-border: none;
-font-size: 18px;
-cursor: pointer;
-border-radius: 50%;
-width: 30px;
-height: 30px;
-box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: white;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .like-btn.liked {
-color: red;
+  color: red;
 }
 
 .outfit-slide {
-display: flex;
-flex-direction: column;
-gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .outfit-row {
-display: flex;
-gap: 12px;
-justify-content: center;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
 
 .outfit-card {
-width: 30%;
-background-color: #fff;
-border-radius: 8px;
-overflow: hidden;
-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: 30%;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .outfit-card img {
-width: 100%;
-height: 220px;
-object-fit: cover;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
 }
 
 .outfit-items {
-display: flex;
-flex-wrap: wrap;
-gap: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .outfit-items span {
-font-size: 15px;
-padding: 3px 6px;
-background-color: #f0f0f0;
-border-radius: 3px;
-color: #555;
+  font-size: 15px;
+  padding: 3px 6px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  color: #555;
 }
 
 @media (max-width: 768px) {
-.outfit-row {
-  flex-direction: row;
-  flex-wrap: wrap;
-}
+  .outfit-slide {
+      gap: 12px;  /* 간격 조정 */
+  }
 
-.outfit-card {
-  width: 48%;
-}
+  .outfit-row {
+      flex-wrap: wrap;  /* 줄바꿈 허용 */
+      gap: 12px;
+      justify-content: space-between;  /* 양쪽 정렬 */
+  }
 
-.outfit-items span {
-  font-size: 10px;
-  padding: 3px 6px;
-}
+  .outfit-card {
+      width: calc(50% - 6px);  /* 2개씩 배치 (간격 고려) */
+      margin-bottom: 12px;  /* 아래 여백 추가 */
+  }
+
+  .outfit-card img {
+      height: 180px;  /* 모바일에서 이미지 높이 조정 */
+  }
+
+  .outfit-items span {
+      font-size: 12px;
+      padding: 3px 6px;
+  }
 }
 
 @media (min-width: 769px) {
-.container {
-  max-width: 800px;
-}
+  .container {
+      max-width: 1000px;
+      margin: 0 auto;
+  }
 
-.content {
-  margin-top: 80px;
-}
+  .content {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+      margin-top: 80px;
+  }
 }
 
 @media (max-width: 768px) {
-.content {
-  padding: 30px;
+  .content {
+      padding: 30px;
+  }
 }
+
+/* 데스크탑 환경 (768px 이상)에서만 변경 */
+@media (min-width: 768px) {
+  .profile-section {
+      width: 160%;  /* 150%에서 180%로 증가 */
+      margin-left: -30%;  /* 중앙 정렬 유지를 위해 조정 */
+  }
+
+  .saved-outfits {
+      width: 160%;  /* 150%에서 180%로 증가 */
+      margin-left: -30%;  /* 중앙 정렬 유지를 위해 조정 */
+  }
 }
