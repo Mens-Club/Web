@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/axios'; // ✅ 백엔드 호출용 axios 인스턴스
 import '../styles/SettingPage.css';
 
 function SettingPage() {
   const navigate = useNavigate();
   const [popupVisible, setPopupVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState('');
+
+  // ✅ 사용자 정보를 저장할 상태
+  const [userInfo, setUserInfo] = useState({
+    username: '',
+    email: '',
+  });
 
   const showPopup = (action) => {
     setCurrentAction(action);
@@ -18,15 +25,13 @@ function SettingPage() {
 
   const handleAction = () => {
     if (currentAction === 'logout') {
-      // ✅ 팝업 먼저 닫고
       hidePopup();
 
-      // ✅ 부드럽게 500ms 정도 기다렸다가
       setTimeout(() => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        navigate('/'); // ✅ 로그인 화면으로 이동
-      }, 500); // 0.5초 뒤 이동
+        navigate('/');
+      }, 500);
     } else {
       hidePopup();
     }
@@ -40,6 +45,34 @@ function SettingPage() {
     logout: '로그아웃 하시겠습니까?',
   };
 
+  // ✅ 백엔드에서 사용자 정보 불러오기
+  useEffect(() => {
+    async function fetchUserInfo() {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.error('❌ 토큰이 없습니다. 로그인 필요.');
+          return;
+        }
+  
+        const response = await api.get('/api/account/v1/user_info/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,  // ✅ 추가
+        });
+  
+        const { username, email } = response.data;
+        setUserInfo({ username, email });
+      } catch (error) {
+        console.error('❌ 사용자 정보 불러오기 실패:', error);
+      }
+    }
+  
+    fetchUserInfo();
+  }, []);
+  
+
   return (
     <div className="setting-container">
       <div className="setting-content">
@@ -48,9 +81,10 @@ function SettingPage() {
           <h1 className="setting-title">내 정보</h1>
         </div>
 
+        {/* ✅ 백엔드에서 받아온 사용자 정보 출력 */}
         <div className="setting-profile-section">
-          <h2>원*은</h2>
-          <p className="setting-email">91******@naver.com</p>
+          <h2>{userInfo.username ? maskName(userInfo.username) : ''}</h2>
+          <p className="setting-email">{userInfo.email ? maskEmail(userInfo.email) : ''}</p>
         </div>
 
         <div className="setting-menu-list">
@@ -86,7 +120,7 @@ function SettingPage() {
         </div>
       </div>
 
-      {/* ✅ 팝업 */}
+      {/* 팝업 */}
       {popupVisible && (
         <div className={`setting-popup-overlay ${popupVisible ? 'show' : ''}`}>
           <div className="setting-popup-content">
@@ -100,6 +134,20 @@ function SettingPage() {
       )}
     </div>
   );
+}
+
+// ✅ 이름 마스킹 (예: "원예은" → "원*은")
+function maskName(name) {
+  if (name.length < 2) return name;
+  return name[0] + '*' + name.slice(2);
+}
+
+// ✅ 이메일 마스킹 (예: "test@example.com" → "te******@example.com")
+function maskEmail(email) {
+  const [localPart, domain] = email.split('@');
+  if (localPart.length < 2) return email;
+  const maskedLocal = localPart.slice(0, 2) + '*'.repeat(localPart.length - 2);
+  return `${maskedLocal}@${domain}`;
 }
 
 export default SettingPage;

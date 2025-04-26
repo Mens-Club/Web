@@ -15,9 +15,8 @@ function BottomNav() {
       <NavLink to="/camera" className="nav-item">
         <i className="fas fa-camera"></i>
       </NavLink>
-      
       <NavLink to ="./main" className="nav-item">
-      <img src="./icons/logo.png" alt="Logo" style={{ width: "40px", height: "40px" }} />
+      <img src="./icons/logo.png" alt="Logo" style={{ width: "30px", height: "30px" }} />
       </NavLink>
       {/* <NavLink to="/fashoin" className="nav-item">
         <i className="fas fa-tshirt"></i>

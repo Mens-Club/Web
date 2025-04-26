@@ -116,25 +116,41 @@ class FindEmailView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+# class UserInfoView(APIView):
+#     # 사용자의 정보를 자동으로 불러오와야함
+#     # permission_classes = [AllowAny]
+#     permission_classes = [IsAuthenticated]
+
+#     @swagger_auto_schema(manual_parameters=[
+#         openapi.Parameter('username', openapi.IN_QUERY, description="Username", type=openapi.TYPE_STRING)
+#     ])
+#     def get(self, request):
+#         username = request.query_params.get('username')
+
+#         if not username:
+#             return Response({"error": "username 쿼리 파라미터가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         try:
+#             # user = User.objects.get(username=username)
+#             user = request.user
+#             return Response({
+#                 "username": user.username,
+#                 "email": user.email,       # ← 여기 추가
+#                 "height": user.height,
+#                 "weight": user.weight
+#             }, status=status.HTTP_200_OK)
+#         except User.DoesNotExist:
+#             return Response({"error": "해당 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+
 class UserInfoView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('username', openapi.IN_QUERY, description="Username", type=openapi.TYPE_STRING)
-    ])
     def get(self, request):
-        username = request.query_params.get('username')
+        user = request.user  # ✅ 현재 로그인한 사용자
 
-        if not username:
-            return Response({"error": "username 쿼리 파라미터가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = User.objects.get(username=username)
-            return Response({
-                "username": user.username,
-                "email": user.email,       # ← 여기 추가
-                "height": user.height,
-                "weight": user.weight
-            }, status=status.HTTP_200_OK)
-        except User.DoesNotExist:
-            return Response({"error": "해당 사용자가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "height": user.height,
+            "weight": user.weight
+        }, status=status.HTTP_200_OK)
