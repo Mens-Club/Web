@@ -89,3 +89,19 @@ class ChangePasswordSerializer(serializers.Serializer):
         if not user.check_password(value):
             raise serializers.ValidationError("현재 비밀번호가 올바르지 않습니다.")
         return value
+
+class FindEmailSerializer(serializers.Serializer):
+    username = serializers.CharField()
+
+    def validate_username(self, value):
+        if not User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
+        return value
+    
+class UserInfoRequestSerializer(serializers.Serializer):
+    username = serializers.CharField()
+
+    def validate_username(self, value):
+        if not User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
+        return value
