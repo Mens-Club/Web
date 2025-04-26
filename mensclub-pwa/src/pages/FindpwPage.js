@@ -55,8 +55,8 @@ function FindpwPage() {
 
           <div className="bottom-links">
             <Link to="/login">로그인</Link>
-            <Link to="/find-id">아이디 찾기</Link>
             <Link to="/signup">회원가입</Link>
+            <Link to="/find-id">아이디 찾기</Link>
             <Link to="/">홈으로</Link>
           </div>
         </div>

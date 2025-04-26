@@ -3,7 +3,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv("C:/Users/user/Desktop/kitty/react/service/.env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

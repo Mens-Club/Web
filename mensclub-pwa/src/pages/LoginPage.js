@@ -39,6 +39,9 @@ function LoginPage() {
       <div className="content">
         <div className="login-card">
           <div className="gradient-circle"></div>
+          <div className="logo">
+            <img src="/images/logo.png" alt="MEN'S CLUB" />
+          </div>
           <h1>Login</h1>
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="input-group">
@@ -64,8 +67,11 @@ function LoginPage() {
 
             <button type="submit" className="login-btn2">Login</button>
           </form>
-          <div className="signup-link">
-            Don't have an account? <Link to="/signup">Sign up</Link>
+         <div className="bottom-links">
+                     <Link to="/signup">회원가입</Link>
+                     <Link to="/find-id">아이디 찾기</Link>
+                     <Link to="/find-pw">비밀번호 찾기</Link>
+                     <Link to="/">홈으로</Link>
           </div>
         </div>
       </div>

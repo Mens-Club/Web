@@ -118,6 +118,25 @@
   color: #555;
 }
 
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-info h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.sub-info {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+
 @media (max-width: 768px) {
   .outfit-slide {
       gap: 12px;  /* 간격 조정 */

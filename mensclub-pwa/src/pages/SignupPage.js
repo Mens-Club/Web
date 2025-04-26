@@ -107,6 +107,8 @@ function SignupPage() {
         weight: formData.weight ? formData.weight : null,
         age: formData.age ? parseInt(formData.age, 10) : null,
         sex: formData.sex || 'M',
+      }, {
+        withCredentials: false
       });
 
       console.log('✅ 회원가입 성공:', response.data);
@@ -150,6 +152,9 @@ function SignupPage() {
       <div className="content">
         <div className="login-card">
           <div className="gradient-circle"></div>
+          <div className="logo-signup">
+            <img src="/images/logo.png" alt="MEN'S CLUB" />
+          </div>
           <h1>Sign Up</h1>
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="input-group">
@@ -240,9 +245,12 @@ function SignupPage() {
             </button>
             {status.success && <p style={{ color: 'green' }}>{status.message}</p>}
           </form>
-          <div className="signup-link">
-            이미 계정이 있으시다면? ➡️ <Link to="/login">로그인</Link>
-          </div>
+            <div className="bottom-links">
+              <Link to="/login">로그인</Link>
+              <Link to="/find-id">아이디 찾기</Link>
+              <Link to="/find-pw">비밀번호 찾기</Link>
+              <Link to="/">홈으로</Link>  
+            </div>
         </div>
       </div>
     </div>
