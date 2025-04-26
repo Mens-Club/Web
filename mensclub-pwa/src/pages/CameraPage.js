@@ -1,5 +1,5 @@
 // src/pages/CameraPage.js
-import React, { useRef, useState, useEffect} from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import '../styles/CameraPage.css';
 import '../styles/Layout.css';
 import { useNavigate, Link } from 'react-router-dom';
@@ -14,6 +14,31 @@ function CameraPage() {
   const [step, setStep] = useState('init');
 
   const navigate = useNavigate();
+
+  // 카메라 에러 처리 함수
+  const handleCameraError = useCallback(async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (err) {
+      handleCameraError(err);
+    }
+  }, [handleCameraError]);
+
+  //카메라 스트림 중지 함수
+  const stopCameraStream = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+  }, [stream]);
 
   useEffect(() => {
     if (step === 'capture') {
@@ -136,14 +161,10 @@ function CameraPage() {
                 {step === 'analyzed' && (
                   <>
                     <Link to="/fashion">
-                      <button
-                        id="recommend-btn"
-                        className="upload-text-btn recommend-btn"
-                      >
+                      <button id="recommend-btn" className="upload-text-btn recommend-btn">
                         오늘의 추천 코디 보기
                       </button>
                     </Link>
-
                   </>
                 )}
               </>
