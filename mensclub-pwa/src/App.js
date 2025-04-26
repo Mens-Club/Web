@@ -25,7 +25,7 @@ function App() {
 
 function AppWithNav() {
   const location = useLocation();
-  const hideNavOnPaths = ['/', '/signup', '/login', '/find-id', '/find-pw'];
+  const hideNavOnPaths = ['/', '/signup', '/login', '/find-id', '/find-pw', '/setting'];
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   return (
