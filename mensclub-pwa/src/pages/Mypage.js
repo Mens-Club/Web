@@ -3,12 +3,12 @@ import "../styles/MyPage.css";
 import "../styles/Layout.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import { Link } from 'react-router-dom';  
-import api from '../api/axios';
+import { Link } from "react-router-dom";
+import api from "../api/axios";
 
 function MyPage() {
   const [userInfo, setUserInfo] = useState({
-    nickname: "",
+    username: "",
     height: null,
     weight: null,
   });
@@ -30,9 +30,14 @@ function MyPage() {
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const response = await api.get("/api/account/v1/user_info/");
+        const token = localStorage.getItem("accessToken");
+        const response = await api.get("/api/account/v1/user_info/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const { username, height, weight } = response.data;
-        setUserInfo({ nickname: username, height, weight });
+        setUserInfo({ username, height, weight });
       } catch (error) {
         console.error("❌ 사용자 정보 불러오기 실패:", error);
       }
@@ -55,11 +60,10 @@ function MyPage() {
   return (
     <div className="container">
       <div className="content">
-        {/* ✅ 프로필 */}
         <div className="profile-section">
           <div className="profile-header">
             <div className="profile-info">
-              <h2>{userInfo.nickname}</h2>
+              <h2>{userInfo.username} 님 안녕하세요😄 </h2>
               {(userInfo.height && userInfo.weight) && (
                 <p className="sub-info">
                   {userInfo.height}cm / {userInfo.weight}kg
@@ -72,7 +76,6 @@ function MyPage() {
           </div>
         </div>
 
-        {/* ✅ 저장된 아웃핏 */}
         <div className="saved-outfits">
           <h2>Saved Outfits <i className="fas fa-heart"></i></h2>
           {savedOutfits.length > 0 ? (
