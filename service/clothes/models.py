@@ -5,15 +5,17 @@ class MensTable(models.Model):
     idx = models.AutoField(primary_key=True)  # AutoField로 기본 키 설정
     goods_name = models.CharField(max_length=255)  # 상품명
     sub_category = models.CharField(max_length=255)  # 서브 카테고리
+    goods_url = models.CharField(max_length=500)  # 👉 이 줄 추가!!
 
     class Meta:
         db_table = 'menstable_test'  # 실제 DB 테이블 이름
         managed = False  # Django가 테이블을 자동으로 관리하지 않도록 설정
-        
+
 class ShoesTest(models.Model):
     idx = models.AutoField(primary_key=True)
     goods_name = models.CharField(max_length=255)
     sub_category = models.CharField(max_length=255)
+    goods_url = models.CharField(max_length=500)  # 👉 이 줄 추가!!
 
     class Meta:
         db_table = 'shoes_test'  # shoes_test 테이블
