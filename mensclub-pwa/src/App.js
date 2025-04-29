@@ -15,6 +15,7 @@ import FindIDPage from './pages/FindidPage.js'; // ✅ 정확한 경로와 대�
 import SignupPage from './pages/SignupPage.js';
 import FindPWPage from './pages/FindpwPage.js';
 import SettingPage from './pages/SettingPage.js';
+import ResetSetPage from './pages/ResetPwPage.js';
 
 function App() {
   return (
@@ -42,16 +43,94 @@ function AppWithNav() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<PageWrapper><FirstPage /></PageWrapper>} />
-          <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
-          <Route path="/signup" element={<PageWrapper><SignupPage /></PageWrapper>} />
-          <Route path="/main" element={<PageWrapper><MainPage /></PageWrapper>} />
-          <Route path="/camera" element={<PageWrapper><CameraPage /></PageWrapper>} />
-          <Route path="/fashion" element={<PageWrapper><FashionPage /></PageWrapper>} />
-          <Route path="/my" element={<PageWrapper><MyPage /></PageWrapper>} />
-          <Route path="/setting" element={<PageWrapper><SettingPage /></PageWrapper>} />
-          <Route path="/find-id" element={<PageWrapper><FindIDPage /></PageWrapper>} />
-          <Route path="/find-pw" element={<PageWrapper><FindPWPage /></PageWrapper>} />
+          <Route
+            path="/"
+            element={
+              <PageWrapper>
+                <FirstPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <PageWrapper>
+                <LoginPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PageWrapper>
+                <SignupPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/main"
+            element={
+              <PageWrapper>
+                <MainPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/camera"
+            element={
+              <PageWrapper>
+                <CameraPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/fashion"
+            element={
+              <PageWrapper>
+                <FashionPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/my"
+            element={
+              <PageWrapper>
+                <MyPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/setting"
+            element={
+              <PageWrapper>
+                <SettingPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/find-id"
+            element={
+              <PageWrapper>
+                <FindIDPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/find-pw"
+            element={
+              <PageWrapper>
+                <FindPWPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/reset-pw"
+            element={
+              <PageWrapper>
+                <ResetSetPage />
+              </PageWrapper>
+            }
+          />
         </Routes>
       </AnimatePresence>
 
@@ -60,6 +139,5 @@ function AppWithNav() {
     </>
   );
 }
-
 
 export default App;
