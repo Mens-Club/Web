@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-class ClothingRequestSerializer(serializers.Serializer):
-    top = serializers.CharField()
-    outwear = serializers.CharField()
-    bottom = serializers.CharField()
-    shoes = serializers.CharField()
+class RecommendedGoodsRequestSerializer(serializers.Serializer):
+    top = serializers.CharField(required=True)
+    outwear = serializers.CharField(required=True)
+    bottom = serializers.CharField(required=True)
+    shoes = serializers.CharField(required=True)
 
 class SaveImageRequestSerializer(serializers.Serializer):
     file_data = serializers.CharField()
