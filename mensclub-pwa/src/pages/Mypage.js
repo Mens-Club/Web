@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/MyPage.css";
 import "../styles/Layout.css";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
 
@@ -14,17 +12,12 @@ function MyPage() {
   });
 
   const [savedOutfits, setSavedOutfits] = useState([]);
+  const [page, setPage] = useState(0);
 
-  const handleUnlike = (id) => {
-    setSavedOutfits(savedOutfits.filter((outfit) => outfit.id !== id));
-  };
+  const ITEMS_PER_PAGE = 6;
 
-  const groupIntoSlides = (data, size = 6) => {
-    const result = [];
-    for (let i = 0; i < data.length; i += size) {
-      result.push(data.slice(i, i + size));
-    }
-    return result;
+  const handlePageClick = (pageIndex) => {
+    setPage(pageIndex);
   };
 
   useEffect(() => {
@@ -45,10 +38,13 @@ function MyPage() {
 
     async function fetchSavedOutfits() {
       const mockOutfits = [
-        { id: 1, image: "./images/outfit1.jpg", alt: "casual fall navy set", items: ["라운드넥 스웨터", "와이드 팬츠", "토트백"] },
-        { id: 2, image: "./images/outfit3.jpg", alt: "high density cotton set", items: ["화이트 셔츠", "블랙 팬츠", "크로스백"] },
-        { id: 3, image: "./images/outfit4.jpg", alt: "soft casual set", items: ["핑크 셔츠", "베이지 팬츠", "숄더백"] },
-        { id: 4, image: "./images/outfit2.jpg", alt: "cool street look", items: ["블랙 티셔츠", "청바지", "운동화"] },
+        { id: 1, image: "./images/outfit1.jpg", alt: "casual fall navy set" },
+        { id: 2, image: "./images/outfit3.jpg", alt: "high density cotton set" },
+        { id: 3, image: "./images/outfit4.jpg", alt: "soft casual set" },
+        { id: 4, image: "./images/outfit2.jpg", alt: "cool street look" },
+        { id: 5, image: "./images/outfit5.jpg", alt: "dandy casual set" },
+        { id: 6, image: "./images/outfit6.jpg", alt: "light spring look" },
+        { id: 7, image: "./images/outfit7.jpg", alt: "street hoodie set" },
       ];
       setSavedOutfits(mockOutfits);
     }
@@ -57,10 +53,15 @@ function MyPage() {
     fetchSavedOutfits();
   }, []);
 
+  const totalPages = Math.ceil(savedOutfits.length / ITEMS_PER_PAGE);
+  const currentOutfits = savedOutfits.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+
   return (
     <div className="container">
       <div className="content">
+        
         <div className="profile-section">
+
           <div className="profile-header">
             <div className="profile-info">
               <h2>{userInfo.username} 님 안녕하세요😄 </h2>
@@ -70,49 +71,55 @@ function MyPage() {
                 </p>
               )}
             </div>
+
             <Link to="/setting" className="settings-btn">
               <i className="fas fa-gear"></i>
             </Link>
           </div>
+
         </div>
 
+        {/* ✅ saved-outfits - 스와이퍼 살아 있음 */}
         <div className="saved-outfits">
           <h2>Saved Outfits <i className="fas fa-heart"></i></h2>
           {savedOutfits.length > 0 ? (
-            <Swiper spaceBetween={20} slidesPerView={1}>
-              {groupIntoSlides(savedOutfits, 4).map((slideGroup, idx) => (
-                <SwiperSlide key={idx}>
-                  <div className="outfit-slide">
-                    <div className="outfit-row">
-                      {slideGroup.map((outfit) => (
-                        <div key={outfit.id} className="outfit-card">
-                          <img src={outfit.image} alt={outfit.alt} />
-                          <div className="outfit-info">
-                            <div className="outfit-items">
-                              {outfit.items.map((item, i) => (
-                                <span key={i}>{item}</span>
-                              ))}
-                            </div>
-                            <button
-                              className="like-btn liked"
-                              onClick={() => handleUnlike(outfit.id)}
-                            >
-                              ♥
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+            <>
+              <div className="outfit-slide">
+                <div className="outfit-row" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+                  {currentOutfits.map((outfit) => (
+                    <div key={outfit.id} className="outfit-card">
+                      <img src={outfit.image} alt={outfit.alt} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px' }} />
                     </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                  ))}
+                </div>
+              </div>
+
+              {/* ✅ dot 페이지네이션 */}
+              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                {Array.from({ length: totalPages }, (_, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handlePageClick(idx)}
+                    style={{
+                      width: page === idx ? '14px' : '10px',
+                      height: page === idx ? '14px' : '10px',
+                      borderRadius: '50%',
+                      backgroundColor: page === idx ? '#007bff' : '#ccc',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      transform: page === idx ? 'scale(1.2)' : 'scale(1)',
+                    }}
+                  />
+                ))}
+              </div>
+            </>
           ) : (
             <p style={{ color: "#666", padding: "1rem" }}>
               아직 저장된 아웃핏이 없습니다.
             </p>
           )}
         </div>
+
       </div>
     </div>
   );

@@ -1,0 +1,46 @@
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 600px; /* ✅ 800px 제한 */
+    height: 80px; /* ✅ PC 기본 높이 */
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 20px;
+    z-index: 1000;
+  }
+  
+  .top-nav-logo {
+    width: 60px; /* ✅ 로고 사이즈 */
+    height: 60px;
+    margin-top: 10px;
+    margin-right: 10px; /* ✅ 로고랑 텍스트 사이 간격 */
+  }
+
+  .top-nav-title {
+    font-size: 18px; /* ✅ PC 기본 글자 크기 */
+    font-weight: 700;
+    color: #000000;
+    margin: 0;
+    font-family: 'SejongGeulggot', sans-serif;
+    line-height: 1.2;
+  }
+  
+  /* ✅ 추가: 모바일 대응 (가로폭 768px 이하일 때) */
+  @media (max-width: 768px) {
+    .top-nav {
+      height: 50px; /* 모바일에서는 높이 줄임 */
+      padding-left: 16px; /* 모바일에서는 padding도 줄임 */
+    }
+  
+    .top-nav-title {
+      font-size: 16px; /* 모바일에서는 글자도 살짝 줄임 */
+    }
+  }
+  
