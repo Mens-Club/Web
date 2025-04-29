@@ -254,13 +254,13 @@ function CameraPage() {
   const sendToServer = async () => {
     setLoading(true);
     setStatusText('');
-    localStorage.setItem('testImg', imgSrc);
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch('http://127.0.0.1:8000/api/clothes/v1/save_image/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imgSrc }),
+        body: JSON.stringify({ file_data: imgSrc }), // key 이름 주의!
       });
+
       if (response.ok) {
         setStatusText('사진이 성공적으로 업로드되었습니다.');
         setStep('analyzed');
@@ -277,17 +277,6 @@ function CameraPage() {
   const switchCamera = () => {
     setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
   };
-
-  // // 이미지 저장
-  // const saveImage = () => {
-  //   if (!imgSrc) return;
-  //   const link = document.createElement('a');
-  //   link.href = imgSrc;
-  //   link.download = `webcam-photo-${Date.now()}.jpg`;
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
 
   // 분석(예시)
   const analyzeImage = () => {
