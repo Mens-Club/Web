@@ -18,14 +18,14 @@ services:
   db:
     image: mysql:latest
     container_name: database
-    restart: always
+    restart: always`
 
     env_file:
       - ./.env
     ports:
       - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql   # ✅ 여기도
+      - mysql_data:/var/lib/mysql   
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
