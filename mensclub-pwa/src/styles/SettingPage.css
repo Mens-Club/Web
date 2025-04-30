@@ -199,7 +199,7 @@
 .setting-popup-content {
     background: white;
     width: 100%;
-    max-width: 768px; /* ✅ 여기 추가 */
+    max-width: 600px; /* ✅ 여기 추가 */
     margin: 0 auto;   /* ✅ 중앙 정렬 */
     border-radius: 20px 20px 0 0;
     padding: 24px 16px;

@@ -3,8 +3,17 @@
 import '../styles/MainPage.css';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
+import { useEffect } from "react";
 
 function MainPage() {
+
+  useEffect(() => {
+    document.body.style.overflow = "auto"; // ✅ 스크롤 허용
+    return () => {
+      document.body.style.overflow = "hidden"; // 페이지 나갈 땐 다시 막기
+    };
+  }, []);
+  
 
 
   return (
