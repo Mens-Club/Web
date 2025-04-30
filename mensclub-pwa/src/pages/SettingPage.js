@@ -24,18 +24,25 @@ function SettingPage() {
   };
 
   const handleAction = () => {
-    if (currentAction === 'logout') {
-      hidePopup();
-
-      setTimeout(() => {
+    hidePopup();
+  
+    setTimeout(() => {
+      if (currentAction === 'logout') {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         navigate('/');
-      }, 500);
-    } else {
-      hidePopup();
-    }
+      } else if (currentAction === 'edit') {
+        navigate('/edit-profile');
+      } else if (currentAction === 'password') {
+        navigate('/set-password');
+      } else if (currentAction === 'preferences') {
+        navigate('/set-body');
+      } else if (currentAction === 'profile') {
+        navigate('/profile');
+      }
+    }, 500); // ✅ 팝업 닫는 애니메이션 고려
   };
+  
 
   const popupMessages = {
     edit: '회원정보를 수정하시겠습니까?',

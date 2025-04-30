@@ -1,3 +1,4 @@
+
 /* ✅ 기본 설정 */
 .profile-section,
 .saved-outfits {
@@ -54,61 +55,61 @@
   font-size: 16px;
 }
 
-.like-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: white;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.like-btn.liked {
-  color: red;
-}
-
 .outfit-slide {
   margin-top: 20px;
 }
 
-.outfit-row {
+.outfit-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* ✅ min-width 240px → 260px로 조금 넓힘 */
-  gap: 20px; /* ✅ gap 16px → 20px로 여유있게 */
+  grid-template-columns: repeat(2, 1fr); /* ✅ 2열 고정 */
+  gap: 20px;
 }
 
 
 .outfit-card {
-  background: white;
-  border-radius: 12px;
+  position: relative;
   overflow: hidden;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  width: 100%;
-  height: 280px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
-.outfit-card img {
+.outfit-card img,
+.outfit-img {
   width: 100%;
-  height: 70%;
+  height: 200px;
   object-fit: cover;
+  display: block;
 }
 
-.outfit-info {
-  padding: 8px;
-  height: 30%;
+/* 통합된 좋아요 버튼 */
+.heart-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ffffffcc;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  
+  /* ✅ 아이콘 가운데 정렬 */
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-size: 12px;
+  align-items: center;
+  justify-content: center;
 }
+
+.heart-icon {
+  font-size: 18px; /* 너무 크면 안 예쁠 수 있음 */
+  color: #ccc;
+  transition: all 0.3s ease;
+}
+
+.heart-icon.liked {
+  color: #ff3b30;
+}
+
 
 .outfit-items {
   display: flex;
@@ -122,4 +123,11 @@
   background-color: #f0f0f0;
   border-radius: 3px;
   color: #555;
+}
+
+.empty-message {
+  text-align: center;
+  font-size: 16px;
+  color: #888;
+  margin-top: 20px;
 }
