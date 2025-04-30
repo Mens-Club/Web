@@ -16,6 +16,7 @@ import SignupPage from './pages/SignupPage.js';
 import FindPWPage from './pages/FindpwPage.js';
 import SettingPage from './pages/SettingPage.js';
 import ResetSetPage from './pages/ResetPwPage.js';
+import DetailPage from './pages/DetailPage.js';
 
 function App() {
   return (
@@ -33,7 +34,7 @@ function AppWithNav() {
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   // 보여줄 경로 (TopNav, BottomNav 둘 다 보여줄)
-  const showNavOnPaths = ['/main', '/camera', '/fashion', '/my'];
+  const showNavOnPaths = ['/main', '/camera', '/fashion', '/my', '/product-detail'];
   const shouldShowNav = showNavOnPaths.includes(location.pathname);
 
   return (
@@ -128,6 +129,14 @@ function AppWithNav() {
             element={
               <PageWrapper>
                 <ResetSetPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="/product-detail"
+            element={
+              <PageWrapper>
+                <DetailPage />
               </PageWrapper>
             }
           />
