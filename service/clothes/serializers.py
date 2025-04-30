@@ -8,3 +8,10 @@ class RecommendedGoodsRequestSerializer(serializers.Serializer):
 
 class SaveImageRequestSerializer(serializers.Serializer):
     file_data = serializers.CharField()
+
+class CancelLikeSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    top_goods_name = serializers.CharField()
+    outwear_goods_name = serializers.CharField()
+    bottom_goods_name = serializers.CharField()
+    shoes_goods_name = serializers.CharField()

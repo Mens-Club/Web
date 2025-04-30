@@ -2,7 +2,6 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -51,25 +50,35 @@ class SignupSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        username = data.get("username")
+        email = data.get("email")
         password = data.get("password")
 
-        if username and password:
-            user = authenticate(username=username, password=password)
+        if email and password:
+            # 기본 authenticate는 username 필드를 사용하므로 커스텀 인증 필요
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                raise serializers.ValidationError("잘못된 로그인 정보입니다.")
+
+            user = authenticate(username=user.username, password=password)
             if user:
                 if not user.is_active:
-                    raise serializers.ValidationError(_("비활성화된 계정입니다."))
+                    raise serializers.ValidationError("비활성화된 계정입니다.")
                 data["user"] = user
             else:
-                raise serializers.ValidationError(_("잘못된 로그인 정보입니다."))
+                raise serializers.ValidationError("잘못된 로그인 정보입니다.")
         else:
-            raise serializers.ValidationError(_("모든 필드를 입력해주세요."))
+            raise serializers.ValidationError("모든 필드를 입력해주세요.")
 
         return data
+
 
 
 class UpdateSerializer(serializers.ModelSerializer):
