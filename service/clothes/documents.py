@@ -6,7 +6,7 @@ from .models import Clothes, Shoes
 @registry.register_document
 class ClothesDocument(Document):
     class Index:
-        name = 'clothes'
+        name = 'clothes' 
         settings = {
             'number_of_shards': 1,
             'number_of_replicas': 0
