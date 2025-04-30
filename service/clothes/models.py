@@ -1,62 +1,84 @@
 from django.db import models
 
-class MensTable(models.Model):
-    # 'menstable_test' 테이블과 매핑
-    idx = models.AutoField(primary_key=True)  # AutoField로 기본 키 설정
-    goods_name = models.CharField(max_length=255)  # 상품명
-    sub_category = models.CharField(max_length=255)  # 서브 카테고리
-    goods_url = models.CharField(max_length=500)  # 👉 이 줄 추가!!
+class Clothes(models.Model):
+    idx = models.AutoField(primary_key=True)  # 기본 키를 idx로 지정
+    color = models.CharField(max_length=50, null=True, blank=True)
+    season = models.CharField(max_length=50, null=True, blank=True)
+    goods_name = models.CharField(max_length=100)
+    thumbnail_url = models.URLField(null=True, blank=True)
+    is_soldout = models.CharField(max_length=50, null=True, blank=True)
+    goods_url = models.URLField(null=True, blank=True)
+    brand = models.CharField(max_length=100, null=True, blank=True)
+    normal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    main_category = models.CharField(max_length=50, null=True, blank=True)
+    sub_category = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    image_id = models.CharField(max_length=100, null=True, blank=True)
+    s3_path = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        db_table = 'menstable_test'  # 실제 DB 테이블 이름
-        managed = False  # Django가 테이블을 자동으로 관리하지 않도록 설정
+        managed = False 
+        db_table = 'mens_table_refine'
 
-class ShoesTest(models.Model):
-    idx = models.AutoField(primary_key=True)
-    goods_name = models.CharField(max_length=255)
-    sub_category = models.CharField(max_length=255)
-    goods_url = models.CharField(max_length=500)  # 👉 이 줄 추가!!
-
-    class Meta:
-        db_table = 'shoes_test'  # shoes_test 테이블
-        managed = False  # 기존 테이블 사용
-
-class Base64FileTest(models.Model):
-    file_data = models.TextField()
-
-    class Meta:
-        db_table = 'save_image_test'
-        managed = False  # 기존 테이블에 연결하는 거니까
-
-class PickedClothesTest(models.Model):
-    id = models.AutoField(primary_key=True)
-    email = models.EmailField()
-    top_goods_name = models.CharField(max_length=255)
-    top_goods_url = models.CharField(max_length=255)
-    outwear_goods_name = models.CharField(max_length=255)
-    outwear_goods_url = models.CharField(max_length=255)
-    bottom_goods_name = models.CharField(max_length=255)
-    bottom_goods_url = models.CharField(max_length=255)
-    shoes_goods_name = models.CharField(max_length=255)
-    shoes_goods_url = models.CharField(max_length=255)
-    detail = models.CharField(max_length=500)
+class Shoes(models.Model):
+    idx = models.AutoField(primary_key=True)  # 기본 키를 idx로 지정
+    color = models.CharField(max_length=50, null=True, blank=True)
+    season = models.CharField(max_length=50, null=True, blank=True)
+    goods_name = models.CharField(max_length=100)
+    thumbnail_url = models.URLField(null=True, blank=True)
+    is_soldout = models.CharField(max_length=50, null=True, blank=True)
+    goods_url = models.URLField(null=True, blank=True)
+    brand = models.CharField(max_length=100, null=True, blank=True)
+    normal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    sub_category = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    image_id = models.CharField(max_length=100, null=True, blank=True)
+    s3_path = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        db_table = 'picked_clothes_test'
-        managed = False  # 이미 존재하는 테이블이라면
+        managed = False  
+        db_table = 'shoes_refine'
 
-class DroppedClothes(models.Model):
-    email = models.CharField(max_length=255)
-    top_goods_name = models.CharField(max_length=255)
-    top_goods_url = models.CharField(max_length=255)
-    outwear_goods_name = models.CharField(max_length=255)
-    outwear_goods_url = models.CharField(max_length=255)
-    bottom_goods_name = models.CharField(max_length=255)
-    bottom_goods_url = models.CharField(max_length=255)
-    shoes_goods_name = models.CharField(max_length=255)
-    shoes_goods_url = models.CharField(max_length=255)
-    detail = models.CharField(max_length=500)
+# class Base64FileTest(models.Model):
+#     file_data = models.TextField()
 
-    class Meta:
-        db_table = 'dropped_clothes_test'
-        managed = False  # 기존 테이블에만 사용
+#     class Meta:
+#         db_table = 'save_image_test'
+#         managed = False  # 기존 테이블에 연결하는 거니까
+
+# class PickedClothesTest(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     email = models.EmailField()
+#     top_goods_name = models.CharField(max_length=255)
+#     top_goods_url = models.CharField(max_length=255)
+#     outwear_goods_name = models.CharField(max_length=255)
+#     outwear_goods_url = models.CharField(max_length=255)
+#     bottom_goods_name = models.CharField(max_length=255)
+#     bottom_goods_url = models.CharField(max_length=255)
+#     shoes_goods_name = models.CharField(max_length=255)
+#     shoes_goods_url = models.CharField(max_length=255)
+#     detail = models.CharField(max_length=500)
+
+#     class Meta:
+#         db_table = 'picked_clothes_test'
+#         managed = False  # 이미 존재하는 테이블이라면
+
+# class DroppedClothes(models.Model):
+#     email = models.CharField(max_length=255)
+#     top_goods_name = models.CharField(max_length=255)
+#     top_goods_url = models.CharField(max_length=255)
+#     outwear_goods_name = models.CharField(max_length=255)
+#     outwear_goods_url = models.CharField(max_length=255)
+#     bottom_goods_name = models.CharField(max_length=255)
+#     bottom_goods_url = models.CharField(max_length=255)
+#     shoes_goods_name = models.CharField(max_length=255)
+#     shoes_goods_url = models.CharField(max_length=255)
+#     detail = models.CharField(max_length=500)
+
+#     class Meta:
+#         db_table = 'dropped_clothes_test'
+#         managed = False  # 기존 테이블에만 사용

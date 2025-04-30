@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import MensTable, ShoesTest, Base64FileTest, PickedClothesTest, DroppedClothes
+# from .models import Clothes, shoes, Base64FileTest, PickedClothesTest, DroppedClothes
 from rest_framework.permissions import AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import RecommendedGoodsRequestSerializer, SaveImageRequestSerializer, CancelLikeSerializer
@@ -20,13 +20,13 @@ class RecommendedGoodsView(APIView):
             bottom = serializer.validated_data['bottom']
             shoes = serializer.validated_data['shoes']
 
-            # menstable_test에서 가져오기
-            top_goods = MensTable.objects.filter(sub_category=top).order_by('?').first()
-            outwear_goods = MensTable.objects.filter(sub_category=outwear).order_by('?').first()
-            bottom_goods = MensTable.objects.filter(sub_category=bottom).order_by('?').first()
+            # Clothes_test에서 가져오기
+            top_goods = Clothes.objects.filter(sub_category=top).order_by('?').first()
+            outwear_goods = Clothes.objects.filter(sub_category=outwear).order_by('?').first()
+            bottom_goods = Clothes.objects.filter(sub_category=bottom).order_by('?').first()
 
             # shoes_test에서 가져오기
-            shoes_goods = ShoesTest.objects.filter(sub_category=shoes).order_by('?').first()
+            shoes_goods = shoes.objects.filter(sub_category=shoes).order_by('?').first()
 
             def generate_image_url(goods_url, is_shoes=False):
                 """ goods_url에서 숫자만 추출해 변환된 이미지 URL을 생성 """
