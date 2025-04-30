@@ -5,7 +5,7 @@ import '../styles/LoginPage.css';
 import '../styles/Layout.css';
 
 function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ function LoginPage() {
 
     try {
       const response = await api.post('/api/account/v1/login/', {
-        username,
+        email,
         password,
       });
 
@@ -47,10 +47,10 @@ function LoginPage() {
             <div className="input-group">
               <input
                 type="text"
-                placeholder="Username"
+                placeholder="Email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="input-group">
@@ -65,13 +65,15 @@ function LoginPage() {
 
             {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
 
-            <button type="submit" className="login-btn2">Login</button>
+            <button type="submit" className="login-btn2">
+              Login
+            </button>
           </form>
-         <div className="bottom-links">
-                     <Link to="/signup">회원가입</Link>
-                     <Link to="/find-id">아이디 찾기</Link>
-                     <Link to="/find-pw">비밀번호 찾기</Link>
-                     <Link to="/">홈으로</Link>
+          <div className="bottom-links">
+            <Link to="/signup">회원가입</Link>
+            <Link to="/find-id">아이디 찾기</Link>
+            <Link to="/find-pw">비밀번호 찾기</Link>
+            <Link to="/">홈으로</Link>
           </div>
         </div>
       </div>
