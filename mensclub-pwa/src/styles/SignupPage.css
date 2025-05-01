@@ -1,29 +1,283 @@
+/* SettingPage 전용 */
+.setting-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f1f3f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+.setting-content {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  padding: 20px 0 40px 0;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.setting-back-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.setting-title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 18px;
+  margin-right: 40px;
+}
+
+.setting-profile-section {
+  padding: 30px 20px;
+  text-align: center;
+  border-bottom: 10px solid #f8f9fa;
+}
+
+.setting-profile-section h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.setting-email {
+  color: #666;
+  font-size: 16px;
+}
+
+.setting-menu-list {
+  background: white;
+  border-radius: 12px;
+  padding: 8px 16px 0 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.setting-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #eef0f5;
+}
+
+.setting-menu-item:last-child {
+  border-bottom: none;
+}
+
+.setting-right-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-text {
+  color: #6b7aff;
+  font-size: 14px;
+}
+
+.setting-arrow {
+  color: #b0b8c1;
+  font-size: 16px;
+}
+
+.setting-profile-code {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+  font-size: 14px;
+}
+
+.setting-small-profile {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
 
 .input-group select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 30px;
-    background-color: #fff;
-    font-size: 16px;
-    color: #999999;
-    outline: none;
-    transition: border-color 0.3s;
-  }
-  
-  .input-group select:focus {
-    border-color: #6c63ff; /* 포커스 시 강조 색상 */
-    box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
-  }
-  
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  background-color: #fff;
+  font-size: 16px;
+  color: #999999;
+  outline: none;
+  transition: border-color 0.3s;
+}
 
-  .logo-signup {
-    margin-top: 5%;
-    margin-bottom: 10px;
-    text-align: center;
+.input-group select:focus {
+  border-color: #6c63ff;
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+}
+
+/* 팝업 */
+.setting-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(40, 41, 44, 0.555);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.setting-popup-overlay.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.setting-popup-content {
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 16px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.setting-popup-overlay.show .setting-popup-content {
+  transform: translateY(0);
+}
+
+.setting-popup-text {
+  text-align: center;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.setting-popup-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.setting-popup-btn {
+  flex: 1;
+  padding: 15px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.setting-popup-btn.cancel {
+  background-color: #f1f3f7;
+  color: #666;
+}
+
+.setting-popup-btn.confirm {
+  background-color: #6b7aff;
+  color: white;
 }
 
 .logo-signup img {
-    width: 120px;
-    height: auto;
+  width: 120px;
+  height: auto;
+}
+
+/* 모바일 대응 강화 */
+@media screen and (max-width: 480px) {
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+  }
+
+  .signup-page input,
+  .signup-page select,
+  .signup-page button {
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .signup-page .input-group {
+    margin-bottom: 12px;
+  }
+
+  .signup-page .login-form {
+    padding-bottom: 16px;
+  }
+
+  .signup-page .input-group.row-split {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .signup-page .input-group.row-split input,
+  .signup-page .input-group.row-split select {
+    flex: 1;
+    width: 100%;
+    font-size: 13px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .signup-page .input-group.inline-height-weight {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .signup-page .input-group.inline-height-weight input {
+    width: 100%;
+    font-size: 13px;
+    height: 40px;
+    padding: 8px;
+    flex: 1;
+  }
+
+  .signup-page .input-group select {
+    width: 100%;
+  }
+
+  .signup-page .input-group.sex-select {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .signup-page .input-group.sex-select select {
+    width: 100%;
+    font-size: 13px;
+    height: 40px;
+  }
+}
+
+@media screen and (max-width: 375px) {
+  .setting-profile-section h2 {
+    font-size: 18px;
+  }
+
+  .setting-popup-text {
+    font-size: 14px;
+  }
 }

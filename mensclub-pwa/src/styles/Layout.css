@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 /* 전체 css 고정정 */
+=======
+/* 전체 layout / css  고정 */
+>>>>>>> Stashed changes
 
 * {
   margin: 0;
@@ -7,9 +11,17 @@
 }
 
 body {
+<<<<<<< Updated upstream
 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 background-color: #9c9c9c2f;
 height: 100vh;
+=======
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+    'Helvetica Neue', sans-serif;
+  background-color: #ffffff48;
+  height: 100vh;
+  overflow-x: hidden;
+>>>>>>> Stashed changes
 }
 
 /* 전체 앱 래퍼 */

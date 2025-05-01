@@ -19,8 +19,15 @@
     border-radius: 12px;
     padding: 50px;
 
+<<<<<<< Updated upstream
     margin: 0 auto 24px; 
     border: 1px solid #ddd;
+=======
+/* 데스크탑에서도 모바일 앱처럼 보이게 */
+@media (min-width: 769px) {
+  .container {
+    max-width: 600px;
+>>>>>>> Stashed changes
   }
 
   .upload-box {

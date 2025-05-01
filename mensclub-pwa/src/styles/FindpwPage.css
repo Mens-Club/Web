@@ -26,10 +26,18 @@ h1 {
     color: #333;
 }
 
+<<<<<<< Updated upstream
 .input-group {
     width: 100%;
     margin-bottom: 16px;
 }
+=======
+/* .input-group {
+  padding: 0 16px;
+  width: 100%;
+  margin-bottom: 16px;
+} */
+>>>>>>> Stashed changes
 
 input {
     width: 100%;

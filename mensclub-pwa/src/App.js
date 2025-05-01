@@ -62,6 +62,17 @@ function AppWithNav() {
           <Route path="/edit-profile" element={<PageWrapper><EditProfilePage /></PageWrapper>} />
           <Route path="/set-password" element={<PageWrapper><SetPasswordPage /></PageWrapper>} />
           <Route path="/set-body" element={<PageWrapper><BodyInfoPage /></PageWrapper>} />
+<<<<<<< Updated upstream
+=======
+          {/* <Route
+            path="/reset-pw"
+            element={
+              <PageWrapper>
+                <ResetSetPage />
+              </PageWrapper>
+            }
+          /> */}
+>>>>>>> Stashed changes
         </Routes>
       </AnimatePresence>
 

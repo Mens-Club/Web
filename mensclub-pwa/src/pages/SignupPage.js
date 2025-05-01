@@ -148,6 +148,7 @@ function SignupPage() {
   };
 
   return (
+    <div className='signup-page'>
     <div className="container">
       <div className="content">
         <div className="login-card">
@@ -254,6 +255,7 @@ function SignupPage() {
         </div>
       </div>
     </div>
+  </div>
   );
 }
 
