@@ -112,6 +112,9 @@
       cursor: pointer;
     }
 
+
+
+    
     /* 데스크탑일 경우 최대 너비 고정 */
     @media (min-width: 769px) {
       .content {

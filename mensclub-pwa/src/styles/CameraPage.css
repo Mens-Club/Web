@@ -1,149 +1,136 @@
-  .title-wrapper {
-    text-align: center;
-    margin-top: 100px;
-    margin-bottom: 40px;
-  }
-  
-  .title-wrapper h1 {
-    font-size: 25px;
-    font-weight: 600;
-    color: #1a1a1a;
-  }
-  
-  
-  /* 업로드 박스 */
-  .upload-box {
-    width: 70%;
-    height: 300px;
-    background-color: #b8b8b8;
-    border-radius: 12px;
-    padding: 50px;
+/* 촬영 페이지 */
 
-<<<<<<< Updated upstream
-    margin: 0 auto 24px; 
-    border: 1px solid #ddd;
-=======
+.title-wrapper {
+  text-align: center;
+  margin-top: 100px;
+  margin-bottom: 40px;
+}
+
+.title-wrapper h1 {
+  font-size: 25px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.uploadbox {
+  width: 70%;
+  height: 400px;
+  background-color: #b8b8b8;
+  border-radius: 12px;
+  padding: 0px;
+  margin: 0 auto 24px;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+#camera-stream,
+#preview {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background-color: #000;
+}
+
+/* 원형 카메라 버튼 */
+.camera-button {
+  margin: 70px auto 0;
+  background-color: #b8b8b8;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* 텍스트 버튼들 */
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.upload-text-btn {
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+/* .recommend-btn {
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  margin-top: 12px;
+} */
+
+.upload-text-btn:hover {
+  background-color: #333;
+}
+
+/* 업로드 상태 */
+.upload-status {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #e6e8f0;
+  border-radius: 12px;
+  text-align: center;
+  width: 70%;
+  border: 1px solid #eee;
+  margin: 0 auto 24px;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ccc;
+  border-top: 3px solid #1a1a1a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 /* 데스크탑에서도 모바일 앱처럼 보이게 */
 @media (min-width: 769px) {
   .container {
     max-width: 600px;
->>>>>>> Stashed changes
   }
 
-  .upload-box {
-    width: 70%;
-    background-color: #b8b8b8;
-    border-radius: 12px;
-    overflow: hidden;
+  h1 {
+    font-size: 10px;
   }
-  
-  
-  #camera-stream,
-  #preview {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    background-color: #000;
-  }
-  
-    /* 원형 카메라 버튼 */
-    .camera-button {
-      margin: 70px auto 0;
-      background-color: #b8b8b8;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 50%;
-      cursor: pointer;
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  
-  .camera-button svg {
-    width: 24px;
-    height: 24px;
-  }
-  
-  /* 텍스트 버튼들 */
-  .button-container {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 12px;
-  }
-  
-  .upload-text-btn {
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-  
-  .upload-text-btn:hover {
-    background-color: #333;
-  }
-  
-  /* 업로드 상태 */
-  .upload-status {
-    margin-top: 24px;
-    padding: 16px;
-    background-color: #e6e8f0;
-    border-radius: 12px;
-    text-align: center;
-    width: 70%;
-    border: 1px solid #eee;
-    margin: 0 auto 24px;
-  }
-  
-  .loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-  
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #ccc;
-    border-top: 3px solid #1a1a1a;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 8px;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  .recommend-btn {
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    margin-top: 12px;
-  }
-  
-  /* 데스크탑에서도 모바일 앱처럼 보이게 */
-  @media (min-width: 769px) {
-    .container {
-      max-width: 800px;
-    }
-
-    h1 {
-      font-size: 10px;
-    }
-  
-  }
-  
+}
