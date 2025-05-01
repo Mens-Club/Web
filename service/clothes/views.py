@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from elasticsearch import Elasticsearch
 from .serializers import PickedClothesLikeSerializer
-import random, time
+import random, time, uuid
 
 es = Elasticsearch("http://localhost:9200")  # 도커로 띄운 ES 주소
 
@@ -279,7 +279,7 @@ class PickedClothesLikeAddView(APIView):
         }
 
         # Elasticsearch에 저장
-        res = es.index(index="picked_clothes", document=doc)
+        res = es.index(index="picked_clothes", id=str(uuid.uuid4()), document=doc)
 
         return Response({"message": "Picked clothes saved to Elasticsearch.", "result": res['result']}, status=status.HTTP_201_CREATED)
 	
