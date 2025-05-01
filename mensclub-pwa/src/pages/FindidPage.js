@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/FindidPage.css'; // CSS 파일 분리해서 import
 
 function FindidPage() {
   const [username, setName] = useState('');
@@ -54,7 +53,6 @@ function FindidPage() {
           <button className="find-btn" onClick={handleFindID}>
             아이디 찾기
           </button>
-
           <div className="bottom-links">
             <Link to="/login">로그인</Link>
             <Link to="/signup">회원가입</Link>
