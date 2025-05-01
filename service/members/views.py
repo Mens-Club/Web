@@ -6,6 +6,7 @@ from .serializers import (
     UpdateSerializer,
     ChangePasswordSerializer,
     FindEmailSerializer,
+    ImageUploadSerializer,
 )
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -92,15 +93,20 @@ class ChangePasswordView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class DeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
         user = request.user
         user.delete()
-        return Response({"message": "회원 탈퇴가 완료되었습니다."}, status=status.HTTP_204_NO_CONTENT)
-    
+        return Response(
+            {"message": "회원 탈퇴가 완료되었습니다."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
 class FindEmailView(APIView):
     permission_classes = [AllowAny]
 
@@ -108,13 +114,14 @@ class FindEmailView(APIView):
     def post(self, request):
         serializer = FindEmailSerializer(data=request.data)
         if serializer.is_valid():
-            user = User.objects.get(username=serializer.validated_data['username'])
-            return Response({
-                "message": "이메일을 찾았습니다.",
-                "email": user.email
-            }, status=status.HTTP_200_OK)
+            user = User.objects.get(username=serializer.validated_data["username"])
+            return Response(
+                {"message": "이메일을 찾았습니다.", "email": user.email},
+                status=status.HTTP_200_OK,
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
@@ -122,43 +129,34 @@ class UserInfoView(APIView):
     def get(self, request):
         user = request.user  # ✅ 현재 로그인한 사용자
 
-        return Response({
-            "username": user.username,
-            "email": user.email,
-            "height": user.height,
-            "weight": user.weight
-        }, status=status.HTTP_200_OK)
-        
+        return Response(
+            {
+                "username": user.username,
+                "email": user.email,
+                "height": user.height,
+                "weight": user.weight,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class ImageUploadView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request):
-        # base64 이미지 데이터 받기
-        base64_image = request.data.get('image')
-        
-        if not base64_image:
-            return Response(
-                {'detail': '이미지 데이터가 없습니다.'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+        serializer = ImageUploadSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        base64_image = serializer.validated_data["image"]
+
         try:
-            # S3 업로드 및 URL 생성
-            photo_url = upload_base64_to_s3(
-                base64_image, 
-                request.user.id
-            )
-            
-            # 사용자 모델 업데이트 (선택사항)
-            request.user.upload_picture = photo_url
-            request.user.save()
-            
-            return Response({
-                'image_url': photo_url
-            }, status=status.HTTP_201_CREATED)
-        
+            photo_url = upload_base64_to_s3(base64_image, user_id=0)
+
+            # request.user.upload_picture = photo_url
+            # request.user.save()
+
+            return Response({"image_url": photo_url}, status=status.HTTP_201_CREATED)
+
         except ValueError as e:
-            return Response(
-                {'detail': str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
