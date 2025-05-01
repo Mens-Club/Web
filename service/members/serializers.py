@@ -114,3 +114,6 @@ class UserInfoRequestSerializer(serializers.Serializer):
         if not User.objects.filter(username=value).exists():
             raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
         return value
+    
+
+        

@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    'django_elasticsearch_dsl' # elastic search 
+    'django_elasticsearch_dsl', # elastic search 
+    'storages'
 ]
 
 
@@ -239,3 +240,11 @@ ELASTICSEARCH_DSL = {
         'hosts': 'http://localhost:9200'
     }
 }
+
+# Bucket Access 
+SERVICE_NAME= os.getenv("SERVICE_NAME")
+ENDPOINT_URL= os.getenv("ENDPOINT_URL")
+REGION_NAME= os.getenv("REGION_NAME")
+ACCESS_KEY= os.getenv("ACCESS_KEY")
+SECRET_KEY= os.getenv("SECRET_KEY")
+STORAGE_BUCKET_NAME=os.getenv("STORAGE_BUCKET_NAME")
