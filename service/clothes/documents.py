@@ -1,6 +1,6 @@
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from .models import Clothes, Shoes  
+from .models import Clothes, Shoes
 
 
 @registry.register_document
