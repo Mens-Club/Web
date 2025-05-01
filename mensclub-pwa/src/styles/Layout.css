@@ -1,6 +1,5 @@
 /* 전체 layout / css  고정 */
 
-
 * {
   margin: 0;
   padding: 0;
@@ -35,4 +34,3 @@ body {
   width: 100%;
   flex: 1;
 }
-
