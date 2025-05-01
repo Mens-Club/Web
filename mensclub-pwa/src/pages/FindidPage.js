@@ -24,7 +24,7 @@ function FindidPage() {
       const data = await response.json();
       if (response.ok) {
         if (data.email && data.email.length > 0) {
-          setResult(`당신의 아이디 ➡️ ${data.email}`);
+          setResult(`당신의 아이디 ➜ ${data.email}`);
         } else {
           setError('일치하는 정보가 없습니다.');
         }
