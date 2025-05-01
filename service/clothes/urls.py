@@ -1,9 +1,11 @@
 from django.urls import path
-from .views import RecommendedGoodsView, SaveImageAPIView, UserLikeSetView, CancelLikeAPIView
+from .views import PickedClothesMainView, PickedClothesMypageView, PickedClothesDetailView, PickedClothesLikeAddView, PickedClothesLikeCancelView, RecommendedGoodsView
 
 urlpatterns = [
-    path('random-clothing/', RecommendedGoodsView.as_view(), name='random_clothing'),
-    path('save_image/', SaveImageAPIView.as_view(), name='save_image'),
-    path('user_like_list', UserLikeSetView.as_view(), name='user_like_list'),
-    path('cancel_like/', CancelLikeAPIView.as_view(), name='cancel_like'),
+    path('recommend_goods/', RecommendedGoodsView.as_view(), name='recommed_goods'),
+    path('picked_clothes/main/', PickedClothesMainView.as_view(), name='picked_clothes_main'),
+    path('picked_clothes/mypage/', PickedClothesMypageView.as_view(), name='picked_clothes_mypage'),
+    path('picked_clothes/detail/', PickedClothesDetailView.as_view(), name='picked_clothes_detail'),
+    path('picked_clothes/add/', PickedClothesLikeAddView.as_view(), name='picked_clothes/add'),
+    path('picked_clothes/delete/', PickedClothesLikeCancelView.as_view(), name='picked_clothes_delete'),
 ]

@@ -1,7 +1,6 @@
 from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
-from .models import Clothes, Shoes  
-
+from .models import Clothes, Shoes, PickedClothes
 
 @registry.register_document
 class ClothesDocument(Document):
@@ -61,4 +60,25 @@ class ShoesDocument(Document):
             'updated_at',
             'image_id',
             's3_path'
+        ]
+
+@registry.register_document
+class PickedClothesDocument(Document):
+    class Index:
+        name = 'picked_clothes'  # Elasticsearch 인덱스 이름
+        settings = {
+            'number_of_shards': 1,
+            'number_of_replicas': 0
+        }
+
+    class Django:
+        model = PickedClothes
+        fields = [
+            'email',
+            'top',
+            'outwear',
+            'bottom',
+            'shoes',
+            'summary_picture',
+            'created_at'
         ]
