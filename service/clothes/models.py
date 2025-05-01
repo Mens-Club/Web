@@ -43,42 +43,11 @@ class Shoes(models.Model):
         managed = False  
         db_table = 'shoes_refine'
 
-# class Base64FileTest(models.Model):
-#     file_data = models.TextField()
-
-#     class Meta:
-#         db_table = 'save_image_test'
-#         managed = False  # 기존 테이블에 연결하는 거니까
-
-# class PickedClothesTest(models.Model):
-#     id = models.AutoField(primary_key=True)
-#     email = models.EmailField()
-#     top_goods_name = models.CharField(max_length=255)
-#     top_goods_url = models.CharField(max_length=255)
-#     outwear_goods_name = models.CharField(max_length=255)
-#     outwear_goods_url = models.CharField(max_length=255)
-#     bottom_goods_name = models.CharField(max_length=255)
-#     bottom_goods_url = models.CharField(max_length=255)
-#     shoes_goods_name = models.CharField(max_length=255)
-#     shoes_goods_url = models.CharField(max_length=255)
-#     detail = models.CharField(max_length=500)
-
-#     class Meta:
-#         db_table = 'picked_clothes_test'
-#         managed = False  # 이미 존재하는 테이블이라면
-
-# class DroppedClothes(models.Model):
-#     email = models.CharField(max_length=255)
-#     top_goods_name = models.CharField(max_length=255)
-#     top_goods_url = models.CharField(max_length=255)
-#     outwear_goods_name = models.CharField(max_length=255)
-#     outwear_goods_url = models.CharField(max_length=255)
-#     bottom_goods_name = models.CharField(max_length=255)
-#     bottom_goods_url = models.CharField(max_length=255)
-#     shoes_goods_name = models.CharField(max_length=255)
-#     shoes_goods_url = models.CharField(max_length=255)
-#     detail = models.CharField(max_length=500)
-
-#     class Meta:
-#         db_table = 'dropped_clothes_test'
-#         managed = False  # 기존 테이블에만 사용
+class PickedClothes(models.Model):
+    email = models.EmailField()
+    top = models.IntegerField(null=True, blank=True)
+    outwear = models.IntegerField(null=True, blank=True)
+    bottom = models.IntegerField(null=True, blank=True)
+    shoes = models.IntegerField(null=True, blank=True)
+    summary_picture = models.URLField()
+    created_at = models.DateTimeField(auto_now_add=True)
