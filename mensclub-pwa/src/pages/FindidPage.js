@@ -3,13 +3,38 @@ import { Link } from 'react-router-dom';
 import '../styles/FindidPage.css'; // CSS 파일 분리해서 import
 
 function FindidPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setName] = useState('');
+  const [result, setResult] = useState('');
+  const [error, setError] = useState('');
 
-  const handleFindID = () => {
-    console.log('이름:', name);
-    console.log('이메일:', email);
-    // TODO: 백엔드로 요청 보내기
+  const handleFindID = async () => {
+    setResult('');
+    setError('');
+    if (!username.trim()) {
+      alert('이름을 입력해주세요');
+      return;
+    }
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/account/v1/find_email/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        if (data.email && data.email.length > 0) {
+          setResult(`당신의 아이디 ➡️ ${data.email}`);
+        } else {
+          setError('일치하는 정보가 없습니다.');
+        }
+      } else {
+        setError(data.error || '일치하는 정보가 없습니다.');
+      }
+    } catch (err) {
+      setError('서버와 통신 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -23,21 +48,7 @@ function FindidPage() {
           <h1>아이디 찾기</h1>
 
           <div className="input-group">
-            <input
-              type="text"
-              placeholder="이름"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="input-group">
-            <input
-              type="email"
-              placeholder="이메일"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <input type="text" placeholder="이름" value={username} onChange={(e) => setName(e.target.value)} />
           </div>
 
           <button className="find-btn" onClick={handleFindID}>
@@ -50,6 +61,10 @@ function FindidPage() {
             <Link to="/find-pw">비밀번호 찾기</Link>
             <Link to="/">홈으로</Link>
           </div>
+        </div>
+        <div className="result_container">
+          {result && <div className="result"> {result}</div>}
+          {error && <div className="error"> {error}</div>}
         </div>
       </div>
     </div>

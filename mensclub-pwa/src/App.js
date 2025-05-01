@@ -16,6 +16,8 @@ import SignupPage from './pages/SignupPage.js';
 import FindPWPage from './pages/FindpwPage.js';
 
 import SettingPage from './pages/SettingPage.js';
+import ResetSetPage from './pages/ResetPwPage.js';
+import DetailPage from './pages/DetailPage.js';
 import EditProfilePage from './pages/EditProfilePage.js';
 import SetPasswordPage from './pages/SetPasswordPage.js';
 import BodyInfoPage from './pages/BodyInfoPage.js';
@@ -39,7 +41,7 @@ function AppWithNav() {
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   // 보여줄 경로 (TopNav, BottomNav 둘 다 보여줄)
-  const showNavOnPaths = ['/main', '/camera', '/fashion', '/my'];
+  const showNavOnPaths = ['/main', '/camera', '/fashion', '/my', '/product-detail'];
   const shouldShowNav = showNavOnPaths.includes(location.pathname);
 
   return (
@@ -49,6 +51,7 @@ function AppWithNav() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
+
           <Route path="/" element={<PageWrapper><FirstPage /></PageWrapper>} />
           <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
           <Route path="/signup" element={<PageWrapper><SignupPage /></PageWrapper>} />
@@ -62,14 +65,15 @@ function AppWithNav() {
           <Route path="/edit-profile" element={<PageWrapper><EditProfilePage /></PageWrapper>} />
           <Route path="/set-password" element={<PageWrapper><SetPasswordPage /></PageWrapper>} />
           <Route path="/set-body" element={<PageWrapper><BodyInfoPage /></PageWrapper>} />
-          {/* <Route
-            path="/reset-pw"
+          />
+          <Route
+            path="/product-detail"
             element={
               <PageWrapper>
-                <ResetSetPage />
+                <DetailPage />
               </PageWrapper>
             }
-          /> */}
+          />
         </Routes>
       </AnimatePresence>
 
@@ -78,6 +82,5 @@ function AppWithNav() {
     </>
   );
 }
-
 
 export default App;

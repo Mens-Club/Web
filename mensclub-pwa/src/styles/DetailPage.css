@@ -1,7 +1,68 @@
+.image-container {
+  padding-top: 60px;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 500px;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-direction: column;
+}
 
-/* 촬영 페이지 */
+.image-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
 
-.title-wrapper {
+.prodict-link a {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: 'none';
+}
+
+.product-link img {
+  display: flex;
+  width: 100px;
+  height: 100px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: 'none';
+}
+
+.product-description {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.product-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 -24px;
+  padding: 0 24px;
+}
+
+.product-cards {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 12px 0;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* .title-wrapper {
   text-align: center;
   margin-top: 100px;
   margin-bottom: 40px;
@@ -13,20 +74,6 @@
   color: #1a1a1a;
 }
 
-.uploadbox {
-.title-wrapper {
-  text-align: center;
-  margin-top: 100px;
-  margin-bottom: 40px;
-}
-
-.title-wrapper h1 {
-  font-size: 25px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-/* 업로드 박스 */
 .upload-box {
   width: 70%;
   height: 400px;
@@ -46,7 +93,6 @@
   background-color: #000;
 }
 
-/* 원형 카메라 버튼 */
 .camera-button {
   margin: 70px auto 0;
   background-color: #b8b8b8;
@@ -67,7 +113,6 @@
   height: 24px;
 }
 
-/* 텍스트 버튼들 */
 .button-container {
   display: flex;
   justify-content: center;
@@ -86,22 +131,10 @@
   transition: background 0.2s ease;
 }
 
-/* .recommend-btn {
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  margin-top: 12px;
-} */
-
 .upload-text-btn:hover {
   background-color: #333;
 }
 
-/* 업로드 상태 */
 .upload-status {
   margin-top: 24px;
   padding: 16px;
@@ -128,7 +161,7 @@
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 8px;
-}
+} */
 
 @keyframes spin {
   0% {
@@ -142,7 +175,9 @@
 /* 데스크탑에서도 모바일 앱처럼 보이게 */
 @media (min-width: 769px) {
   .container {
-    max-width: 600px;
+    max-width: 800px;
+  }
+
   h1 {
     font-size: 10px;
   }
