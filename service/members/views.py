@@ -5,7 +5,7 @@ from .serializers import (
     LoginSerializer,
     UpdateSerializer,
     ChangePasswordSerializer,
-    FindEmailSerializer,
+    FindEmailSerializer,UserImageUploadSerializer
 )
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -15,7 +15,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from .storage import upload_base64_to_s3
+from datetime import datetime
+from django.core.files.storage import default_storage
 
 
 User = get_user_model()
@@ -129,36 +130,13 @@ class UserInfoView(APIView):
             "weight": user.weight
         }, status=status.HTTP_200_OK)
         
-class ImageUploadView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request):
-        # base64 이미지 데이터 받기
-        base64_image = request.data.get('image')
+
+class UserImageUploadView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request, format=None):
+        serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
         
-        if not base64_image:
-            return Response(
-                {'detail': '이미지 데이터가 없습니다.'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        try:
-            # S3 업로드 및 URL 생성
-            photo_url = upload_base64_to_s3(
-                base64_image, 
-                request.user.id
-            )
-            
-            # 사용자 모델 업데이트 (선택사항)
-            request.user.upload_picture = photo_url
-            request.user.save()
-            
-            return Response({
-                'image_url': photo_url
-            }, status=status.HTTP_201_CREATED)
-        
-        except ValueError as e:
-            return Response(
-                {'detail': str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success': '이미지가 성공적으로 업로드되었습니다.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
