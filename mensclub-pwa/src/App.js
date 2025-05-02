@@ -65,6 +65,7 @@ function AppWithNav() {
           <Route path="/edit-profile" element={<PageWrapper><EditProfilePage /></PageWrapper>} />
           <Route path="/set-password" element={<PageWrapper><SetPasswordPage /></PageWrapper>} />
           <Route path="/set-body" element={<PageWrapper><BodyInfoPage /></PageWrapper>} />
+
           <Route
             path="/product-detail"
             element={

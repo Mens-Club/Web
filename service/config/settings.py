@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    'django_elasticsearch_dsl', # elastic search 
-    'storages'
+    "django_elasticsearch_dsl",  # elastic search
+    "storages",
 ]
 
 
@@ -126,15 +126,13 @@ DATABASES = {
 }
 
 ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'http://localhost:9200'  # 'http://' 스키마 추가
-    },
+    "default": {"hosts": "http://localhost:9200"},  # 'http://' 스키마 추가
 }
 
 # 인덱스 이름 매핑
 ELASTICSEARCH_INDEX_NAMES = {
-    'clothes.documents.ClothesDocument': 'clothes',
-    'clothes.documents.ShoesDocument': 'shoes'
+    "clothes.documents.ClothesDocument": "clothes",
+    "clothes.documents.ShoesDocument": "shoes",
 }
 
 
@@ -160,7 +158,12 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",  # 기본적으로 인증된 사용자만 접근 가능
+        # "rest_framework.parsers.JSONParser", # DEFAULT_PARSER_CLASSES새로 생성 및 이동
+    ),
+    "DEFAULT_PARSER_CLASSES": (
         "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,  # 페이지당 10개씩 조회
@@ -235,16 +238,12 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'http://localhost:9200'
-    }
-}
+ELASTICSEARCH_DSL = {"default": {"hosts": "http://localhost:9200"}}
 
-# Bucket Access 
-SERVICE_NAME= os.getenv("SERVICE_NAME")
-ENDPOINT_URL= os.getenv("ENDPOINT_URL")
-REGION_NAME= os.getenv("REGION_NAME")
-ACCESS_KEY= os.getenv("ACCESS_KEY")
-SECRET_KEY= os.getenv("SECRET_KEY")
-STORAGE_BUCKET_NAME=os.getenv("STORAGE_BUCKET_NAME")
+# 오브젝트 스토리지 연결
+SERVICE_NAME = os.getenv("SERVICE_NAME")
+ENDPOINT_URL = os.getenv("ENDPOINT_URL")
+REGION_NAME = os.getenv("REGION_NAME")
+ACCESS_KEY = os.getenv("ACCESS_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
+STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
