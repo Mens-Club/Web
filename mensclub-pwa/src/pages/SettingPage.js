@@ -84,7 +84,7 @@ function SettingPage() {
     <div className="setting-container">
       <div className="setting-content">
         <div className="setting-header">
-          <button className="setting-back-btn" onClick={() => navigate(-1)}>←</button>
+          <button className="setting-back-btn" onClick={() => navigate(-1)}>‹</button>
           <h1 className="setting-title">내 정보</h1>
         </div>
 

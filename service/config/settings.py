@@ -291,10 +291,9 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
-
 ELASTICSEARCH_DSL = {"default": {"hosts": "http://localhost:9200"}}
 
-# Bucket Access
+# 오브젝트 스토리지 연결
 SERVICE_NAME = os.getenv("SERVICE_NAME")
 ENDPOINT_URL = os.getenv("ENDPOINT_URL")
 REGION_NAME = os.getenv("REGION_NAME")

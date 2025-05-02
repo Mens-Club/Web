@@ -155,6 +155,7 @@ function AppWithNav() {
               </PageWrapper>
             }
           />
+
           <Route
             path="/product-detail"
             element={
