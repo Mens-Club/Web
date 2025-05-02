@@ -5,7 +5,6 @@ import '../styles/BodyInfoPage.css'; // 기존 2.css를 리네이밍해서 사�
 
 // 이미 정보가 있는 경우, 정보 를 올린후 수정
 
-
 function BodyInfoPage() {
   const navigate = useNavigate();
   const [height, setHeight] = useState('');
