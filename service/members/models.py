@@ -35,6 +35,12 @@ class User(AbstractUser):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    upload_picture = models.URLField(
+        null=True,
+        blank=True,
+        verbose_name="버킷 업로드 경로"
+    )
 
     def __str__(self):
         return self.username
