@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from .custom_upload import user_upload_path
+
 
 
 class User(AbstractUser):
@@ -36,10 +38,11 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    upload_picture = models.URLField(
+    upload_picture = models.ImageField(
+        upload_to=user_upload_path,
         null=True,
         blank=True,
-        verbose_name="버킷 업로드 경로"
+        verbose_name="의류 사진"
     )
 
     def __str__(self):

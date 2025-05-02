@@ -4,11 +4,14 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 schema_view = get_schema_view(
     openapi.Info(
-        title="회원 및 인증 API 문서",
+        title="메인 Swagger",
         default_version="v1",
-        description="회원가입, 로그인, JWT 인증 API 문서",
+        description="냉무",
         terms_of_service="",
         contact=openapi.Contact(email="cheorish.hw@gmail.com"),
         license=openapi.License(name="MIT License"),
@@ -30,3 +33,7 @@ urlpatterns = [
     path("swagger.json/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
     path("accounts/", include("allauth.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
