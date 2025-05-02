@@ -6,7 +6,7 @@ from .views import (SignupView,
                     FindEmailView, 
                     UserInfoView, UserImageUploadView, SimpleImageUploadView)
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+ 
 urlpatterns = [
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
