@@ -129,20 +129,17 @@ class FindEmailView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user  # ✅ 현재 로그인한 사용자
-
         return Response({
-            "username": user.username,
-            "email": user.email,
-            "height": user.height,
-            "weight": user.weight
+            "id": request.user.id,
+            "username": request.user.username,
+            "email": request.user.email,
+            "height": request.user.height,
+            "weight": request.user.weight
         }, status=status.HTTP_200_OK)
-        
 
 class UserImageUploadView(APIView):
     permission_classes = [AllowAny]
