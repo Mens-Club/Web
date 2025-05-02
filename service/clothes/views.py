@@ -112,14 +112,14 @@ es = Elasticsearch("http://localhost:9200")
 #         try:
 #             res = es.search(index="picked_clothes", body=query)
 #             all_items = [hit["_source"] for hit in res["hits"]["hits"]]
-            
+
 #             # 4개 랜덤 선택 (최대 4개)
 #             selected_items = random.sample(all_items, min(4, len(all_items)))
-            
+
 #             return Response(selected_items, status=status.HTTP_200_OK)
 #         except Exception as e:
 #             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
 # class PickedClothesMypageView(APIView):
 #     # 최신, 오래된순, 가격, 스타일
 #     permission_classes = [AllowAny]
@@ -163,14 +163,14 @@ es = Elasticsearch("http://localhost:9200")
 #             500: "Internal server error"
 #         }
 #     )
-    
+
 #     def get(self, request):
 #         email = request.query_params.get("email")
-        
+
 #         # email이 제공되지 않으면 에러 반환
 #         if not email:
 #             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 #         query = {
 #             "size": 10,
 #             "query": {
@@ -189,11 +189,11 @@ es = Elasticsearch("http://localhost:9200")
 #                 item = hit["_source"]
 #                 item['uid'] = hit["_id"]  # _id를 uid로 추가
 #                 all_items.append(item)
-            
+
 #             return Response(all_items, status=status.HTTP_200_OK)
 #         except Exception as e:
 #             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
 # class PickedClothesDetailView(APIView):
 #     permission_classes = [AllowAny]
 
@@ -221,7 +221,7 @@ es = Elasticsearch("http://localhost:9200")
 #             500: "Internal server error"
 #         }
 #     )
-    
+
 #     def get(self, request):
 #         # 각 카테고리 제품 ID
 #         product_ids = {
@@ -230,7 +230,7 @@ es = Elasticsearch("http://localhost:9200")
 #             "bottom": request.query_params.get("bottom"),
 #             "shoes": request.query_params.get("shoes")
 #         }
-        
+
 #         # 제품 상세 정보를 담을 변수
 #         product_details = {}
 
@@ -292,7 +292,7 @@ es = Elasticsearch("http://localhost:9200")
 # #         res = es.index(index="picked_clothes", id=str(uuid.uuid4()), document=doc)
 
 # #         return Response({"message": "Picked clothes saved to Elasticsearch.", "result": res['result']}, status=status.HTTP_201_CREATED)
-	
+
 # class PickedClothesLikeCancelView(APIView):
 #     permission_classes = [AllowAny]
 
@@ -310,7 +310,7 @@ es = Elasticsearch("http://localhost:9200")
 #             "message": "저장 성공",
 #             "id": saved_file.id
 #         }, status=201)
-    
+
 # class UserLikeSetView(APIView):
 #     permission_classes = [AllowAny]
 
@@ -327,42 +327,50 @@ es = Elasticsearch("http://localhost:9200")
 #             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class RecommendViewSet(mixins.ListModelMixin,
-                       mixins.CreateModelMixin,
-                       viewsets.GenericViewSet):
+class RecommendViewSet(
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
     permission_classes = [AllowAny]
     queryset = Recommended.objects.all()
     serializer_class = RecommendedSerializer
+
     def get_permissions(self):
         return [permissions.AllowAny()]
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['top_id', 'bottom_id', 'outer_id', 'shoes_id', 'season', 'style'],
+            required=["top_id", "bottom_id", "outer_id", "shoes_id", "season", "style"],
             properties={
-                'top_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=101),
-                'bottom_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=202),
-                'outer_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=303),
-                'shoes_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=404),
-                'season': openapi.Schema(type=openapi.TYPE_STRING, example="404"),
-                'style': openapi.Schema(type=openapi.TYPE_STRING, example="404"),
+                "top_id": openapi.Schema(type=openapi.TYPE_INTEGER, example=101),
+                "bottom_id": openapi.Schema(type=openapi.TYPE_INTEGER, example=202),
+                "outer_id": openapi.Schema(type=openapi.TYPE_INTEGER, example=303),
+                "shoes_id": openapi.Schema(type=openapi.TYPE_INTEGER, example=404),
+                "season": openapi.Schema(type=openapi.TYPE_STRING, example="404"),
+                "style": openapi.Schema(type=openapi.TYPE_STRING, example="404"),
             },
         ),
-        responses={201: RecommendedSerializer}
+        responses={201: RecommendedSerializer},
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-class PickedViewSet(mixins.ListModelMixin,       # GET /picks/
-                    mixins.CreateModelMixin,     # POST /picks/
-                    mixins.DestroyModelMixin,    # DELETE /picks/{id}/
-                    viewsets.GenericViewSet):
+
+class PickedViewSet(
+    mixins.ListModelMixin,  # GET /picks/
+    mixins.CreateModelMixin,  # POST /picks/
+    mixins.DestroyModelMixin,  # DELETE /picks/{id}/
+    viewsets.GenericViewSet,
+):
     permission_classes = [AllowAny]
     queryset = Picked.objects.all()
     serializer_class = PickedSerializer
+
     def get_permissions(self):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            serializer.save()  # user 필드가 null 허용일 때만 가능
