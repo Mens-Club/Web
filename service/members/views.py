@@ -144,13 +144,12 @@ class ImageUploadView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
+        print("request.data:", request.data)
         serializer = ImageUploadSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        base64_image = serializer.validated_data["image"]
-
         try:
+            base64_image = serializer.validated_data["image"]
             photo_url = upload_base64_to_s3(base64_image, user_id=0)
 
             # request.user.upload_picture = photo_url

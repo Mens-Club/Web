@@ -1,220 +1,3 @@
-// import React, { useRef, useState, useEffect } from 'react';
-// import '../styles/CameraPage.css';
-// import '../styles/Layout.css';
-// import { Link } from 'react-router-dom';
-
-// function CameraPage() {
-//   const videoRef = useRef(null);
-//   const previewRef = useRef(null);
-//   const [stream, setStream] = useState(null);
-//   const [imageData, setImageData] = useState(null);
-//   const [statusText, setStatusText] = useState('');
-//   const [loading, setLoading] = useState(false);
-//   const [step, setStep] = useState('init');
-//   const [canSwitch, setCanSwitch] = useState(false);
-//   const [facingMode, setFacingMode] = useState('user');
-
-//   // 카메라 장치 개수 확인
-//   useEffect(() => {
-//     async function checkCameraSwitchable() {
-//       try {
-//         const devices = await navigator.mediaDevices.enumerateDevices();
-//         const videoInputs = devices.filter((device) => device.kind === 'videoinput');
-//         setCanSwitch(videoInputs.length > 1);
-//       } catch (e) {
-//         setCanSwitch(false);
-//       }
-//     }
-//     checkCameraSwitchable();
-//   }, []);
-
-//   // 카메라 시작/중지 관리
-//   useEffect(() => {
-//     let localStream = null;
-
-//     async function startCamera() {
-//       try {
-//         // 기존 스트림 정리
-//         if (videoRef.current && videoRef.current.srcObject) {
-//           videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-//           videoRef.current.srcObject = null;
-//         }
-//         const mediaStream = await navigator.mediaDevices.getUserMedia({
-//           video: { facingMode },
-//           audio: false,
-//         });
-//         setStream(mediaStream);
-//         if (videoRef.current) {
-//           videoRef.current.srcObject = mediaStream;
-//         }
-//         localStream = mediaStream;
-//       } catch (err) {
-//         console.log('카메라 접근 오류: ', err);
-//         setStatusText('카메라를 사용할 수 없습니다.');
-//       }
-//     }
-
-//     if (step === 'capture') {
-//       startCamera();
-//     }
-
-//     // 언마운트 시 스트림 정리
-//     return () => {
-//       if (localStream) {
-//         localStream.getTracks().forEach((track) => track.stop());
-//       }
-//       if (videoRef.current) {
-//         videoRef.current.srcObject = null;
-//       }
-//     };
-//   }, [step, facingMode]);
-
-//   // 사진 촬영
-//   const capturePhoto = () => {
-//     if (!videoRef.current) return;
-//     const canvas = document.createElement('canvas');
-//     canvas.width = videoRef.current.videoWidth;
-//     canvas.height = videoRef.current.videoHeight;
-//     canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
-//     const data = canvas.toDataURL('image/jpeg');
-//     setImageData(data);
-//     setStep('preview');
-//     // 스트림 중지
-//     if (videoRef.current && videoRef.current.srcObject) {
-//       videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-//       videoRef.current.srcObject = null;
-//     }
-//     setStream(null);
-//     analyzeImage(data);
-//   };
-
-//   // 사진 다시 찍기
-//   const retakePhoto = () => {
-//     setImageData(null);
-//     setStatusText('');
-//     setStep('capture'); // 이 한 줄이면 useEffect에서 카메라가 재시작됨
-//   };
-
-//   // 이미지 분석(예시)
-//   const analyzeImage = async (data) => {
-//     setLoading(true);
-//     setStatusText('');
-//     setTimeout(() => {
-//       setLoading(false);
-//       setStatusText('사진이 성공적으로 촬영되었습니다.');
-//       setStep('analyzed');
-//     }, 1500);
-//   };
-
-//   // 카메라 전환
-//   const toggleFacingMode = () => {
-//     setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
-//   };
-
-//   // 이미지 저장
-//   const saveImageLocally = () => {
-//     if (!imageData) return;
-//     const link = document.createElement('a');
-//     link.href = imageData;
-//     link.download = `captured-image-${new Date().getTime()}.jpg`;
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-//   };
-
-//   return (
-//     <div className="container">
-//       <div className="content">
-//         <div className="title-wrapper">
-//           <h1>오늘 입을 옷을 촬영해주세요!</h1>
-//         </div>
-//         <div className="upload-box">
-//           {step === 'capture' && (
-//             <video
-//               id="camera-stream"
-//               ref={videoRef}
-//               autoPlay
-//               playsInline
-//               muted
-//               style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'cover' }}
-//             />
-//           )}
-
-//           {imageData && (
-//             <img
-//               id="preview"
-//               ref={previewRef}
-//               src={imageData}
-//               alt="preview"
-//               style={{ display: step !== 'init' ? 'block' : 'none', width: '100%', borderRadius: '12px' }}
-//             />
-//           )}
-
-//           {step === 'init' && (
-//             <button id="camera-button" className="camera-button" onClick={() => setStep('capture')}>
-//               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-//                 <circle cx="12" cy="13" r="3" />
-//                 <path d="M5 7h2l2-2h6l2 2h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2" />
-//               </svg>
-//             </button>
-//           )}
-//         </div>
-
-//         <div className="button-container">
-//           {step === 'capture' && (
-//             <>
-//               <button id="capture-btn" className="upload-text-btn" onClick={capturePhoto}>
-//                 사진 촬영
-//               </button>
-//               {canSwitch && (
-//                 <button id="switch-btn" className="upload-text-btn" onClick={toggleFacingMode}>
-//                   카메라 전환
-//                 </button>
-//               )}
-//             </>
-//           )}
-//           {step === 'preview' && (
-//             <>
-//               <button id="retake-btn" className="upload-text-btn" onClick={retakePhoto}>
-//                 다시 찍기
-//               </button>
-//               <button id="save-btn" className="upload-text-btn" onClick={saveImageLocally}>
-//                 이미지 저장
-//               </button>
-//             </>
-//           )}
-//         </div>
-
-//         {step !== 'init' && (
-//           <div className="upload-status" style={{ display: 'block' }}>
-//             {loading ? (
-//               <div className="loading-spinner">
-//                 <div className="spinner"></div>
-//                 <p>이미지 분석 중...</p>
-//               </div>
-//             ) : (
-//               <>
-//                 <p id="status-text">{statusText}</p>
-//                 {step === 'analyzed' && (
-//                   <>
-//                     <Link to="/fashion">
-//                       <button id="recommend-btn" className="upload-text-btn recommend-btn">
-//                         오늘의 추천 코디 보기
-//                       </button>
-//                     </Link>
-//                   </>
-//                 )}
-//               </>
-//             )}
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default CameraPage;
-
 import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam'; //웹캠 구현을 위한 라이브러리 설치
 import '../styles/CameraPage.css';
@@ -235,9 +18,16 @@ function CameraPage() {
   const [statusText, setStatusText] = useState('');
   const [step, setStep] = useState('init');
 
+  const [analyzeResult, setAnalyzeResult] = useState(null); // 분석 결과(옷 종류)
+  const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
+
   // 사진 촬영
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) {
+      setStatusText('카메라가 로딩중입니다. 잠시만 기다려주세요 🙏');
+      return;
+    }
     setImgSrc(imageSrc);
     setStep('preview');
     setStatusText('');
@@ -250,8 +40,12 @@ function CameraPage() {
     setStatusText('');
   };
 
-  // "사진 보내기" (이때만 서버 전송)
+  // 사진을 서버에 전송 및 분석 결과 받기
   const sendToServer = async () => {
+    if (!imgSrc) {
+      setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
+      return;
+    }
     setLoading(true);
     setStatusText('');
 
@@ -259,17 +53,18 @@ function CameraPage() {
       const response = await fetch('http://localhost:8000/api/account/v1/upload/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imgSrc }), // ✅ 키 이름 수정됨
+        body: JSON.stringify({ image: imgSrc }),
       });
       console.log(imgSrc);
 
       const responseData = await response.json(); // 💡 JSON 파싱
 
       if (response.ok) {
-        setStatusText('사진이 성공적으로 업로드되었습니다.');
+        setAnalyzeResult(responseData.cloth_type); //NeedMapping
+        setStatusText(`분석결과 : ${responseData.cloth_type}입니다.\n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
         setStep('analyzed');
       } else {
-        console.error('❌ 서버 오류 응답:', responseData); // 💥 콘솔에 상세 내용 출력
+        console.error('❌ 서버 오류 응답:', responseData);
         setStatusText(`업로드 실패: ${responseData.detail || '알 수 없는 오류'}`);
       }
     } catch (error) {
@@ -277,6 +72,35 @@ function CameraPage() {
       setStatusText('서버 통신 오류');
     }
 
+    setLoading(false);
+  };
+
+  // 추천 결과 받기
+  const getRecommendation = async (clothType) => {
+    setLoading(true);
+    setStatusText('');
+    setRecommendResult(null);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/account/v1/recommend/', {
+        // 추천 API 엔드포인트 예시
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cloth_type: clothType }),
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        setRecommendResult(responseData.recommendation); // 예: '흰색 셔츠와 잘 어울리는 청바지'
+        setStatusText('추천 결과를 확인하세요!');
+        setStep('recommend');
+      } else {
+        setStatusText(`추천 실패: ${responseData.detail || '알 수 없는 오류'}`);
+      }
+    } catch (error) {
+      setStatusText('추천 서버 통신 오류');
+    }
     setLoading(false);
   };
 
@@ -306,7 +130,7 @@ function CameraPage() {
 
   return (
     <div className="container">
-      <div className="content">
+      <div className="main-content">
         <div className="title-wrapper">
           <h1>오늘 입을 옷을 촬영해주세요!</h1>
         </div>
@@ -361,12 +185,12 @@ function CameraPage() {
               <button className="upload-text-btn" onClick={retake}>
                 다시 찍기
               </button>
-              <button className="upload-text-btn" onClick={sendToServer}>
-                사진 보내기
+              <button className="upload-text-btn" onClick={sendToServer} disabled={!imgSrc}>
+                추천 시작하기
               </button>
-              <button className="upload-text-btn" onClick={analyzeImage}>
+              {/* <button className="upload-text-btn" onClick={analyzeImage}>
                 추천 결과 보기
-              </button>
+              </button> */}
             </>
           )}
           {step === 'analyzed' && (
