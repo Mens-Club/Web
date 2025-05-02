@@ -27,11 +27,6 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -52,18 +47,14 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    'django_elasticsearch_dsl', # elastic search 
+    'django_elasticsearch_dsl',  
     "drf_yasg",
     "members",
     "clothes",
     'storages'
-
-
 ]
 
 
-
-# settings.py
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -94,7 +85,7 @@ STORAGES = {
         "signature_version": "s3v4",
         "default_acl": "public-read",
         "querystring_auth": False,
-        "location": "static",  # 정적 파일용 별도 경로
+        "location": "static",  
         "object_parameters": {
             "CacheControl": "max-age=86400",
             },
@@ -180,8 +171,10 @@ DATABASES = {
 }
 
 ELASTICSEARCH_DSL = {
-    "default": {"hosts": "http://localhost:9200"},  # 'http://' 스키마 추가
+    "default": {"hosts": "http://localhost:9200"},
 }
+
+
 
 # 인덱스 이름 매핑
 ELASTICSEARCH_INDEX_NAMES = {
@@ -234,7 +227,11 @@ USE_TZ = False  # Django 시간대
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -291,14 +288,4 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
-
-ELASTICSEARCH_DSL = {"default": {"hosts": "http://localhost:9200"}}
-
-# 오브젝트 스토리지 연결
-SERVICE_NAME = os.getenv("SERVICE_NAME")
-ENDPOINT_URL = os.getenv("ENDPOINT_URL")
-REGION_NAME = os.getenv("REGION_NAME")
-ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRET_KEY = os.getenv("SECRET_KEY")
-STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
 
