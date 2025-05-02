@@ -130,7 +130,6 @@ class FindEmailView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
 

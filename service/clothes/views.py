@@ -1,15 +1,11 @@
-from rest_framework import status, viewsets, permissions
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework import viewsets, permissions, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
-from elasticsearch import Elasticsearch
-import random, time, uuid
 from .models import Recommended, Picked
-from .serializers import RecommendedSerializer, PickedSerializer
-from rest_framework import generics
+from .serializers import RecommendedSerializer, PickedSerializer, RecommendedCreateSerializer
 from drf_yasg import openapi
 from rest_framework import mixins, viewsets
+from rest_framework.response import Response
 
 es = Elasticsearch("http://localhost:9200")
 
@@ -363,6 +359,23 @@ class PickedViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = [AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return RecommendedCreateSerializer
+        return RecommendedSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        recommended = serializer.save()
+        read_serializer = RecommendedSerializer(recommended)
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+    
+class PickedViewSet(mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    mixins.DestroyModelMixin,
+                    viewsets.GenericViewSet):
     queryset = Picked.objects.all()
     serializer_class = PickedSerializer
 
