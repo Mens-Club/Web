@@ -339,12 +339,14 @@ class RecommendViewSet(mixins.ListModelMixin,
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            required=['top_id', 'bottom_id', 'outer_id', 'shoes_id'],
+            required=['top_id', 'bottom_id', 'outer_id', 'shoes_id', 'season', 'style'],
             properties={
                 'top_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=101),
                 'bottom_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=202),
                 'outer_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=303),
                 'shoes_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=404),
+                'season': openapi.Schema(type=openapi.TYPE_STRING, example="404"),
+                'style': openapi.Schema(type=openapi.TYPE_STRING, example="404"),
             },
         ),
         responses={201: RecommendedSerializer}
