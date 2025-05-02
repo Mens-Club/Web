@@ -5,7 +5,10 @@ from .serializers import (
     LoginSerializer,
     UpdateSerializer,
     ChangePasswordSerializer,
-    FindEmailSerializer,UserImageUploadSerializer
+    FindEmailSerializer,UserImageUploadSerializer,
+    FindEmailSerializer,
+    ImageUploadSerializer,
+    UserImageUploadSerializer
 )
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -93,15 +96,20 @@ class ChangePasswordView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class DeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request):
         user = request.user
         user.delete()
-        return Response({"message": "회원 탈퇴가 완료되었습니다."}, status=status.HTTP_204_NO_CONTENT)
-    
+        return Response(
+            {"message": "회원 탈퇴가 완료되었습니다."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
 class FindEmailView(APIView):
     permission_classes = [AllowAny]
 
@@ -109,13 +117,14 @@ class FindEmailView(APIView):
     def post(self, request):
         serializer = FindEmailSerializer(data=request.data)
         if serializer.is_valid():
-            user = User.objects.get(username=serializer.validated_data['username'])
-            return Response({
-                "message": "이메일을 찾았습니다.",
-                "email": user.email
-            }, status=status.HTTP_200_OK)
+            user = User.objects.get(username=serializer.validated_data["username"])
+            return Response(
+                {"message": "이메일을 찾았습니다.", "email": user.email},
+                status=status.HTTP_200_OK,
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]

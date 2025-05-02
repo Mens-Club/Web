@@ -1,7 +1,12 @@
 from rest_framework import serializers
-from .models import PickedClothes
+from .models import Recommended, Picked
 
-class PickedClothesLikeSerializer(serializers.ModelSerializer):
+class RecommendedSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PickedClothes
+        model = Recommended
+        fields = '__all__'
+
+class PickedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Picked
         fields = '__all__'

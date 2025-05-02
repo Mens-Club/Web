@@ -44,9 +44,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
-    "drf_yasg",
-    "members",
-    "clothes",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -56,7 +53,11 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     'django_elasticsearch_dsl', # elastic search 
-    'storages',
+    "drf_yasg",
+    "members",
+    "clothes",
+    'storages'
+
 ]
 
 
@@ -169,11 +170,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("MYSQL_DATABASE", "mensclub"),
-        "USER": os.getenv("MYSQL_USER", "CHEOL"),
-        "PASSWORD": os.getenv("MYSQL_PASSWORD", "1234"),
-        "HOST": os.getenv("MYSQL_HOST", "172.16.221.208"),
-        "PORT": os.getenv("MYSQL_PORT", "3300"),
+        "NAME": os.environ['MYSQL_DATABASE'],
+        "USER": os.environ['MYSQL_USER'],
+        "PASSWORD": os.environ['MYSQL_PASSWORD'],
+        "HOST": os.environ['MYSQL_HOST'],
+        "PORT": os.environ['MYSQL_PORT'],
     }
 }
 
@@ -287,8 +288,10 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
+
 ELASTICSEARCH_DSL = {
     'default': {
         'hosts': 'http://localhost:9200'
     }
 }
+

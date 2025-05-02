@@ -254,22 +254,29 @@ function CameraPage() {
   const sendToServer = async () => {
     setLoading(true);
     setStatusText('');
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/clothes/v1/save_image/', {
+      const response = await fetch('http://localhost:8000/api/account/v1/upload/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_data: imgSrc }), // key 이름 주의!
+        body: JSON.stringify({ image: imgSrc }), // ✅ 키 이름 수정됨
       });
+      console.log(imgSrc);
+
+      const responseData = await response.json(); // 💡 JSON 파싱
 
       if (response.ok) {
         setStatusText('사진이 성공적으로 업로드되었습니다.');
         setStep('analyzed');
       } else {
-        setStatusText('업로드 실패');
+        console.error('❌ 서버 오류 응답:', responseData); // 💥 콘솔에 상세 내용 출력
+        setStatusText(`업로드 실패: ${responseData.detail || '알 수 없는 오류'}`);
       }
     } catch (error) {
+      console.error('❌ 네트워크 오류:', error);
       setStatusText('서버 통신 오류');
     }
+
     setLoading(false);
   };
 

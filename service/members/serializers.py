@@ -63,6 +63,7 @@ class LoginSerializer(serializers.Serializer):
         if email and password:
             # 기본 authenticate는 username 필드를 사용하므로 커스텀 인증 필요
             from django.contrib.auth import get_user_model
+
             User = get_user_model()
 
             try:
@@ -83,7 +84,6 @@ class LoginSerializer(serializers.Serializer):
         return data
 
 
-
 class UpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -102,6 +102,7 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("현재 비밀번호가 올바르지 않습니다.")
         return value
 
+
 class FindEmailSerializer(serializers.Serializer):
     username = serializers.CharField()
 
@@ -109,7 +110,8 @@ class FindEmailSerializer(serializers.Serializer):
         if not User.objects.filter(username=value).exists():
             raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
         return value
-    
+
+
 class UserInfoRequestSerializer(serializers.Serializer):
     username = serializers.CharField()
 
@@ -117,7 +119,6 @@ class UserInfoRequestSerializer(serializers.Serializer):
         if not User.objects.filter(username=value).exists():
             raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
         return value
-    
 
 class Base64ImageField(serializers.ImageField):
     """
@@ -144,3 +145,13 @@ class UserImageUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['upload_picture']
+
+
+class ImageUploadSerializer(serializers.Serializer):
+    image = serializers.CharField(required=True, allow_blank=False)
+
+    def validate_image(self, value):
+        if not value.startswith("data:image/"):
+            raise serializers.ValidationError("올바른 base64 이미지 형식이 아닙니다.")
+        return value
+

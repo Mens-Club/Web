@@ -35,7 +35,7 @@
   /* ✅ 추가: 모바일 대응 (가로폭 768px 이하일 때) */
   @media (max-width: 768px) {
     .top-nav {
-      height: 50px; /* 모바일에서는 높이 줄임 */
+      height: 80px; /* 모바일에서는 높이 줄임 */
       padding-left: 16px; /* 모바일에서는 padding도 줄임 */
     }
   
