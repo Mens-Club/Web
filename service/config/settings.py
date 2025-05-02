@@ -3,6 +3,12 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+import boto3
+boto3.set_stream_logger('', logging.DEBUG)
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,6 +27,11 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -33,9 +44,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
-    "drf_yasg",
-    "members",
-    "clothes",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -44,9 +52,55 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    "django_elasticsearch_dsl",  # elastic search
-    "storages",
+    'django_elasticsearch_dsl', # elastic search 
+    "drf_yasg",
+    "members",
+    "clothes",
+    'storages'
+
+
 ]
+
+
+
+# settings.py
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": os.getenv("ACCESS_KEY"),
+            "secret_key": os.getenv("SECRET_KEY"),
+            "bucket_name": os.getenv("STORAGE_BUCKET_NAME"),
+            "endpoint_url": os.getenv("ENDPOINT_URL"),
+            "region_name": os.getenv("REGION_NAME"),
+            "addressing_style": "path",
+            "signature_version": "s3v4",
+            "default_acl": "public-read",
+            "querystring_auth": False,
+            "object_parameters": {
+                "CacheControl": "max-age=86400",
+            },
+        },
+    },
+    "staticfiles": {
+    "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    "OPTIONS": {
+        "access_key": os.getenv("ACCESS_KEY"),
+        "secret_key": os.getenv("SECRET_KEY"),
+        "bucket_name": os.getenv("STORAGE_BUCKET_NAME"),
+        "endpoint_url": os.getenv("ENDPOINT_URL"),
+        "region_name": os.getenv("REGION_NAME"),
+        "addressing_style": "path",
+        "signature_version": "s3v4",
+        "default_acl": "public-read",
+        "querystring_auth": False,
+        "location": "static",  # 정적 파일용 별도 경로
+        "object_parameters": {
+            "CacheControl": "max-age=86400",
+            },
+        },
+    },
+}
 
 
 CORS_ALLOWED_ORIGINS = [
@@ -117,11 +171,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("MYSQL_DATABASE", "mensclub"),
-        "USER": os.getenv("MYSQL_USER", "CHEOL"),
-        "PASSWORD": os.getenv("MYSQL_PASSWORD", "1234"),
-        "HOST": os.getenv("MYSQL_HOST", "172.16.221.208"),
-        "PORT": os.getenv("MYSQL_PORT", "3300"),
+        "NAME": os.environ['MYSQL_DATABASE'],
+        "USER": os.environ['MYSQL_USER'],
+        "PASSWORD": os.environ['MYSQL_PASSWORD'],
+        "HOST": os.environ['MYSQL_HOST'],
+        "PORT": os.environ['MYSQL_PORT'],
     }
 }
 
@@ -247,3 +301,4 @@ REGION_NAME = os.getenv("REGION_NAME")
 ACCESS_KEY = os.getenv("ACCESS_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY")
 STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
+

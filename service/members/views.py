@@ -5,8 +5,10 @@ from .serializers import (
     LoginSerializer,
     UpdateSerializer,
     ChangePasswordSerializer,
+    FindEmailSerializer,UserImageUploadSerializer,
     FindEmailSerializer,
     ImageUploadSerializer,
+    UserImageUploadSerializer
 )
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -16,7 +18,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from .storage import upload_base64_to_s3
+from datetime import datetime
+from django.core.files.storage import default_storage
 
 
 User = get_user_model()
@@ -129,34 +132,20 @@ class UserInfoView(APIView):
     def get(self, request):
         user = request.user  # ✅ 현재 로그인한 사용자
 
-        return Response(
-            {
-                "username": user.username,
-                "email": user.email,
-                "height": user.height,
-                "weight": user.weight,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "height": user.height,
+            "weight": user.weight
+        }, status=status.HTTP_200_OK)
+        
 
-
-class ImageUploadView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = ImageUploadSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        base64_image = serializer.validated_data["image"]
-
-        try:
-            photo_url = upload_base64_to_s3(base64_image, user_id=0)
-
-            # request.user.upload_picture = photo_url
-            # request.user.save()
-
-            return Response({"image_url": photo_url}, status=status.HTTP_201_CREATED)
-
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class UserImageUploadView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request, format=None):
+        serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success': '이미지가 성공적으로 업로드되었습니다.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
