@@ -7,6 +7,9 @@ from elasticsearch import Elasticsearch
 import random, time, uuid
 from .models import Recommended, Picked
 from .serializers import RecommendedSerializer, PickedSerializer
+from rest_framework import generics
+from drf_yasg import openapi
+from rest_framework import mixins, viewsets
 
 es = Elasticsearch("http://localhost:9200")
 
@@ -324,15 +327,40 @@ es = Elasticsearch("http://localhost:9200")
 #             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class RecommendViewSet(viewsets.ModelViewSet):
+class RecommendViewSet(mixins.ListModelMixin,
+                       mixins.CreateModelMixin,
+                       viewsets.GenericViewSet):
+    permission_classes = [AllowAny]
     queryset = Recommended.objects.all()
     serializer_class = RecommendedSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def get_permissions(self):
+        return [permissions.AllowAny()]
 
-class PickedViewSet(viewsets.ModelViewSet):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['top_id', 'bottom_id', 'outer_id', 'shoes_id'],
+            properties={
+                'top_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=101),
+                'bottom_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=202),
+                'outer_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=303),
+                'shoes_id': openapi.Schema(type=openapi.TYPE_INTEGER, example=404),
+            },
+        ),
+        responses={201: RecommendedSerializer}
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+class PickedViewSet(mixins.ListModelMixin,       # GET /picks/
+                    mixins.CreateModelMixin,     # POST /picks/
+                    mixins.DestroyModelMixin,    # DELETE /picks/{id}/
+                    viewsets.GenericViewSet):
+    permission_classes = [AllowAny]
     queryset = Picked.objects.all()
     serializer_class = PickedSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

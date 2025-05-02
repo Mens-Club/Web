@@ -131,6 +131,7 @@ class UserInfoView(APIView):
 
         return Response(
             {
+                "userid": user.id,
                 "username": user.username,
                 "email": user.email,
                 "height": user.height,
