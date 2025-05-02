@@ -57,8 +57,7 @@ function MainPage() {
           <button
             className="heart-button"
             onClick={() => toggleLike(itemId, payload)}
-            aria-label={liked[itemId] ? '찜 해제' : '찜 추가'}
-          >
+            aria-label={liked[itemId] ? '찜 해제' : '찜 추가'}>
             <FontAwesomeIcon
               icon={liked[itemId] ? solidHeart : regularHeart}
               className={`heart-icon ${liked[itemId] ? 'liked' : ''}`}
@@ -113,13 +112,15 @@ function MainPage() {
           </div>
           <div className="coordination-slider">
             <div className="coordination-cards">
-              {[1, 2, 3, 4].map(i => renderCard(
-                'random',
-                i,
-                ['데일리 니트', '와이드 데님', '코튼 팬츠', '베이직 셔츠'][i - 1],
-                ['39,000원', '59,000원', '45,000원', '49,000원'][i - 1],
-                `./images/outfit${i}.jpg`
-              ))}
+              {[1, 2, 3, 4].map((i) =>
+                renderCard(
+                  'random',
+                  i,
+                  ['데일리 니트', '와이드 데님', '코튼 팬츠', '베이직 셔츠'][i - 1],
+                  ['39,000원', '59,000원', '45,000원', '49,000원'][i - 1],
+                  `./images/outfit${i}.jpg`
+                )
+              )}
             </div>
           </div>
         </div>
@@ -136,13 +137,15 @@ function MainPage() {
           </div>
           <div className="coordination-slider">
             <div className="coordination-cards">
-              {[1, 2, 3, 4].map(i => renderCard(
-                'price',
-                i,
-                ['캐시미어 코트', '울 블레이저', '가죽 자켓', '트렌치 코트'][i - 1],
-                ['159,000원', '129,000원', '189,000원', '169,000원'][i - 1],
-                `./images/price${i}.jpg`
-              ))}
+              {[1, 2, 3, 4].map((i) =>
+                renderCard(
+                  'price',
+                  i,
+                  ['캐시미어 코트', '울 블레이저', '가죽 자켓', '트렌치 코트'][i - 1],
+                  ['159,000원', '129,000원', '189,000원', '169,000원'][i - 1],
+                  `./images/price${i}.jpg`
+                )
+              )}
             </div>
           </div>
         </div>
@@ -158,13 +161,15 @@ function MainPage() {
           </div>
           <div className="coordination-slider">
             <div className="coordination-cards">
-              {[1, 2, 3, 4].map(i => renderCard(
-                'style',
-                i,
-                ['슬림핏 셔츠', '스트레이트 팬츠', '니트 베스트', '린넨 셔츠'][i - 1],
-                ['79,000원', '89,000원', '69,000원', '85,000원'][i - 1],
-                `./images/style${i}.jpg`
-              ))}
+              {[1, 2, 3, 4].map((i) =>
+                renderCard(
+                  'style',
+                  i,
+                  ['슬림핏 셔츠', '스트레이트 팬츠', '니트 베스트', '린넨 셔츠'][i - 1],
+                  ['79,000원', '89,000원', '69,000원', '85,000원'][i - 1],
+                  `./images/style${i}.jpg`
+                )
+              )}
             </div>
           </div>
         </div>

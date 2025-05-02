@@ -2,7 +2,7 @@ import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam'; //웹캠 구현을 위한 라이브러리 설치
 import '../styles/CameraPage.css';
 import '../styles/Layout.css';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 const videoConstraints = {
   width: 400,
@@ -11,6 +11,9 @@ const videoConstraints = {
 };
 
 function CameraPage() {
+  const { id } = useParams();
+  console.log('id:', id);
+
   const webcamRef = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
   const [facingMode, setFacingMode] = useState('user');
@@ -20,7 +23,6 @@ function CameraPage() {
 
   const [analyzeResult, setAnalyzeResult] = useState(null); // 분석 결과(옷 종류)
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
-
   // 사진 촬영
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -49,10 +51,15 @@ function CameraPage() {
     setLoading(true);
     setStatusText('');
 
+    const token = localStorage.getItem('accessToken');
+
     try {
-      const response = await fetch('http://localhost:8000/api/account/v1/upload/', {
+      const response = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({ image: imgSrc }),
       });
       console.log(imgSrc);
@@ -61,7 +68,7 @@ function CameraPage() {
 
       if (response.ok) {
         setAnalyzeResult(responseData.cloth_type); //NeedMapping
-        setStatusText(`분석결과 : ${responseData.cloth_type}입니다.\n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
+        setStatusText(`분석결과 : ${responseData.cloth_type}입니다. \n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
         setStep('analyzed');
       } else {
         console.error('❌ 서버 오류 응답:', responseData);
@@ -195,12 +202,15 @@ function CameraPage() {
           )}
           {step === 'analyzed' && (
             <>
+              <button className="upload-text-btn" onClick={retake}>
+                다시 찍기
+              </button>
               <Link to="/fashion">
                 <button className="upload-text-btn recommend-btn">오늘의 추천 코디 보기</button>
               </Link>
-              <button className="upload-text-btn" onClick={goInit}>
+              {/* <button className="upload-text-btn" onClick={goInit}>
                 처음으로
-              </button>
+              </button> */}
             </>
           )}
         </div>
@@ -214,7 +224,9 @@ function CameraPage() {
                 <p>이미지 분석 중...</p>
               </div>
             ) : (
-              <p id="status-text">{statusText}</p>
+              <p id="status-text" style={{ whiteSpace: 'pre-line' }}>
+                {statusText}
+              </p>
             )}
           </div>
         )}

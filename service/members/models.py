@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from .custom_upload import user_upload_path
 
 
-
 class User(AbstractUser):
 
     # 성별 선택
@@ -37,13 +36,27 @@ class User(AbstractUser):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     upload_picture = models.ImageField(
-        upload_to=user_upload_path,
-        null=True,
-        blank=True,
-        verbose_name="의류 사진"
+        upload_to=user_upload_path, null=True, blank=True, verbose_name="의류 사진"
     )
 
     def __str__(self):
         return self.username
+
+
+import os
+from datetime import datetime
+
+
+def user_directory_path(instance, filename):
+    ext = filename.split(".")[-1]
+    now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{now_str}.{ext}"
+    # user가 ForeignKey로 연결되어 있어야 함
+    return f"user_{instance.user_id.id}/{filename}"
+
+
+class YourModel(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=user_directory_path)
