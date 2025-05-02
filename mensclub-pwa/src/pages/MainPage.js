@@ -8,7 +8,6 @@ import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import api from '../api/axios';
 import AutoSwiper from './AutoSwiper';
 
-
 // mainpage 개요 - 추천코디 & 찜 목록
 
 function MainPage() {
@@ -39,7 +38,7 @@ function MainPage() {
 
         setRecommends(recommendRes.data.results);
         const map = {};
-        picksRes.data.results.forEach(p => {
+        picksRes.data.results.forEach((p) => {
           map[p.recommend] = p.id;
         });
         setLikedMap(map);
@@ -50,7 +49,7 @@ function MainPage() {
     fetchData();
   }, []);
 
-  // 찜 추가 & 삭제 함수 
+  // 찜 추가 & 삭제 함수
   //찜한 상태일 경우 → DELETE /picks/{id}/
   //찜하지 않은 경우 → POST /picks/ 로 추가
   const toggleLike = async (recommendId) => {
@@ -62,7 +61,7 @@ function MainPage() {
         await api.delete(`/clothes/v1/picks/${likedMap[recommendId]}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setLikedMap(prev => {
+        setLikedMap((prev) => {
           const updated = { ...prev };
           delete updated[recommendId];
           return updated;
@@ -72,13 +71,17 @@ function MainPage() {
       }
     } else {
       try {
-        const res = await api.post('/clothes/v1/picks/', {
-          user: Number(userId),
-          recommend: recommendId,
-        }, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setLikedMap(prev => ({ ...prev, [recommendId]: res.data.id }));
+        const res = await api.post(
+          '/clothes/v1/picks/',
+          {
+            user: Number(userId),
+            recommend: recommendId,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setLikedMap((prev) => ({ ...prev, [recommendId]: res.data.id }));
       } catch (err) {
         console.error('찜 추가 오류:', err);
       }
@@ -92,8 +95,7 @@ function MainPage() {
         <button
           className="heart-button"
           onClick={() => toggleLike(recommend.id)}
-          aria-label={likedMap[recommend.id] ? '찜 해제' : '찜 추가'}
-        >
+          aria-label={likedMap[recommend.id] ? '찜 해제' : '찜 추가'}>
           <FontAwesomeIcon
             icon={likedMap[recommend.id] ? solidHeart : regularHeart}
             className={`heart-icon ${likedMap[recommend.id] ? 'liked' : ''}`}
@@ -108,24 +110,25 @@ function MainPage() {
   );
 
   const filterAndRender = (category, filter) => {
-    const filtered = recommends.filter(r => r.category === category && (!filter || r.tag === filter));
-    const placeholders = Array.from({ length: 4 - filtered.length }, (_, i) => <div key={`placeholder-${category}-${i}`} className="card placeholder" />);
-    return [
-      ...filtered.slice(0, 4).map(renderCard),
-      ...placeholders
-    ];
+    const filtered = recommends.filter((r) => r.category === category && (!filter || r.tag === filter));
+    const placeholders = Array.from({ length: 4 - filtered.length }, (_, i) => (
+      <div key={`placeholder-${category}-${i}`} className="card placeholder" />
+    ));
+    return [...filtered.slice(0, 4).map(renderCard), ...placeholders];
   };
 
   return (
     <div className="container">
       <main className="main-content">
         <div className="header-section">
-        <AutoSwiper images={[
-        '/images/banner4.png',
-        '/images/banner1.png',
-        '/images/banner3.png',
-        // '/images/banner2.png'
-          ]} />
+          <AutoSwiper
+            images={[
+              '/images/banner4.png',
+              '/images/banner1.png',
+              '/images/banner3.png',
+              // '/images/banner2.png'
+            ]}
+          />
           <div className="title-area">
             <h1>오늘의 날씨</h1>
             <div className="weather-info">
@@ -160,9 +163,7 @@ function MainPage() {
             <h2>오늘의 랜덤 추천</h2>
           </div>
           <div className="coordination-slider">
-            <div className="coordination-cards">
-              {filterAndRender('random')}
-            </div>
+            <div className="coordination-cards">{filterAndRender('random')}</div>
           </div>
         </div>
 
@@ -171,21 +172,18 @@ function MainPage() {
           <div className="section-header">
             <h2>가격대별 추천 💶</h2>
             <div className="filter-buttons">
-              {['10만원대', '20만원대', '30만원대'].map(label => (
+              {['10만원대', '20만원대', '30만원대'].map((label) => (
                 <button
                   key={label}
                   className={`filter-btn ${priceFilter === label ? 'active' : ''}`}
-                  onClick={() => setPriceFilter(label)}
-                >
+                  onClick={() => setPriceFilter(label)}>
                   {label}
                 </button>
               ))}
             </div>
           </div>
           <div className="coordination-slider">
-            <div className="coordination-cards">
-              {filterAndRender('price', priceFilter)}
-            </div>
+            <div className="coordination-cards">{filterAndRender('price', priceFilter)}</div>
           </div>
         </div>
 
@@ -194,21 +192,18 @@ function MainPage() {
           <div className="section-header">
             <h2>스타일별 추천 🧢</h2>
             <div className="filter-buttons">
-              {['미니멀', '캐주얼'].map(label => (
+              {['미니멀', '캐주얼'].map((label) => (
                 <button
                   key={label}
                   className={`filter-btn ${styleFilter === label ? 'active' : ''}`}
-                  onClick={() => setStyleFilter(label)}
-                >
+                  onClick={() => setStyleFilter(label)}>
                   {label}
                 </button>
               ))}
             </div>
           </div>
           <div className="coordination-slider">
-            <div className="coordination-cards">
-              {filterAndRender('style', styleFilter)}
-            </div>
+            <div className="coordination-cards">{filterAndRender('style', styleFilter)}</div>
           </div>
         </div>
       </main>
