@@ -11,9 +11,6 @@ const videoConstraints = {
 };
 
 function CameraPage() {
-  const { id } = useParams();
-  console.log('id:', id);
-
   const webcamRef = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
   const [facingMode, setFacingMode] = useState('user');
@@ -60,11 +57,13 @@ function CameraPage() {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({ image: imgSrc }),
+        body: JSON.stringify({ upload_picture: imgSrc }),
       });
-      console.log(imgSrc);
+      // console.log(imgSrc);
+      // 응답 확인
 
       const responseData = await response.json(); // 💡 JSON 파싱
+      // console.log('서버 응답:', responseData);
 
       if (response.ok) {
         setAnalyzeResult(responseData.cloth_type); //NeedMapping

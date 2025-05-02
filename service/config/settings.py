@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from django.conf import settings
 import logging
+from datetime import timedelta
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -206,22 +207,30 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PARSER_CLASSES": (
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    'DEFAULT_PAGINATION_CLASS': None,
+    "DEFAULT_PAGINATION_CLASS": None,
     "PAGE_SIZE": 10,  # 페이지당 10개씩 조회
 }
 
+# 토큰 유효시간 설정
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # 액세스 토큰 유효기간: 60분
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # 리프레시 토큰 유효기간: 1일
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 LANGUAGE_CODE = "ko-kr"  # 국가 설정
 TIME_ZONE = "Asia/Seoul"  # 시간대 설정

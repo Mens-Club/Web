@@ -8,7 +8,6 @@ from .serializers import (
     FindEmailSerializer,
     UserImageUploadSerializer,
     FindEmailSerializer,
-    ImageUploadSerializer,
     UserImageUploadSerializer,
 )
 from django.contrib.auth import get_user_model
@@ -21,10 +20,12 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.core.files.storage import default_storage
+from django.conf import settings
 
 from django.core.files.base import ContentFile
 import base64
 import uuid
+import requests
 
 
 User = get_user_model()
@@ -57,6 +58,114 @@ class LoginView(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SocialLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        provider = request.data.get("provider")
+        email = None
+        social_id = None
+
+        if provider == "google":
+            id_token = request.data.get("id_token")
+            google_api = f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+            resp = requests.get(google_api)
+            if resp.status_code != 200:
+                return Response({"error": "Invalid Google token"}, status=400)
+            google_user = resp.json()
+            email = google_user.get("email")
+            social_id = google_user.get("sub")
+
+        elif provider == "kakao":
+            access_token = request.data.get("access_token")
+            user_info, error_response = self.verify_kakao_token_and_get_userinfo(
+                access_token
+            )
+            if error_response:
+                return error_response
+            email = user_info.get("email")
+            social_id = user_info.get("kakao_id")
+
+        elif provider == "naver":
+            access_token = request.data.get("access_token")
+            user_info, error_response = self.verify_naver_token_and_get_userinfo(
+                access_token,
+                settings.NAVER_CLIENT_ID,
+                settings.NAVER_SECRET,
+            )
+            if error_response:
+                return error_response
+            email = user_info.get("email")
+            social_id = user_info.get("naver_id")
+
+        else:
+            return Response({"error": "지원하지 않는 provider"}, status=400)
+
+        if not email or not social_id:
+            return Response({"error": "필수 정보가 없습니다."}, status=400)
+
+        # 이메일로 사용자 찾기 또는 생성
+        user, created = User.objects.get_or_create(
+            email=email, defaults={"username": f"{provider}_{social_id}"}
+        )
+
+        # JWT 토큰 발급
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        return Response(
+            {
+                "message": f"{provider} 로그인 성공",
+                "username": user.username,
+                "access_token": access_token,
+                "refresh_token": str(refresh),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def verify_kakao_token_and_get_userinfo(self, access_token):
+        token_info_url = "https://kapi.kakao.com/v1/user/access_token_info"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        token_resp = requests.get(token_info_url, headers=headers)
+        if token_resp.status_code != 200:
+            return None, Response({"error": "유효하지 않은 카카오 토큰"}, status=400)
+        user_info_url = "https://kapi.kakao.com/v2/user/me"
+        user_resp = requests.get(user_info_url, headers=headers)
+        if user_resp.status_code != 200:
+            return None, Response({"error": "카카오 사용자 정보 조회 실패"}, status=400)
+        user_json = user_resp.json()
+        kakao_id = user_json.get("id")
+        kakao_account = user_json.get("kakao_account", {})
+        email = kakao_account.get("email")
+        return {
+            "kakao_id": kakao_id,
+            "email": email,
+        }, None
+
+    def verify_naver_token_and_get_userinfo(
+        self, access_token, client_id, client_secret
+    ):
+        user_info_url = "https://openapi.naver.com/v1/nid/me"
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "X-Naver-Client-Id": client_id,
+            "X-Naver-Client-Secret": client_secret,
+        }
+        resp = requests.get(user_info_url, headers=headers)
+        if resp.status_code != 200:
+            return None, Response({"error": "네이버 사용자 정보 조회 실패"}, status=400)
+        user_json = resp.json()
+        if user_json.get("resultcode") != "00":
+            return None, Response({"error": "유효하지 않은 네이버 토큰"}, status=400)
+        response = user_json.get("response", {})
+        naver_id = response.get("id")
+        email = response.get("email")
+        return {
+            "naver_id": naver_id,
+            "email": email,
+        }, None
 
 
 class UpdateView(RetrieveUpdateAPIView):
@@ -130,6 +239,7 @@ class FindEmailView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -160,3 +270,33 @@ class UserImageUploadView(APIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def post(self, request, format=None):
+    print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
+    print(
+        "이미지 데이터 길이:",
+        (
+            len(request.data.get("image", ""))
+            if "image" in request.data
+            else "이미지 키 없음"
+        ),
+    )
+    print(
+        "인증된 사용자:",
+        request.user.username if request.user.is_authenticated else "인증 안됨",
+    )
+
+    serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
+
+    if serializer.is_valid():
+        print("시리얼라이저 유효함")
+        serializer.save()
+        print("저장 완료")
+        return Response(
+            {"success": "이미지가 성공적으로 업로드되었습니다."},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        print("시리얼라이저 에러:", serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
