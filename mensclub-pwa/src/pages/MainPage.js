@@ -3,16 +3,21 @@
 import '../styles/MainPage.css';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
+import { useEffect } from 'react';
 
 function MainPage() {
-
+  useEffect(() => {
+    document.body.style.overflow = 'auto'; // ✅ 스크롤 허용
+    return () => {
+      document.body.style.overflow = 'hidden'; // 페이지 나갈 땐 다시 막기
+    };
+  }, []);
 
   return (
     <div className="container">
       <main className="main-content">
-       {/* 날씨 영역 */}
+        {/* 날씨 영역 */}
         <div className="header-section">
-
           <div className="title-area">
             <h1>오늘의 날씨 ⭐</h1>
             <div className="weather-info">
@@ -30,10 +35,9 @@ function MainPage() {
             <h2>남성 맞춤 패션 스타일링 서비스</h2>
             <p>스타일, 서비스 고객 맞춤 특별 구매하세요!</p>
             <Link to="/camera">
-            <button>1분만에 쇼핑 추천받기</button>
+              <button>1분만에 쇼핑 추천받기</button>
             </Link>
           </div>
-
         </div>
 
         {/* 모바일 전용 서비스 박스 - 날씨 아래, 추천 위 */}
@@ -45,7 +49,6 @@ function MainPage() {
           </Link>
         </div>
 
-
         {/* 추천 코디 섹션 */}
         <div className="coordination-section">
           <h2>오늘의 추천 👔</h2>
@@ -54,19 +57,27 @@ function MainPage() {
             <div className="coordination-cards">
               <div className="card">
                 <img src="./images/outfit1.jpg" alt="essential round knit" />
-                <div className="card-info"><h3>essential round knit</h3></div>
+                <div className="card-info">
+                  <h3>essential round knit</h3>
+                </div>
               </div>
               <div className="card">
                 <img src="./images/outfit2.jpg" alt="new growth blue wide denim" />
-                <div className="card-info"><h3>new growth blue wide denim</h3></div>
+                <div className="card-info">
+                  <h3>new growth blue wide denim</h3>
+                </div>
               </div>
               <div className="card">
                 <img src="./images/outfit3.jpg" alt="W206 side pin tuck cotton pants" />
-                <div className="card-info"><h3>W206 side pin tuck cotton pants</h3></div>
+                <div className="card-info">
+                  <h3>W206 side pin tuck cotton pants</h3>
+                </div>
               </div>
               <div className="card">
                 <img src="./images/outfit4.jpg" alt="W206 side pin tuck cotton pants" />
-                <div className="card-info"><h3>W206 side pin tuck cotton pants</h3></div>
+                <div className="card-info">
+                  <h3>W206 side pin tuck cotton pants</h3>
+                </div>
               </div>
             </div>
             <button className="slider-btn next">&gt;</button>

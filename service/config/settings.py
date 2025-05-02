@@ -44,7 +44,10 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
+    'django_elasticsearch_dsl', # elastic search 
+    'storages'
 ]
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버 주소
@@ -115,24 +118,24 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.getenv("MYSQL_DATABASE", "mensclub"),
-        "USER": os.getenv("MYSQL_USER", "UK"),
+        "USER": os.getenv("MYSQL_USER", "CHEOL"),
         "PASSWORD": os.getenv("MYSQL_PASSWORD", "1234"),
         "HOST": os.getenv("MYSQL_HOST", "172.16.221.208"),
         "PORT": os.getenv("MYSQL_PORT", "3300"),
     }
 }
 
-# Docker
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': os.getenv('MYSQL_DATABASE', 'db_name'),
-#         'USER': os.getenv('MYSQL_USER', 'master'),
-#         'PASSWORD': os.getenv('MYSQL_PASSWORD', 'db_password'),
-#         'HOST': os.getenv('MYSQL_HOST', 'database'),
-#         'PORT': os.getenv('MYSQL_PORT', '3306'),
-#     }
-# }
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200'  # 'http://' 스키마 추가
+    },
+}
+
+# 인덱스 이름 매핑
+ELASTICSEARCH_INDEX_NAMES = {
+    'clothes.documents.ClothesDocument': 'clothes',
+    'clothes.documents.ShoesDocument': 'shoes'
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -231,3 +234,17 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'http://localhost:9200'
+    }
+}
+
+# Bucket Access 
+SERVICE_NAME= os.getenv("SERVICE_NAME")
+ENDPOINT_URL= os.getenv("ENDPOINT_URL")
+REGION_NAME= os.getenv("REGION_NAME")
+ACCESS_KEY= os.getenv("ACCESS_KEY")
+SECRET_KEY= os.getenv("SECRET_KEY")
+STORAGE_BUCKET_NAME=os.getenv("STORAGE_BUCKET_NAME")

@@ -1,7 +1,6 @@
 from rest_framework import status, viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import MensTable, ShoesTest, Base64FileTest, PickedClothesTest, DroppedClothes
 from rest_framework.permissions import AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from elasticsearch import Elasticsearch

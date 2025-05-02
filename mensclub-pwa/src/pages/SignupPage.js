@@ -93,23 +93,22 @@ function SignupPage() {
       general: '',
     });
 
-    // if (formData.password !== formData.confirmPw) {
-    //   setStatus({ error: '비밀번호가 일치하지 않습니다.', success: false });
-    //   return;
-    // }
-
     try {
-      const response = await api.post('/api/account/v1/signup/', {
-        email: formData.email,
-        username: formData.username,
-        password: formData.password,
-        height: formData.height ? formData.height : null,
-        weight: formData.weight ? formData.weight : null,
-        age: formData.age ? parseInt(formData.age, 10) : null,
-        sex: formData.sex || 'M',
-      }, {
-        withCredentials: false
-      });
+      const response = await api.post(
+        '/api/account/v1/signup/',
+        {
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+          height: formData.height ? formData.height : null,
+          weight: formData.weight ? formData.weight : null,
+          age: formData.age ? parseInt(formData.age, 10) : null,
+          sex: formData.sex || 'M',
+        },
+        {
+          withCredentials: false,
+        }
+      );
 
       console.log('✅ 회원가입 성공:', response.data);
 
@@ -148,6 +147,7 @@ function SignupPage() {
   };
 
   return (
+    <div className='signup-page'>
     <div className="container">
       <div className="content">
         <div className="login-card">
@@ -245,15 +245,16 @@ function SignupPage() {
             </button>
             {status.success && <p style={{ color: 'green' }}>{status.message}</p>}
           </form>
-            <div className="bottom-links">
-              <Link to="/login">로그인</Link>
-              <Link to="/find-id">아이디 찾기</Link>
-              <Link to="/find-pw">비밀번호 찾기</Link>
-              <Link to="/">홈으로</Link>  
-            </div>
+          <div className="bottom-links">
+            <Link to="/login">로그인</Link>
+            <Link to="/find-id">아이디 찾기</Link>
+            <Link to="/find-pw">비밀번호 찾기</Link>
+            <Link to="/">홈으로</Link>
+          </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }
 

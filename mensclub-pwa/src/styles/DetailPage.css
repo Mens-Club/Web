@@ -1,0 +1,162 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.content {
+  width: 100%;
+}
+
+/* 메인 이미지 */
+.main-image-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.main-image {
+  margin-top: 2rem;
+  width: 500px;
+  height: 500px;
+  object-fit: fill;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* 슬라이더 */
+.slider-wrapper {
+  position: relative;
+  margin-bottom: 48px;
+}
+
+.product-slider {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scroll-behavior: smooth;
+}
+
+/* 스크롤바 숨기기 */
+.product-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.product-card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s;
+  min-width: 320px;
+}
+
+.product-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+}
+
+.product-card-inner {
+  display: flex;
+  align-items: center;
+}
+
+.product-thumb {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 16px;
+}
+
+.brand {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.product-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 2px;
+}
+
+.product-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f62b9dc;
+  margin-bottom: 5px;
+}
+
+.product-link {
+  font-size: 15px;
+  color: rgb(12, 90, 65);
+  text-decoration: none;
+}
+
+.product-link:hover {
+  text-decoration: underline;
+}
+
+.prev-btn {
+  left: -24px;
+}
+
+.next-btn {
+  right: -24px;
+}
+
+/* 설명 박스 */
+.info-boxes {
+  margin-top: 20px;
+  display: flexbox;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .info-boxes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.info-box {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.info-box h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.info-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.info-box p {
+  color: #555;
+  font-size: 15px;
+}
+
+.info-list {
+  list-style: disc;
+  padding-left: 20px;
+  color: #555;
+  font-size: 15px;
+}
+
+.info-list li {
+  margin-bottom: 6px;
+}

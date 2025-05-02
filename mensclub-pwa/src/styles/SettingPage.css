@@ -1,212 +1,246 @@
 /* SettingPage 전용 */
 .setting-container {
-    width: 100%;
-    min-height: 100vh;
-    background-color: #f1f3f7;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f1f3f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
 }
 
 .setting-content {
-    max-width: 768px;
-    width: 100%;
-    margin: 0 auto;
-    background: white;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-    padding: 20px 0 40px 0;
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  padding: 20px 0 40px 0;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .setting-header {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
 }
 
 .setting-back-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 0 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0 10px;
 }
 
 .setting-title {
-    flex-grow: 1;
-    text-align: center;
-    font-size: 18px;
-    margin-right: 40px;
+  flex-grow: 1;
+  text-align: center;
+  font-size: 18px;
+  margin-right: 40px;
 }
 
 .setting-profile-section {
-    padding: 30px 20px;
-    text-align: center;
-    border-bottom: 10px solid #f8f9fa;
+  padding: 30px 20px;
+  text-align: center;
+  border-bottom: 10px solid #f8f9fa;
 }
 
 .setting-profile-section h2 {
-    font-size: 24px;
-    margin-bottom: 8px;
+  font-size: 24px;
+  margin-bottom: 8px;
 }
 
 .setting-email {
-    color: #666;
-    font-size: 16px;
+  color: #666;
+  font-size: 16px;
 }
 
 .setting-menu-list {
-    background: white;
-    border-radius: 12px;
-    padding: 8px 16px 0 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    flex-shrink: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 8px 16px 0 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .setting-menu-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    border-bottom: 1px solid #eef0f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #eef0f5;
 }
 
 .setting-menu-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .setting-right-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .setting-text {
-    color: #6b7aff;
-    font-size: 14px;
+  color: #6b7aff;
+  font-size: 14px;
 }
 
 .setting-arrow {
-    color: #b0b8c1;
-    font-size: 16px;
+  color: #b0b8c1;
+  font-size: 16px;
 }
 
 .setting-profile-code {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #999;
-    font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+  font-size: 14px;
 }
 
 .setting-small-profile {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    margin-right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 4px;
 }
 
 /* 팝업 */
 .setting-popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(241, 243, 247, 0.9);
-    display: flex;
-    align-items: flex-end;
-    visibility: hidden;
-    opacity: 0;
-    transition: all 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(40, 41, 44, 0.555);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1000;
 }
 
 .setting-popup-overlay.show {
-    visibility: visible;
-    opacity: 1;
+  visibility: visible;
+  opacity: 1;
 }
 
 .setting-popup-content {
-    width: 100%;
-    background-color: white;
-    border-radius: 20px 20px 0 0;
-    padding: 24px 16px;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
+  background: white;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 16px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
 }
 
 .setting-popup-overlay.show .setting-popup-content {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 .setting-popup-text {
-    text-align: center;
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 20px;
+  text-align: center;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
 }
 
 .setting-popup-buttons {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .setting-popup-btn {
-    flex: 1;
-    padding: 15px 0;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
+  flex: 1;
+  padding: 15px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .setting-popup-btn.cancel {
-    background-color: #f1f3f7;
-    color: #666;
+  background-color: #f1f3f7;
+  color: #666;
 }
 
 .setting-popup-btn.confirm {
-    background-color: #6b7aff;
-    color: white;
+  background-color: #6b7aff;
+  color: white;
 }
 
-.setting-popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(40, 41, 44, 0.555);
-    display: flex;
-    justify-content: center; /* 가운데 정렬 */
-    align-items: flex-end;
-    visibility: hidden;
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 1000; /* 다른거보다 위에 뜨게 */
+/* 모바일 대응 강화 */
+@media screen and (max-width: 480px) {
+  html, body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+  }
+
+  .setting-container {
+    padding: 0 10px;
+    box-sizing: border-box;
+  }
+
+  .setting-content {
+    border-radius: 0;
+    box-shadow: none;
+    padding: 16px 0 32px 0;
+  }
+
+  .setting-header {
+    padding: 16px 8px;
+  }
+
+  .setting-title {
+    font-size: 16px;
+    margin-right: 20px;
+  }
+
+  .setting-profile-section h2 {
+    font-size: 20px;
+  }
+
+  .setting-email {
+    font-size: 14px;
+  }
+
+  .setting-menu-list {
+    padding: 8px;
+  }
+
+  .setting-popup-content {
+    padding: 20px 12px;
+    max-width: 100%;
+  }
+
+  .setting-popup-text {
+    font-size: 15px;
+  }
+
+  .setting-popup-btn {
+    font-size: 15px;
+  }
 }
 
-.setting-popup-overlay.show {
-    visibility: visible;
-    opacity: 1;
-}
+@media screen and (max-width: 375px) {
+  .setting-profile-section h2 {
+    font-size: 18px;
+  }
 
-.setting-popup-content {
-    background: white;
-    width: 100%;
-    max-width: 768px; /* ✅ 여기 추가 */
-    margin: 0 auto;   /* ✅ 중앙 정렬 */
-    border-radius: 20px 20px 0 0;
-    padding: 24px 16px;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-}
-
-.setting-popup-overlay.show .setting-popup-content {
-    transform: translateY(0);
+  .setting-popup-text {
+    font-size: 14px;
+  }
 }

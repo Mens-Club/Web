@@ -1,40 +1,46 @@
 import React, { useEffect, useState } from "react";
 import "../styles/MyPage.css";
-import "../styles/Layout.css";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 
 function MyPage() {
-  const [userInfo, setUserInfo] = useState({
-    username: "",
-    height: null,
-    weight: null,
-  });
-
+  const [userInfo, setUserInfo] = useState({ username: "", height: null, weight: null });
   const [savedOutfits, setSavedOutfits] = useState([]);
+  const [liked, setLiked] = useState({}); // { outfitId: true/false }
 
-  const handleUnlike = (id) => {
-    setSavedOutfits(savedOutfits.filter((outfit) => outfit.id !== id));
-  };
-
-  const groupIntoSlides = (data, size = 6) => {
-    const result = [];
-    for (let i = 0; i < data.length; i += size) {
-      result.push(data.slice(i, i + size));
+  const toggleLike = async (id) => {
+    const token = localStorage.getItem("accessToken");
+  
+    try {
+      await api.delete(`/api/outfits/${id}/unlike`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      // ✅ 프론트 상태에서 해당 아웃핏 제거
+      setSavedOutfits((prev) => prev.filter((outfit) => outfit.id !== id));
+  
+      // ✅ liked 상태에서도 제거 (선택사항)
+      setLiked((prev) => {
+        const updated = { ...prev };
+        delete updated[id];
+        return updated;
+      });
+    } catch (error) {
+      console.error("❌ 찜 해제 실패:", error);
     }
-    return result;
   };
-
+  
+  
   useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+
     async function fetchUserInfo() {
       try {
-        const token = localStorage.getItem("accessToken");
         const response = await api.get("/api/account/v1/user_info/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const { username, height, weight } = response.data;
         setUserInfo({ username, height, weight });
@@ -44,13 +50,22 @@ function MyPage() {
     }
 
     async function fetchSavedOutfits() {
-      const mockOutfits = [
-        { id: 1, image: "./images/outfit1.jpg", alt: "casual fall navy set", items: ["라운드넥 스웨터", "와이드 팬츠", "토트백"] },
-        { id: 2, image: "./images/outfit3.jpg", alt: "high density cotton set", items: ["화이트 셔츠", "블랙 팬츠", "크로스백"] },
-        { id: 3, image: "./images/outfit4.jpg", alt: "soft casual set", items: ["핑크 셔츠", "베이지 팬츠", "숄더백"] },
-        { id: 4, image: "./images/outfit2.jpg", alt: "cool street look", items: ["블랙 티셔츠", "청바지", "운동화"] },
-      ];
-      setSavedOutfits(mockOutfits);
+      try {
+        const res = await api.get("/api/account/v1/likes", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // 백엔드에서 [{ id, image, alt }] 형식으로 받는다고 가정
+        setSavedOutfits(res.data);
+
+        // 초기 liked 상태 세팅
+        const likedMap = {};
+        res.data.forEach((item) => {
+          likedMap[item.id] = true;
+        });
+        setLiked(likedMap);
+      } catch (error) {
+        console.error("❌ 찜한 아웃핏 불러오기 실패:", error);
+      }
     }
 
     fetchUserInfo();
@@ -63,11 +78,9 @@ function MyPage() {
         <div className="profile-section">
           <div className="profile-header">
             <div className="profile-info">
-              <h2>{userInfo.username} 님 안녕하세요😄 </h2>
-              {(userInfo.height && userInfo.weight) && (
-                <p className="sub-info">
-                  {userInfo.height}cm / {userInfo.weight}kg
-                </p>
+              <h2>{userInfo.username} 님 안녕하세요 😄 </h2>
+              {userInfo.height && userInfo.weight && (
+                <p className="sub-info">{userInfo.height}cm / {userInfo.weight}kg</p>
               )}
             </div>
             <Link to="/setting" className="settings-btn">
@@ -77,42 +90,31 @@ function MyPage() {
         </div>
 
         <div className="saved-outfits">
-          <h2>Saved Outfits <i className="fas fa-heart"></i></h2>
-          {savedOutfits.length > 0 ? (
-            <Swiper spaceBetween={20} slidesPerView={1}>
-              {groupIntoSlides(savedOutfits, 4).map((slideGroup, idx) => (
-                <SwiperSlide key={idx}>
-                  <div className="outfit-slide">
-                    <div className="outfit-row">
-                      {slideGroup.map((outfit) => (
-                        <div key={outfit.id} className="outfit-card">
-                          <img src={outfit.image} alt={outfit.alt} />
-                          <div className="outfit-info">
-                            <div className="outfit-items">
-                              {outfit.items.map((item, i) => (
-                                <span key={i}>{item}</span>
-                              ))}
-                            </div>
-                            <button
-                              className="like-btn liked"
-                              onClick={() => handleUnlike(outfit.id)}
-                            >
-                              ♥
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          ) : (
-            <p style={{ color: "#666", padding: "1rem" }}>
-              아직 저장된 아웃핏이 없습니다.
-            </p>
-          )}
+  <h2>Saved Outfits 👕 </h2>
+
+  {savedOutfits.length > 0 ? (
+    <div className="outfit-grid">
+      {savedOutfits.map((outfit) => (
+        <div key={outfit.id} className="outfit-card">
+          <img src={outfit.image} alt={outfit.alt} className="outfit-img" />
+          <button
+            className="heart-button"
+            onClick={() => toggleLike(outfit.id)}
+            aria-label="찜 해제"
+          >
+            <FontAwesomeIcon
+              icon={solidHeart}
+              className="heart-icon liked"
+            />
+          </button>
         </div>
+      ))}
+    </div>
+  ) : (
+    <p className="empty-message">찜한 아웃핏이 없습니다 😢</p>
+  )}
+</div>
+
       </div>
     </div>
   );

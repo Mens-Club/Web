@@ -1,5 +1,10 @@
 from django.urls import path
-from .views import SignupView, LoginView, UpdateView, ChangePasswordView, DeleteView, FindEmailView, UserInfoView
+from .views import (SignupView, 
+                    LoginView, 
+                    UpdateView, ChangePasswordView, 
+                    DeleteView, 
+                    FindEmailView, 
+                    UserInfoView, ImageUploadView)
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -12,5 +17,6 @@ urlpatterns = [
     path('user_info/', UserInfoView.as_view(), name='user_info'),
 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # JWT 토큰 발급
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # JWT 토큰 갱신  
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # JWT 토큰 갱신
+    path('upload/', ImageUploadView.as_view(), name="picture_upload"),  
 ]
