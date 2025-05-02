@@ -4,7 +4,7 @@ from .views import (SignupView,
                     UpdateView, ChangePasswordView, 
                     DeleteView, 
                     FindEmailView, 
-                    UserInfoView, UserImageUploadView)
+                    UserInfoView, UserImageUploadView, SimpleImageUploadView)
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -19,5 +19,6 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # JWT 토큰 발급
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # JWT 토큰 갱신
     path("test/s3/", UserImageUploadView.as_view(), name="s3-upload-test"),
+    path('upload-image/', SimpleImageUploadView.as_view(), name='upload-image'),
     
 ]

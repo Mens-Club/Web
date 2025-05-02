@@ -21,6 +21,10 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from django.core.files.storage import default_storage
 
+from django.core.files.base import ContentFile
+import base64
+import uuid
+
 
 User = get_user_model()
 
@@ -149,3 +153,46 @@ class UserImageUploadView(APIView):
             serializer.save()
             return Response({'success': '이미지가 성공적으로 업로드되었습니다.'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class SimpleImageUploadView(APIView):
+    def post(self, request, format=None):
+        try:
+            # base64 이미지 데이터 가져오기
+            image_data = request.data.get('image', None)
+            
+            if not image_data:
+                return Response({'error': '이미지 데이터가 필요합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if isinstance(image_data, str) and image_data.startswith('data:image'):
+                # base64 데이터에서 형식 및 인코딩 데이터 추출
+                format, imgstr = image_data.split(';base64,') 
+                ext = format.split('/')[-1]
+                
+                # 임시 파일명 생성 (user_upload_path 함수에 의해 변경됨)
+                temp_filename = f"temp.{ext}"
+                
+                # base64 디코딩 및 ContentFile 생성
+                decoded_image = ContentFile(base64.b64decode(imgstr), name=temp_filename)
+                
+                # 모델 대신 직접 파일 저장
+                from django.core.files.storage import default_storage
+                # user_id 0으로 고정하고 경로 지정 (커스텀 경로 생성)
+                from datetime import datetime
+                timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                file_path = f'user_uploads/webcam/{timestamp}.{ext}'
+                
+                # 파일 저장
+                path = default_storage.save(file_path, decoded_image)
+                
+                # 저장된 URL 반환
+                file_url = default_storage.url(path)
+                
+                return Response({
+                    'success': '이미지가 성공적으로 업로드되었습니다.',
+                    'file_url': file_url
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': '유효한 base64 이미지 형식이 아닙니다.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
