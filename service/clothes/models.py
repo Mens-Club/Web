@@ -1,62 +1,22 @@
 from django.db import models
+from django.conf import settings
 
-class MensTable(models.Model):
-    # 'menstable_test' 테이블과 매핑
-    idx = models.AutoField(primary_key=True)  # AutoField로 기본 키 설정
-    goods_name = models.CharField(max_length=255)  # 상품명
-    sub_category = models.CharField(max_length=255)  # 서브 카테고리
-    goods_url = models.CharField(max_length=500)  # 👉 이 줄 추가!!
-
-    class Meta:
-        db_table = 'menstable_test'  # 실제 DB 테이블 이름
-        managed = False  # Django가 테이블을 자동으로 관리하지 않도록 설정
-
-class ShoesTest(models.Model):
-    idx = models.AutoField(primary_key=True)
-    goods_name = models.CharField(max_length=255)
-    sub_category = models.CharField(max_length=255)
-    goods_url = models.CharField(max_length=500)  # 👉 이 줄 추가!!
-
-    class Meta:
-        db_table = 'shoes_test'  # shoes_test 테이블
-        managed = False  # 기존 테이블 사용
-
-class Base64FileTest(models.Model):
-    file_data = models.TextField()
-
-    class Meta:
-        db_table = 'save_image_test'
-        managed = False  # 기존 테이블에 연결하는 거니까
-
-class PickedClothesTest(models.Model):
+class Recommended(models.Model):
     id = models.AutoField(primary_key=True)
-    email = models.EmailField()
-    top_goods_name = models.CharField(max_length=255)
-    top_goods_url = models.CharField(max_length=255)
-    outwear_goods_name = models.CharField(max_length=255)
-    outwear_goods_url = models.CharField(max_length=255)
-    bottom_goods_name = models.CharField(max_length=255)
-    bottom_goods_url = models.CharField(max_length=255)
-    shoes_goods_name = models.CharField(max_length=255)
-    shoes_goods_url = models.CharField(max_length=255)
-    detail = models.CharField(max_length=500)
+    top_id = models.IntegerField()
+    bottom_id = models.IntegerField()
+    outer_id = models.IntegerField()
+    shoes_id = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)  # 생성 시 자동 저장
 
-    class Meta:
-        db_table = 'picked_clothes_test'
-        managed = False  # 이미 존재하는 테이블이라면
+    def __str__(self):
+        return f"Recommend #{self.id}"
 
-class DroppedClothes(models.Model):
-    email = models.CharField(max_length=255)
-    top_goods_name = models.CharField(max_length=255)
-    top_goods_url = models.CharField(max_length=255)
-    outwear_goods_name = models.CharField(max_length=255)
-    outwear_goods_url = models.CharField(max_length=255)
-    bottom_goods_name = models.CharField(max_length=255)
-    bottom_goods_url = models.CharField(max_length=255)
-    shoes_goods_name = models.CharField(max_length=255)
-    shoes_goods_url = models.CharField(max_length=255)
-    detail = models.CharField(max_length=500)
+class Picked(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    recommend = models.ForeignKey(Recommended, on_delete=models.CASCADE, related_name='picks')
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        db_table = 'dropped_clothes_test'
-        managed = False  # 기존 테이블에만 사용
+    def __str__(self):
+        return f"{self.user.username} picked Recommend #{self.recommend.id}"

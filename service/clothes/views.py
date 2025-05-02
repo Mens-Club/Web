@@ -1,169 +1,339 @@
+from rest_framework import status, viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import MensTable, ShoesTest, Base64FileTest, PickedClothesTest, DroppedClothes
 from rest_framework.permissions import AllowAny
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import RecommendedGoodsRequestSerializer, SaveImageRequestSerializer, CancelLikeSerializer
-import re
-from drf_yasg import openapi
+from elasticsearch import Elasticsearch
+import random, time, uuid
+from .models import Recommended, Picked
+from .serializers import RecommendedSerializer, PickedSerializer
 
-class RecommendedGoodsView(APIView):
-    permission_classes = [AllowAny]
+es = Elasticsearch("http://localhost:9200")
 
-    @swagger_auto_schema(request_body=RecommendedGoodsRequestSerializer)
-    def post(self, request):
-        serializer = RecommendedGoodsRequestSerializer(data=request.data)
+# class RecommendedGoodsView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         test = [
+#             {
+#                 "top": "셔츠&블라우스 - 긴소매",
+#                 "outwear": "슈트&블레이저 자켓",
+#                 "bottom": "슈트 팬츠&슬랙스",
+#                 "shoes": "미들/하프 부츠"
+#             },
+#             {
+#                 "top": "셔츠&블라우스 - 반소매",
+#                 "outwear": "",
+#                 "bottom": "숏팬츠",
+#                 "shoes": "스포츠/캐주얼 샌들"
+#             },
+#             {
+#                 "top": "후드 티셔츠",
+#                 "outwear": "플리스&뽀글이",
+#                 "bottom": "데님 팬츠",
+#                 "shoes": "캔버스/단화"
+#             }
+#         ]
+
+#         color_map = [['블랙', '화이트', '블랙', '화이트'], ['화이트', '블랙', '화이트', '블랙']]
+#         style_map = ['미니멀', '캐주얼']
+#         random_cmap = random.randint(0, len(color_map) - 1)
+
+#         all_results = []
+
+#         for data in test:
+#             response_dict = {
+#                 "top": '',
+#                 "outwear": '',
+#                 "bottom": '',
+#                 "shoes": '',
+#                 "style": '',
+#                 "total_price": 0,
+#                 "summary_picture": None
+#             }
+
+#             for i, (key, value) in enumerate(data.items()):
+#                 if not value:  # 값이 없을 경우 무시
+#                     continue
+
+#                 print(f"Searching for {key} with value: {value} and color: {color_map[random_cmap][i]}")
+
+#                 query = {
+#                     "size": 1,
+#                     "query": {
+#                         "function_score": {
+#                             "query": {
+#                                 "bool": {
+#                                     "must": [
+#                                         {"match": {"sub_category": value}},
+#                                         {"match": {"color": color_map[random_cmap][i]}},
+#                                         {"match": {"style": style_map[random_cmap]}}
+#                                     ]
+#                                 }
+#                             },
+#                             "random_score": {
+#                                 "seed": int(time.time()) + i  # 시간에 따라 시드 다르게
+#                             }
+#                         }
+#                     }
+#                 }
+
+#                 index_name = "shoes" if key == "shoes" else "clothes"
+#                 res = es.search(index=index_name, body=query)
+
+#                 if res["hits"]["hits"]:
+#                     item = res["hits"]["hits"][0]["_source"]
+#                     response_dict[key] = item["idx"]
+#                     response_dict["total_price"] += item['price']
+#                     if not response_dict["summary_picture"]:
+#                         response_dict["summary_picture"] = item.get("s3_path", "")
+#                 else:
+#                     print(f"No {key} found for {value}")
+
+#             response_dict['style'] = style_map[random_cmap]
+#             all_results.append(response_dict)
+
+#         return Response(all_results, status=status.HTTP_200_OK)
+
+# class PickedClothesMainView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         query = {
+#             "size": 100,
+#             "query": {
+#                 "match_all": {}
+#             }
+#         }
+
+#         try:
+#             res = es.search(index="picked_clothes", body=query)
+#             all_items = [hit["_source"] for hit in res["hits"]["hits"]]
+            
+#             # 4개 랜덤 선택 (최대 4개)
+#             selected_items = random.sample(all_items, min(4, len(all_items)))
+            
+#             return Response(selected_items, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        if serializer.is_valid():
-            top = serializer.validated_data['top']
-            outwear = serializer.validated_data['outwear']
-            bottom = serializer.validated_data['bottom']
-            shoes = serializer.validated_data['shoes']
+# class PickedClothesMypageView(APIView):
+#     # 최신, 오래된순, 가격, 스타일
+#     permission_classes = [AllowAny]
 
-            # menstable_test에서 가져오기
-            top_goods = MensTable.objects.filter(sub_category=top).order_by('?').first()
-            outwear_goods = MensTable.objects.filter(sub_category=outwear).order_by('?').first()
-            bottom_goods = MensTable.objects.filter(sub_category=bottom).order_by('?').first()
-
-            # shoes_test에서 가져오기
-            shoes_goods = ShoesTest.objects.filter(sub_category=shoes).order_by('?').first()
-
-            def generate_image_url(goods_url, is_shoes=False):
-                """ goods_url에서 숫자만 추출해 변환된 이미지 URL을 생성 """
-                match = re.search(r'/products/(\d+)', goods_url)
-                if match:
-                    if is_shoes:
-                        product_id = match.group(1)
-                        return f"https://kr.object.iwinv.kr/web-assets-prod/shoes/{product_id}.jpg"
-                    else:
-                        product_id = match.group(1)
-                        return f"https://kr.object.iwinv.kr/web-assets-prod/clothes/{product_id}.jpg"
-                return None
-
-            # 결과 만들기
-            result = {
-                "top": [],
-                "outwear": [],
-                "bottom": [],
-                "shoes": []
-            }
-
-            if top_goods:
-                result["top"].append({
-                    "goods_name": top_goods.goods_name,
-                    "sub_category": top_goods.sub_category,
-                    "image_url": generate_image_url(top_goods.goods_url)
-                })
-
-            if outwear_goods:
-                result["outwear"].append({
-                    "goods_name": outwear_goods.goods_name,
-                    "sub_category": outwear_goods.sub_category,
-                    "image_url": generate_image_url(outwear_goods.goods_url)
-                })
-
-            if bottom_goods:
-                result["bottom"].append({
-                    "goods_name": bottom_goods.goods_name,
-                    "sub_category": bottom_goods.sub_category,
-                    "image_url": generate_image_url(bottom_goods.goods_url)
-                })
-
-            if shoes_goods:
-                result["shoes"].append({
-                    "goods_name": shoes_goods.goods_name,
-                    "sub_category": shoes_goods.sub_category,
-                    "image_url": generate_image_url(shoes_goods.goods_url, True)
-                })
-
-            return Response(result)
+#     @swagger_auto_schema(
+#         operation_description="사용자의 마이페이지에서 선택된 옷 목록을 조회합니다.",
+#         manual_parameters=[
+#             openapi.Parameter('email', openapi.IN_QUERY, description="사용자의 이메일", type=openapi.TYPE_STRING),
+#         ],
+#         responses={
+#             200: openapi.Response(
+#                 description="사용자의 옷 목록 조회 성공",
+#                 schema=openapi.Schema(
+#                     type=openapi.TYPE_ARRAY,
+#                     items=openapi.Schema(
+#                         type=openapi.TYPE_OBJECT,
+#                         properties={
+#                             'uid': openapi.Schema(type=openapi.TYPE_STRING),  # 추가된 필드
+#                             'idx': openapi.Schema(type=openapi.TYPE_INTEGER),
+#                             'style': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'season': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'fit': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'color': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'goods_name': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'thumbnail_url': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'is_soldout': openapi.Schema(type=openapi.TYPE_INTEGER),
+#                             'goods_url': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'brand': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'normal_price': openapi.Schema(type=openapi.TYPE_INTEGER),
+#                             'price': openapi.Schema(type=openapi.TYPE_INTEGER),
+#                             'main_category': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'sub_category': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'created_at': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'updated_at': openapi.Schema(type=openapi.TYPE_STRING),
+#                             'image_id': openapi.Schema(type=openapi.TYPE_STRING),
+#                             's3_path': openapi.Schema(type=openapi.TYPE_STRING),
+#                         }
+#                     )
+#                 )
+#             ),
+#             500: "Internal server error"
+#         }
+#     )
+    
+#     def get(self, request):
+#         email = request.query_params.get("email")
         
-        return Response(serializer.errors, status=400)
+#         # email이 제공되지 않으면 에러 반환
+#         if not email:
+#             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+#         query = {
+#             "size": 10,
+#             "query": {
+#                 "term": {
+#                     "email.keyword": email  # 정확한 일치를 위해 .keyword 사용
+#                 }
+#             }
+#         }
+
+#         try:
+#             res = es.search(index="picked_clothes", body=query)
+#             all_items = []
+
+#             for hit in res["hits"]["hits"]:
+#                 # hit['_id']는 Elasticsearch에서 자동으로 제공되는 문서의 고유 ID (UUID)가 됩니다.
+#                 item = hit["_source"]
+#                 item['uid'] = hit["_id"]  # _id를 uid로 추가
+#                 all_items.append(item)
+            
+#             return Response(all_items, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+# class PickedClothesDetailView(APIView):
+#     permission_classes = [AllowAny]
+
+#     @swagger_auto_schema(
+#         operation_description="상세 제품 정보를 조회합니다.",
+#         manual_parameters=[
+#             openapi.Parameter('top', openapi.IN_QUERY, description="Top 제품 ID", type=openapi.TYPE_INTEGER),
+#             openapi.Parameter('outwear', openapi.IN_QUERY, description="Outwear 제품 ID", type=openapi.TYPE_INTEGER),
+#             openapi.Parameter('bottom', openapi.IN_QUERY, description="Bottom 제품 ID", type=openapi.TYPE_INTEGER),
+#             openapi.Parameter('shoes', openapi.IN_QUERY, description="Shoes 제품 ID", type=openapi.TYPE_INTEGER),
+#         ],
+#         responses={
+#             200: openapi.Response(
+#                 description="제품 상세 조회 성공",
+#                 schema=openapi.Schema(
+#                     type=openapi.TYPE_OBJECT,
+#                     properties={
+#                         'top': openapi.Schema(type=openapi.TYPE_OBJECT),
+#                         'outwear': openapi.Schema(type=openapi.TYPE_OBJECT),
+#                         'bottom': openapi.Schema(type=openapi.TYPE_OBJECT),
+#                         'shoes': openapi.Schema(type=openapi.TYPE_OBJECT),
+#                     }
+#                 )
+#             ),
+#             500: "Internal server error"
+#         }
+#     )
     
-class SaveImageAPIView(APIView):
-    permission_classes = [AllowAny]
+#     def get(self, request):
+#         # 각 카테고리 제품 ID
+#         product_ids = {
+#             "top": request.query_params.get("top"),
+#             "outwear": request.query_params.get("outwear"),
+#             "bottom": request.query_params.get("bottom"),
+#             "shoes": request.query_params.get("shoes")
+#         }
+        
+#         # 제품 상세 정보를 담을 변수
+#         product_details = {}
 
-    @swagger_auto_schema(request_body=SaveImageRequestSerializer)
-    def post(self, request):
-        file_data = request.data.get('file_data')
+#         # clothes 인덱스에서 top, outwear, bottom의 상세 정보 조회
+#         for category, product_id in product_ids.items():
+#             if category in ["top", "outwear", "bottom"]:
+#                 # clothes 인덱스에서 제품 정보 가져오기
+#                 query = {
+#                     "query": {
+#                         "match": {
+#                             "idx": product_id
+#                         }
+#                     }
+#                 }
+#                 res = es.search(index="clothes", body=query)
+#                 if res["hits"]["hits"]:
+#                     product_details[category] = res["hits"]["hits"][0]["_source"]
 
-        if not file_data:
-            return Response({"error": "file_data가 필요합니다."}, status=400)
+#             # shoes 인덱스에서 shoes의 상세 정보 조회
+#             elif category == "shoes":
+#                 query = {
+#                     "query": {
+#                         "match": {
+#                             "idx": product_id
+#                         }
+#                     }
+#                 }
+#                 res = es.search(index="shoes", body=query)
+#                 if res["hits"]["hits"]:
+#                     product_details[category] = res["hits"]["hits"][0]["_source"]
 
-        # 저장
-        saved_file = Base64FileTest.objects.create(file_data=file_data)
+#         return Response(product_details, status=status.HTTP_200_OK)
 
-        return Response({
-            "message": "저장 성공",
-            "id": saved_file.id
-        }, status=201)
+# # class PickedClothesLikeAddView(APIView):
+# #     permission_classes = [AllowAny]
+
+# #     @swagger_auto_schema(request_body=PickedClothesLikeSerializer)
+# #     def post(self, request):
+# #         data = request.data
+
+# #         # 검증: 필수값 존재 여부 (간단한 유효성 검증)
+# #         required_fields = ['email', 'top', 'bottom', 'shoes', 'summary_picture']
+# #         for field in required_fields:
+# #             if field not in data:
+# #                 return Response({"error": f"'{field}' is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+# #         # null 또는 "" 값은 None 처리
+# #         doc = {
+# #             "email": data.get("email"),
+# #             "top": data.get("top") or None,
+# #             "outwear": data.get("outwear") or None,
+# #             "bottom": data.get("bottom"),
+# #             "shoes": data.get("shoes"),
+# #             "summary_picture": data.get("summary_picture"),
+# #             "created_at": int(time.time())  # timestamp
+# #         }
+
+# #         # Elasticsearch에 저장
+# #         res = es.index(index="picked_clothes", id=str(uuid.uuid4()), document=doc)
+
+# #         return Response({"message": "Picked clothes saved to Elasticsearch.", "result": res['result']}, status=status.HTTP_201_CREATED)
+	
+# class PickedClothesLikeCancelView(APIView):
+#     permission_classes = [AllowAny]
+
+#     @swagger_auto_schema(request_body=SaveImageRequestSerializer)
+#     def post(self, request):
+#         file_data = request.data.get('file_data')
+
+#         if not file_data:
+#             return Response({"error": "file_data가 필요합니다."}, status=400)
+
+#         # 저장
+#         saved_file = Base64FileTest.objects.create(file_data=file_data)
+
+#         return Response({
+#             "message": "저장 성공",
+#             "id": saved_file.id
+#         }, status=201)
     
-class UserLikeSetView(APIView):
-    permission_classes = [AllowAny]
+# class UserLikeSetView(APIView):
+#     permission_classes = [AllowAny]
 
-    # 쿼리 파라미터 정의
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('email', openapi.IN_QUERY, description="유저 이메일", type=openapi.TYPE_STRING)
-    ])
-    def get(self, request):
-        email = request.query_params.get('email')
-        if not email:
-            return Response({"error": "이메일이 필요합니다."}, status=400)
+#     # 쿼리 파라미터 정의
+#     @swagger_auto_schema(manual_parameters=[
+#         openapi.Parameter('email', openapi.IN_QUERY, description="유저 이메일", type=openapi.TYPE_STRING)
+#     ])
+#     def get(self, request):
+#         email = request.query_params.get('email')
+#         if not email:
+#             return Response({"error": "이메일이 필요합니다."}, status=400)
 
-        # 조회 로직
-        clothes = PickedClothesTest.objects.filter(email=email)
-        result = [{
-            "top_goods_name": c.top_goods_name,
-            "top_goods_url": c.top_goods_url,
-            "outwear_goods_name": c.outwear_goods_name,
-            "outwear_goods_url": c.outwear_goods_url,
-            "bottom_goods_name": c.bottom_goods_name,
-            "bottom_goods_url": c.bottom_goods_url,
-            "shoes_goods_name": c.shoes_goods_name,
-            "shoes_goods_url": c.shoes_goods_url,
-            "detail": c.detail
-        } for c in clothes]
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(result)
-    
-class CancelLikeAPIView(APIView):
-    permission_classes = [AllowAny]
 
-    @swagger_auto_schema(request_body=CancelLikeSerializer)
-    def post(self, request):
-        serializer = CancelLikeSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            top_name = serializer.validated_data['top_goods_name']
-            bottom_name = serializer.validated_data['bottom_goods_name']
+class RecommendViewSet(viewsets.ModelViewSet):
+    queryset = Recommended.objects.all()
+    serializer_class = RecommendedSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-            # 해당 항목 존재 여부 확인
-            item = PickedClothesTest.objects.filter(
-                email=email,
-                top_goods_name=top_name,
-                bottom_goods_name=bottom_name
-            ).first()
+class PickedViewSet(viewsets.ModelViewSet):
+    queryset = Picked.objects.all()
+    serializer_class = PickedSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-            if not item:
-                return Response({"message": "해당 데이터가 없습니다."}, status=404)
-
-            # DroppedClothes에 복사
-            DroppedClothes.objects.create(
-                email=item.email,
-                top_goods_name=item.top_goods_name,
-                top_goods_url=item.top_goods_url,
-                outwear_goods_name=item.outwear_goods_name,
-                outwear_goods_url=item.outwear_goods_url,
-                bottom_goods_name=item.bottom_goods_name,
-                bottom_goods_url=item.bottom_goods_url,
-                shoes_goods_name=item.shoes_goods_name,
-                shoes_goods_url=item.shoes_goods_url,
-                detail=item.detail,
-            )
-
-            # 원래 테이블에서 삭제
-            item.delete()
-
-            return Response({"message": "좋아요 취소 → dropped_clothes로 이동 완료."})
-
-        return Response(serializer.errors, status=400)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
