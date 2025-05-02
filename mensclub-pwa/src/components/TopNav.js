@@ -7,7 +7,7 @@ function TopNav() {
 
   // ✅ 경로 ➔ 타이틀 매핑
   const titles = {
-    '/main': 'MensClub',
+    '/main': 'MENSCLUB',
     '/camera': '카메라',
     '/fashion': '패션페이지',
     '/my': '마이페이지',
@@ -15,7 +15,7 @@ function TopNav() {
   };
 
   // ✅ 경로에 맞는 타이틀 찾기 (없으면 기본 MensClub)
-  const title = titles[location.pathname] || 'MensClub';
+  const title = titles[location.pathname] || 'MENSCLUB';
 
   return (
     <header className="top-nav">

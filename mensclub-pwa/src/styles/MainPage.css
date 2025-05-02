@@ -1,10 +1,37 @@
 /* 메인 컨텐츠 스타일 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+    'Helvetica Neue', sans-serif;
+  background-color: #ffffff48;  
+  height: 100vh;
+  overflow-x: hidden;
+}
+
+
+.container {
+  display: flex;
+  justify-content: center;
+  background-color: #e6e8f09c;
+  flex-direction: column;
+  /* min-height: calc(100vh - 80px - 80px); top-nav + bottom-nav 제외한 높이 */
+  padding-bottom: 120px; /* bottom-nav와 겹치지 않도록 여백 추가 */
+  overflow-y: auto;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .main-content {
   flex: 1;
   margin-top: 0;
   padding: 20px 24px;
-  padding-bottom: 50px;
-  background-color: #e6e8f0;
+  /* padding-bottom: 50px; */
+  /* background-color: #e6e8f0; */
   max-width: 100%;
   align-items: center;
 }
@@ -200,7 +227,7 @@ h1 {
   max-width: 1000px;
   margin: 0 auto;
   text-align: center;
-  margin-bottom: 30px;
+  /* margin-bottom: 30px; */
 }
 
 .coordination-section h2 {
@@ -638,3 +665,86 @@ h1 {
     }
     
   }
+
+/* 섹션 헤더 스타일 */
+.section-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 10px;
+margin-bottom: 10px;
+padding: 0 4px;
+}
+
+.filter-buttons {
+display: flex;
+gap: 8px;
+}
+
+.filter-btn {
+padding: 8px 16px;
+border: 1px solid #ddd;
+border-radius: 20px;
+background-color: white;
+color: #666;
+font-size: 13px;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+background-color: #f5f5f5;
+}
+
+.filter-btn.active {
+background-color: #1a1a1a;
+color: white;
+border-color: #1a1a1a;
+}
+
+/* 카드 가격 스타일 */
+.card-info {
+padding: 16px;
+text-align: left;
+}
+
+.card-info h3 {
+font-size: 15px;
+color: #1a1a1a;
+font-weight: 500;
+margin-bottom: 4px;
+}
+
+.card-info .price {
+font-size: 14px;
+color: #666;
+font-weight: 500;
+}
+
+/* 코디네이션 섹션 간격 조정 */
+.coordination-section {
+margin-bottom: 40px;
+}
+
+.coordination-section:last-child {
+margin-bottom: -10px;
+}
+
+/* 스크롤바 스타일링 */
+.coordination-cards::-webkit-scrollbar {
+height: 4px;
+}
+
+.coordination-cards::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 4px;
+}
+
+.coordination-cards::-webkit-scrollbar-thumb {
+background: #888;
+border-radius: 4px;
+}
+
+.coordination-cards::-webkit-scrollbar-thumb:hover {
+background: #555;
+}
