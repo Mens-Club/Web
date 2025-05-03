@@ -22,9 +22,11 @@ from datetime import datetime
 from django.core.files.storage import default_storage
 from django.conf import settings
 
+from django.views.generic import View
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+
 from django.core.files.base import ContentFile
-import base64
-import uuid
 import requests
 
 
@@ -168,6 +170,34 @@ class SocialLoginView(APIView):
         }, None
 
 
+class SocialLoginCallbackView(View):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            # JWT 토큰 생성
+            refresh = RefreshToken.for_user(request.user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            # 디버깅 로그
+            print(f"인증된 사용자: {request.user.username}")
+            print(f"토큰: {access_token}")
+            print(f"리프레시: {refresh_token}")
+
+            # 프론트엔드 리다이렉트 URL
+            frontend_url = "http://localhost:3000/main"
+
+            # 토큰을 쿼리 파라미터로 추가하여 리다이렉트
+            redirect_url = (
+                f"{frontend_url}?token={access_token}&refresh={refresh_token}"
+            )
+            print(f"리다이렉트 URL: {redirect_url}")
+
+            return HttpResponseRedirect(redirect_url)
+
+        # 인증되지 않은 경우 로그인 페이지로 리다이렉트
+        return redirect("/accounts/login/")
+
+
 class UpdateView(RetrieveUpdateAPIView):
     serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
@@ -260,43 +290,42 @@ class UserInfoView(APIView):
 class UserImageUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # def post(self, request, format=None):
+    #     serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
+
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(
+    #             {"success": "이미지가 성공적으로 업로드되었습니다."},
+    #             status=status.HTTP_200_OK,
+    #         )
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self, request, format=None):
+        print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
+        print(
+            "이미지 데이터 길이:",
+            (
+                len(request.data.get("image", ""))
+                if "image" in request.data
+                else "이미지 키 없음"
+            ),
+        )
+        print(
+            "인증된 사용자:",
+            request.user.username if request.user.is_authenticated else "인증 안됨",
+        )
+
         serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
 
         if serializer.is_valid():
+            print("시리얼라이저 유효함")
             serializer.save()
+            print("저장 완료")
             return Response(
                 {"success": "이미지가 성공적으로 업로드되었습니다."},
                 status=status.HTTP_200_OK,
             )
+        else:
+            print("시리얼라이저 에러:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-def post(self, request, format=None):
-    print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
-    print(
-        "이미지 데이터 길이:",
-        (
-            len(request.data.get("image", ""))
-            if "image" in request.data
-            else "이미지 키 없음"
-        ),
-    )
-    print(
-        "인증된 사용자:",
-        request.user.username if request.user.is_authenticated else "인증 안됨",
-    )
-
-    serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
-
-    if serializer.is_valid():
-        print("시리얼라이저 유효함")
-        serializer.save()
-        print("저장 완료")
-        return Response(
-            {"success": "이미지가 성공적으로 업로드되었습니다."},
-            status=status.HTTP_200_OK,
-        )
-    else:
-        print("시리얼라이저 에러:", serializer.errors)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
