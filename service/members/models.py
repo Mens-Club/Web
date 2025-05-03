@@ -35,12 +35,10 @@ class User(AbstractUser):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    # 사진 업로드
     upload_picture = models.ImageField(
-        upload_to=user_upload_path,
-        null=True,
-        blank=True,
-        verbose_name="의류 사진"
+        upload_to=user_upload_path, null=True, blank=True, verbose_name="의류 사진"
     )
 
     def __str__(self):

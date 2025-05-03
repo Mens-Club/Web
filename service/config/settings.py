@@ -4,10 +4,13 @@ import os
 from dotenv import load_dotenv
 from django.conf import settings
 import logging
+from datetime import timedelta
+
 logging.basicConfig(level=logging.DEBUG)
 
 import boto3
-boto3.set_stream_logger('', logging.DEBUG)
+
+boto3.set_stream_logger("", logging.DEBUG)
 
 load_dotenv()
 
@@ -27,6 +30,14 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
+<<<<<<< HEAD
+=======
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+>>>>>>> a5db9f6383f46534a1052b419dce4ed03baf61d5
 # Application definition
 
 INSTALLED_APPS = [
@@ -51,8 +62,9 @@ INSTALLED_APPS = [
     "drf_yasg",
     "members",
     "clothes",
-    'storages'
+    "storages",
 ]
+
 
 # settings.py
 STORAGES = {
@@ -74,6 +86,7 @@ STORAGES = {
         },
     },
     "staticfiles": {
+<<<<<<< HEAD
     "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
     "OPTIONS": {
         "access_key": os.getenv("ACCESS_KEY"),
@@ -88,6 +101,22 @@ STORAGES = {
         "location": "static",  
         "object_parameters": {
             "CacheControl": "max-age=86400",
+=======
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": os.getenv("ACCESS_KEY"),
+            "secret_key": os.getenv("SECRET_KEY"),
+            "bucket_name": os.getenv("STORAGE_BUCKET_NAME"),
+            "endpoint_url": os.getenv("ENDPOINT_URL"),
+            "region_name": os.getenv("REGION_NAME"),
+            "addressing_style": "path",
+            "signature_version": "s3v4",
+            "default_acl": "public-read",
+            "querystring_auth": False,
+            "location": "static",  # 정적 파일용 별도 경로
+            "object_parameters": {
+                "CacheControl": "max-age=86400",
+>>>>>>> a5db9f6383f46534a1052b419dce4ed03baf61d5
             },
         },
     },
@@ -162,11 +191,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ['MYSQL_DATABASE'],
-        "USER": os.environ['MYSQL_USER'],
-        "PASSWORD": os.environ['MYSQL_PASSWORD'],
-        "HOST": os.environ['MYSQL_HOST'],
-        "PORT": os.environ['MYSQL_PORT'],
+        "NAME": os.environ["MYSQL_DB"],
+        "USER": os.environ["MYSQL_USER"],
+        "PASSWORD": os.environ["MYSQL_PASSWD"],
+        "HOST": os.environ["MYSQL_HOST"],
+        "PORT": os.environ["MYSQL_PORT"],
     }
 }
 
@@ -200,22 +229,30 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PARSER_CLASSES": (
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    'DEFAULT_PAGINATION_CLASS': None,
+    "DEFAULT_PAGINATION_CLASS": None,
     "PAGE_SIZE": 10,  # 페이지당 10개씩 조회
 }
 
+# 토큰 유효시간 설정
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # 액세스 토큰 유효기간: 60분
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # 리프레시 토큰 유효기간: 1일
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 LANGUAGE_CODE = "ko-kr"  # 국가 설정
 TIME_ZONE = "Asia/Seoul"  # 시간대 설정
@@ -298,4 +335,7 @@ REGION_NAME = os.getenv("REGION_NAME")
 ACCESS_KEY = os.getenv("ACCESS_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY")
 STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
+<<<<<<< HEAD
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
+=======
+>>>>>>> a5db9f6383f46534a1052b419dce4ed03baf61d5

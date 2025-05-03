@@ -6,14 +6,6 @@ from rest_framework.response import Response
 from elasticsearch import Elasticsearch
 from django.conf import settings
 
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from rest_framework.response import Response
-from elasticsearch import Elasticsearch
-from django.conf import settings
-
 # 계절별 추천 색상 팔레트
 COLOR_PALETTE_BY_SEASON = {
     "봄": ['오트밀', '아이보리', '화이트', '블랙', '베이지', '네이비', "흑청", "진청", "연청", "중청"],
