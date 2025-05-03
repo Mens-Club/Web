@@ -1,21 +1,25 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.conf import settings
 
 class RecommendationTest(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    top_id = models.IntegerField(null=True)
-    bottom_id = models.IntegerField(null=True)
-    outer_id = models.IntegerField(null=True)
-    shoes_id = models.IntegerField(null=True)
-    answer = models.TextField(null=True)
-    style = models.CharField(max_length=100, null=True)
-    total_price = models.IntegerField(null=True)
-    liked = models.BooleanField(default=False)
-    detail = models.TextField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    recommendation_code = models.IntegerField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        db_column='user_id',
+        on_delete=models.CASCADE
+    )
+    top_id = models.IntegerField()
+    bottom_id = models.IntegerField()
+    outer_id = models.IntegerField(null=True, blank=True)
+    shoes_id = models.IntegerField()
+    answer = models.TextField()
+    style = models.CharField(max_length=50)
+    total_price = models.IntegerField()
+    liked = models.BooleanField()
+    detail = models.TextField()
+    created_at = models.DateTimeField(null=False, blank=True)
 
     class Meta:
         db_table = 'recommendation_test'
+        managed = False
