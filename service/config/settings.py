@@ -29,13 +29,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.sites",
@@ -55,10 +52,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    "django_elasticsearch_dsl",  # elastic search
+    'django_elasticsearch_dsl',  
     "drf_yasg",
     "members",
     "clothes",
+    "Picked",
     "storages",
 ]
 
@@ -83,7 +81,7 @@ STORAGES = {
         },
     },
     "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
         "OPTIONS": {
             "access_key": os.getenv("ACCESS_KEY"),
             "secret_key": os.getenv("SECRET_KEY"),
@@ -94,7 +92,7 @@ STORAGES = {
             "signature_version": "s3v4",
             "default_acl": "public-read",
             "querystring_auth": False,
-            "location": "static",  # 정적 파일용 별도 경로
+            "location": "static",  # 정적 파일 전용 prefix
             "object_parameters": {
                 "CacheControl": "max-age=86400",
             },
@@ -172,17 +170,19 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ["MYSQL_DB"],
+        "NAME": os.environ["MYSQL_DATABASE"],
         "USER": os.environ["MYSQL_USER"],
-        "PASSWORD": os.environ["MYSQL_PASSWD"],
+        "PASSWORD": os.environ["MYSQL_PASSWORD"],
         "HOST": os.environ["MYSQL_HOST"],
         "PORT": os.environ["MYSQL_PORT"],
     }
 }
 
 ELASTICSEARCH_DSL = {
-    "default": {"hosts": "http://localhost:9200"},  # 'http://' 스키마 추가
+    "default": {"hosts": "http://localhost:9200"},
 }
+
+
 
 # 인덱스 이름 매핑
 ELASTICSEARCH_INDEX_NAMES = {
@@ -239,7 +239,11 @@ USE_TZ = False  # Django 시간대
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -299,12 +303,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
 
-ELASTICSEARCH_DSL = {"default": {"hosts": "http://localhost:9200"}}
+ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
+ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
-# 오브젝트 스토리지 연결
-SERVICE_NAME = os.getenv("SERVICE_NAME")
-ENDPOINT_URL = os.getenv("ENDPOINT_URL")
-REGION_NAME = os.getenv("REGION_NAME")
-ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRET_KEY = os.getenv("SECRET_KEY")
-STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
+
+
