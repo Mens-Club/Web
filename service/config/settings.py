@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "members",
     "clothes",
+    "Picked",
     "storages",
 ]
 
@@ -118,8 +119,8 @@ MIDDLEWARE = [
 ]
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # 액세스 토큰 유효기간: 60분
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # 리프레시 토큰 유효기간: 1일
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
@@ -143,6 +144,7 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=60),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 }
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -203,6 +205,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# JWT 설정 추가
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": False,  # 프론트엔드에서 토큰에 접근할 수 있도록 설정
+}
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -219,16 +227,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,  # 페이지당 10개씩 조회
 }
 
-# 토큰 유효시간 설정
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # 액세스 토큰 유효기간: 60분
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # 리프레시 토큰 유효기간: 1일
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
 
 LANGUAGE_CODE = "ko-kr"  # 국가 설정
 TIME_ZONE = "Asia/Seoul"  # 시간대 설정
@@ -268,9 +266,6 @@ AUTHENTICATION_BACKENDS = ("allauth.account.auth_backends.AuthenticationBackend"
 
 SITE_ID = 1
 
-LOGIN_REDIRECT_URL = "http://localhost:3000/main"  # 로그인 후 리디렉션할 URL
-LOGOUT_REDIRECT_URL = "/accounts/google/login"
-
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": [
@@ -299,8 +294,13 @@ SOCIALACCOUNT_PROVIDERS = {
         },
     },
 }
-
+SOCIALACCOUNT_STORE_TOKEN = True
+# LOGIN_REDIRECT_URL = "http://localhost:3000/main"
+LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
+SOCIALACCOUNT_ADAPTER = "members.tokken_toss.CustomSocialAccountAdapter"
 SOCIALACCOUNT_LOGIN_ON_GET = True
+LOGOUT_REDIRECT_URL = "/"
+
 
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
