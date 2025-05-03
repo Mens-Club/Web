@@ -1,6 +1,6 @@
 // MainPage.jsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import '../styles/MainPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
@@ -16,6 +16,7 @@ function MainPage() {
   const [likedMap, setLikedMap] = useState({});
   const [styleFilter, setStyleFilter] = useState('미니멀');
   const [priceFilter, setPriceFilter] = useState('10만원대');
+  const location = useLocation(); // 현재 URL 정보를 가져오기 위한 hook 추가
 
   useEffect(() => {
     document.body.style.overflow = 'auto';
@@ -23,6 +24,34 @@ function MainPage() {
       document.body.style.overflow = 'hidden';
     };
   }, []);
+
+  // 소셜 로그인 후 URL에서 토큰 추출하여 저장하는 로직 추가
+  // 소셜 로그인 후 URL에서 토큰 추출하여 저장하는 로직
+  useEffect(() => {
+    // URL에서 토큰 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const refresh = urlParams.get('refresh');
+
+    if (token) {
+      // 토큰 저장
+      localStorage.setItem('accessToken', token);
+      if (refresh) {
+        localStorage.setItem('refreshToken', refresh);
+      }
+
+      console.log('URL 전체:', window.location.href);
+      console.log('URL 파라미터:', window.location.search);
+      console.log('토큰:', token);
+      console.log('리프레시:', refresh);
+
+      // URL에서 쿼리 파라미터 제거 (깔끔한 URL 유지)
+      window.history.replaceState({}, document.title, '/main');
+
+      // 토큰이 저장되었는지 확인
+      console.log('저장된 토큰:', localStorage.getItem('accessToken'));
+    }
+  }, []); // 컴포넌트가 마운트될 때만 실행
 
   useEffect(() => {
     const fetchData = async () => {

@@ -9,6 +9,7 @@ from .views import (
     UserInfoView,
     UserImageUploadView,
     SocialLoginView,
+    SocialLoginCallbackView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -29,4 +30,5 @@ urlpatterns = [
     # JWT 토큰 갱신
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("upload-image/", UserImageUploadView.as_view(), name="s3-upload-test"),
+    path("social-callback/", SocialLoginCallbackView.as_view(), name="social-callback"),
 ]
