@@ -29,16 +29,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
-<<<<<<< HEAD
-=======
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
->>>>>>> a5db9f6383f46534a1052b419dce4ed03baf61d5
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.sites",
@@ -86,23 +80,7 @@ STORAGES = {
         },
     },
     "staticfiles": {
-<<<<<<< HEAD
-    "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    "OPTIONS": {
-        "access_key": os.getenv("ACCESS_KEY"),
-        "secret_key": os.getenv("SECRET_KEY"),
-        "bucket_name": os.getenv("STORAGE_BUCKET_NAME"),
-        "endpoint_url": os.getenv("ENDPOINT_URL"),
-        "region_name": os.getenv("REGION_NAME"),
-        "addressing_style": "path",
-        "signature_version": "s3v4",
-        "default_acl": "public-read",
-        "querystring_auth": False,
-        "location": "static",  
-        "object_parameters": {
-            "CacheControl": "max-age=86400",
-=======
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
         "OPTIONS": {
             "access_key": os.getenv("ACCESS_KEY"),
             "secret_key": os.getenv("SECRET_KEY"),
@@ -113,10 +91,9 @@ STORAGES = {
             "signature_version": "s3v4",
             "default_acl": "public-read",
             "querystring_auth": False,
-            "location": "static",  # 정적 파일용 별도 경로
+            "location": "static",  # 정적 파일 전용 prefix
             "object_parameters": {
                 "CacheControl": "max-age=86400",
->>>>>>> a5db9f6383f46534a1052b419dce4ed03baf61d5
             },
         },
     },
@@ -326,16 +303,8 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
+ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
-# 오브젝트 스토리지 연결
-SERVICE_NAME = os.getenv("SERVICE_NAME")
-ENDPOINT_URL = os.getenv("ENDPOINT_URL")
-REGION_NAME = os.getenv("REGION_NAME")
-ACCESS_KEY = os.getenv("ACCESS_KEY")
-SECRET_KEY = os.getenv("SECRET_KEY")
-STORAGE_BUCKET_NAME = os.getenv("STORAGE_BUCKET_NAME")
-<<<<<<< HEAD
-ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
-=======
->>>>>>> a5db9f6383f46534a1052b419dce4ed03baf61d5
+
+
