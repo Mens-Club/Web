@@ -99,7 +99,6 @@ STORAGES = {
     },
 }
 
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버 주소
 ]
@@ -168,9 +167,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ["MYSQL_DB"],
+        "NAME": os.environ["MYSQL_DATABASE"],
         "USER": os.environ["MYSQL_USER"],
-        "PASSWORD": os.environ["MYSQL_PASSWD"],
+        "PASSWORD": os.environ["MYSQL_PASSWORD"],
         "HOST": os.environ["MYSQL_HOST"],
         "PORT": os.environ["MYSQL_PORT"],
     }
