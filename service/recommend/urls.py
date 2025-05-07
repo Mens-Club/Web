@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import FashionRecommendationAPIView
+from .views import IntegratedFashionRecommendAPIView
 
 urlpatterns = [
-    path('similarity-search/', FashionRecommendationAPIView.as_view(), name='fashion-similarity-search'),
+    path('recommed/', IntegratedFashionRecommendAPIView.as_view(), name='fashion-recommend'),
 ]
