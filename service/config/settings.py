@@ -6,10 +6,9 @@ from django.conf import settings
 import logging
 from datetime import timedelta
 
-logging.basicConfig(level=logging.DEBUG)
-
 import boto3
 
+logging.basicConfig(level=logging.DEBUG)
 boto3.set_stream_logger("", logging.DEBUG)
 
 load_dotenv()
