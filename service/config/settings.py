@@ -52,13 +52,24 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    'django_elasticsearch_dsl',  
+    "django_elasticsearch_dsl",
     "drf_yasg",
     "members",
     "clothes",
     "Picked",
     "storages",
 ]
+
+# Redis 캐시
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 
 
 # settings.py
@@ -182,7 +193,6 @@ ELASTICSEARCH_DSL = {
 }
 
 
-
 # 인덱스 이름 매핑
 ELASTICSEARCH_INDEX_NAMES = {
     "clothes.documents.ClothesDocument": "clothes",
@@ -239,10 +249,10 @@ USE_TZ = False  # Django 시간대
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -304,6 +314,3 @@ LOGOUT_REDIRECT_URL = "/"
 
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
-
-
-

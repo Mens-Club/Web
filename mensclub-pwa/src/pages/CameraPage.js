@@ -59,15 +59,13 @@ function CameraPage() {
         },
         body: JSON.stringify({ upload_picture: imgSrc }),
       });
-      // console.log(imgSrc);
-      // 응답 확인
 
       const responseData = await response.json(); // 💡 JSON 파싱
-      // console.log('서버 응답:', responseData);
 
       if (response.ok) {
-        setAnalyzeResult(responseData.cloth_type); //NeedMapping
-        setStatusText(`분석결과 : ${responseData.cloth_type}입니다. \n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
+        setAnalyzeResult(responseData.answer);
+        console.log(responseData);
+        setStatusText(`분석결과 : ${responseData.answer}입니다. \n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
         setStep('analyzed');
       } else {
         console.error('❌ 서버 오류 응답:', responseData);

@@ -11,21 +11,22 @@ from .serializers import (
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from datetime import datetime
 from django.core.files.storage import default_storage
 from django.conf import settings
 
 from django.views.generic import View
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-
-from django.core.files.base import ContentFile
 import requests
+
+##사용자 정보 캐시 저장
+import hashlib
+from django.core.cache import cache
 
 
 User = get_user_model()
@@ -290,7 +291,7 @@ class UserImageUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        """
+        """== 디버깅용 ==
         print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
         print(
             "이미지 데이터 길이:",
@@ -308,13 +309,50 @@ class UserImageUploadView(APIView):
         serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
 
         if serializer.is_valid():
-            print("시리얼라이저 유효함")
-            serializer.save()
-            print("저장 완료")
-            return Response(
-                {"success": "이미지가 성공적으로 업로드되었습니다."},
-                status=status.HTTP_200_OK,
-            )
+            user = serializer.save()
+            response_data = {
+                "status": "success",
+                "message": "이미지가 성공적으로 업로드되었습니다.",
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
-            print("시리얼라이저 에러:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "status": "error",
+                    "message": "업로드 실패",
+                    "errors": serializer.errors,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+#
+class ImageAnalysisView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 이미지 URL 또는 분석 결과를 받아옴
+        image_url = request.data.get("image_url")
+        analysis_result = request.data.get("analysis_result")
+
+        if not image_url or not analysis_result:
+            return Response(
+                {"error": "이미지 URL과 분석 결과가 필요합니다"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # JWT 토큰에서 해시 생성 (사용자별 캐시 키)
+        token = request.auth.decode("utf-8")
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+        # 분석 결과를 캐시에 저장 (30분 유효)
+        cache.set(f"analysis_{token_hash}", analysis_result, 60 * 30)
+
+        # 초기 답변만 반환
+        return Response(
+            {
+                "status": "success",
+                "answer": analysis_result["initial_recommendation"]["answer"],
+            },
+            status=status.HTTP_200_OK,
+        )
