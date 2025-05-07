@@ -1,6 +1,6 @@
 from config.celery import app 
 from .recommendation_reasoning import generate_recommendation_reasoning
-
+from models import Recommendation
 
 @app.task
 def generate_reasoning_task(recommendation_id, combinations, season, styles, original_item_info=None):
@@ -15,7 +15,7 @@ def generate_reasoning_task(recommendation_id, combinations, season, styles, ori
         original_item_info (dict): 원래 이미지의 아이템 정보
     """
     try:
-        recommendation = FashionRecommendation.objects.get(id=recommendation_id)
+        recommendation = Recommendation.objects.get(id=recommendation_id)
         
         for idx, combo in enumerate(combinations):
             # 현재 조합에 적용된 스타일 결정
@@ -30,7 +30,7 @@ def generate_reasoning_task(recommendation_id, combinations, season, styles, ori
             )
             
             # 데이터베이스에 저장
-            RecommendationReasoning.objects.create(
+            Recommendation.objects.create(
                 recommendation=recommendation,
                 combination_index=idx,
                 reasoning_text=reasoning_text

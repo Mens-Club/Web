@@ -83,14 +83,30 @@ class RecommendationBookmark(models.Model):
     
     
 
-# 아직 미완성
 class RecommendationReasoning(models.Model):
     id = models.AutoField(primary_key=True)
-    
-    recommendation = models.OneToOneField(
+
+    recommendation = models.ForeignKey(
         Recommendation,
         on_delete=models.CASCADE,
-        related_name='reasoning'
+        related_name='reasonings'
     )
-    
+
+    combination_name = models.CharField(
+        max_length=50,
+        help_text="조합 이름 (예: 1번 조합, 2번 조합 등)"
+    )
+
+    reasoning_text = models.TextField(help_text="추천 이유")
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'recommend_reasoning'
+        ordering = ['created_at']
+        unique_together = ('recommendation', 'combination_name')
+
+    def __str__(self):
+        return f"{self.recommendation.id} - {self.combination_name}"
+
     
