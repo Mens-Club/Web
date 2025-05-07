@@ -6,7 +6,6 @@ import numpy as np
 
 load_dotenv() 
 
-
 class PGVecProcess:
     
     def __init__(self, params=None):
@@ -36,7 +35,9 @@ class PGVecProcess:
             return None
     
     def close(self):
+        
         """데이터베이스 연결을 닫습니다."""
+        
         if self.conn:
             self.conn.close()
         

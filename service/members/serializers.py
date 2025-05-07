@@ -149,10 +149,3 @@ class UserImageUploadSerializer(serializers.ModelSerializer):
         fields = ["upload_picture"]
 
 
-class ImageUploadSerializer(serializers.Serializer):
-    image = serializers.CharField(required=True, allow_blank=False)
-
-    def validate_image(self, value):
-        if not value.startswith("data:image/"):
-            raise serializers.ValidationError("올바른 base64 이미지 형식이 아닙니다.")
-        return value
