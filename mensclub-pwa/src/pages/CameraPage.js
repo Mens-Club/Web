@@ -57,7 +57,7 @@ function CameraPage() {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({ upload_picture: imgSrc }),
+        body: JSON.stringify({ image: imgSrc }),
       });
 
       const responseData = await response.json(); // 💡 JSON 파싱

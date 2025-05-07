@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from .models import UserUpload
+
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-
 from .utils.custom_base64handle import Base64ImageField
 
 
@@ -122,10 +123,8 @@ class UserInfoRequestSerializer(serializers.Serializer):
 
 
 class UserImageUploadSerializer(serializers.ModelSerializer):
-    upload_picture = Base64ImageField(required=False)
+    image = Base64ImageField(required=False)
 
     class Meta:
-        model = User
-        fields = ["upload_picture"]
-
-
+        model = UserUpload
+        fields = ["image"]

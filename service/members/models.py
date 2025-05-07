@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractUser
 from .utils.custom_upload import user_upload_path
 
 
-
 class User(AbstractUser):
     SEX_CHOICES = [
         ("M", "남성"),

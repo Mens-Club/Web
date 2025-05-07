@@ -28,6 +28,7 @@ import requests
 import hashlib
 from django.core.cache import cache
 
+from .models import UserUpload
 
 User = get_user_model()
 
@@ -291,31 +292,98 @@ class UserImageUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, format=None):
-        """== 디버깅용 ==
-        print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
-        print(
-            "이미지 데이터 길이:",
-            (
-                len(request.data.get("image", ""))
-                if "image" in request.data
-                else "이미지 키 없음"
-            ),
-        )
-        print(
-            "인증된 사용자:",
-            request.user.username if request.user.is_authenticated else "인증 안됨",
-        )
-        """
         serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
 
         if serializer.is_valid():
-            user = serializer.save()
-            response_data = {
-                "status": "success",
-                "message": "이미지가 성공적으로 업로드되었습니다.",
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
+            try:
+                # 사용자와 연결하여 저장
+                upload = serializer.save(user=request.user)
+
+                # 이미지가 저장되었는지 확인 (upload 인스턴스 사용)
+                if not upload.image:
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": "이미지가 업로드되지 않았습니다.",
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                # 이미지 URL 가져오기 (upload 인스턴스 사용)
+                try:
+                    image_url = request.build_absolute_uri(upload.image.url)
+                    print(f"이미지 URL: {image_url}")
+                except (AttributeError, ValueError) as e:
+                    print(f"이미지 URL 접근 실패: {str(e)}")
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": "이미지 URL을 가져오는데 실패했습니다.",
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
+                # 추천 API 호출
+                try:
+                    print(f"추천 API 호출: {image_url}")
+                    response = requests.post(
+                        "http://127.0.0.1:8000/api/recommend/v1/recommed/",
+                        json={"image_url": image_url},
+                    )
+
+                    # 응답 상태 확인
+                    if response.status_code != 200:
+                        print(
+                            f"추천 API 오류 응답: {response.status_code}, {response.text}"
+                        )
+                        return Response(
+                            {
+                                "status": "error",
+                                "message": f"추천 API 오류: {response.status_code}",
+                            },
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        )
+
+                    recommendation_data = response.json()
+
+                    # 캐시에 저장
+                    token = request.auth.decode("utf-8")
+                    token_hash = hashlib.sha256(token.encode()).hexdigest()
+                    cache.set(
+                        f"recommendation_{token_hash}", recommendation_data, 60 * 30
+                    )
+
+                    # 초기 답변만 반환
+                    return Response(
+                        {
+                            "status": "success",
+                            "message": "이미지가 성공적으로 업로드되었습니다.",
+                            "answer": recommendation_data["initial_recommendation"][
+                                "answer"
+                            ],
+                        }
+                    )
+
+                except requests.exceptions.RequestException as e:
+                    print(f"추천 API 호출 중 예외 발생: {str(e)}")
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": f"추천 API 호출 중 오류 발생: {str(e)}",
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
+            except Exception as e:
+                # 예상치 못한 오류 처리
+                print(f"예상치 못한 오류 발생: {str(e)}")
+                return Response(
+                    {"status": "error", "message": f"서버 오류: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
         else:
+            # 시리얼라이저 오류 상세 출력
+            print(f"시리얼라이저 오류: {serializer.errors}")
             return Response(
                 {
                     "status": "error",
@@ -324,35 +392,3 @@ class UserImageUploadView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
-#
-class ImageAnalysisView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        # 이미지 URL 또는 분석 결과를 받아옴
-        image_url = request.data.get("image_url")
-        analysis_result = request.data.get("analysis_result")
-
-        if not image_url or not analysis_result:
-            return Response(
-                {"error": "이미지 URL과 분석 결과가 필요합니다"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # JWT 토큰에서 해시 생성 (사용자별 캐시 키)
-        token = request.auth.decode("utf-8")
-        token_hash = hashlib.sha256(token.encode()).hexdigest()
-
-        # 분석 결과를 캐시에 저장 (30분 유효)
-        cache.set(f"analysis_{token_hash}", analysis_result, 60 * 30)
-
-        # 초기 답변만 반환
-        return Response(
-            {
-                "status": "success",
-                "answer": analysis_result["initial_recommendation"]["answer"],
-            },
-            status=status.HTTP_200_OK,
-        )
