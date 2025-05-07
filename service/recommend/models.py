@@ -39,7 +39,7 @@ class Recommendation(models.Model):
     
     total_price = models.IntegerField(null=True, blank=True)
     
-    bookmark = models.BooleanField(default=False, help_text="사용자가 북마크한 추천 여부")
+    
     
     class Meta:
         db_table = 'recommend_recommendation'
@@ -53,3 +53,31 @@ class Recommendation(models.Model):
     def __str__(self):
         return f"추천 {self.id} - 사용자: {self.user.username}"
 
+
+class RecommendationBookmark(models.Model):
+    
+    id = models.AutoField(primary_key=True)
+    
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        related_name="recommendation_bookmarks"
+    )
+    
+    recommendation = models.ForeignKey(
+        Recommendation,
+        on_delete=models.CASCADE,
+        related_name='bookmarks'
+    )
+
+    # 북마크 생성 시간
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'recommend_bookmark'
+        # 사용자와 추천의 조합이 유일하도록 제약 설정
+        unique_together = ('user', 'recommendation')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"

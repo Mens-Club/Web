@@ -127,3 +127,5 @@ class UserImageUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["upload_picture"]
+
+
