@@ -3,8 +3,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 
-import base64
-from django.core.files.base import ContentFile
+from .utils.custom_base64handle import Base64ImageField
+
 
 User = get_user_model()
 
@@ -121,38 +121,9 @@ class UserInfoRequestSerializer(serializers.Serializer):
         return value
 
 
-class Base64ImageField(serializers.ImageField):
-    """
-    base64로 인코딩된 이미지를 처리하는 커스텀 필드
-    """
-
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith("data:image"):
-            # base64 데이터에서 형식 및 인코딩 데이터 추출
-            format, imgstr = data.split(";base64,")
-            ext = format.split("/")[-1]
-
-            # 임시 파일명 생성 (user_upload_path 함수가 최종 경로/파일명 생성)
-            temp_filename = f"temp.{ext}"
-
-            # base64 디코딩 및 ContentFile 생성
-            data = ContentFile(base64.b64decode(imgstr), name=temp_filename)
-
-        return super().to_internal_value(data)
-
-
 class UserImageUploadSerializer(serializers.ModelSerializer):
     upload_picture = Base64ImageField(required=False)
 
     class Meta:
         model = User
         fields = ["upload_picture"]
-
-
-class ImageUploadSerializer(serializers.Serializer):
-    image = serializers.CharField(required=True, allow_blank=False)
-
-    def validate_image(self, value):
-        if not value.startswith("data:image/"):
-            raise serializers.ValidationError("올바른 base64 이미지 형식이 아닙니다.")
-        return value

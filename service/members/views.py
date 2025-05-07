@@ -7,8 +7,6 @@ from .serializers import (
     ChangePasswordSerializer,
     FindEmailSerializer,
     UserImageUploadSerializer,
-    FindEmailSerializer,
-    UserImageUploadSerializer,
 )
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -178,10 +176,11 @@ class SocialLoginCallbackView(View):
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
 
-            # 디버깅 로그
-            print(f"인증된 사용자: {request.user.username}")
-            print(f"토큰: {access_token}")
-            print(f"리프레시: {refresh_token}")
+            """ ======  디버깅 로그 ======
+            # print(f"인증된 사용자: {request.user.username}")
+            # print(f"토큰: {access_token}")
+            # print(f"리프레시: {refresh_token}")
+            """
 
             # 프론트엔드 리다이렉트 URL
             frontend_url = "http://localhost:3000/main"
@@ -290,18 +289,8 @@ class UserInfoView(APIView):
 class UserImageUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
-    # def post(self, request, format=None):
-    #     serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
-
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(
-    #             {"success": "이미지가 성공적으로 업로드되었습니다."},
-    #             status=status.HTTP_200_OK,
-    #         )
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def post(self, request, format=None):
+        """
         print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
         print(
             "이미지 데이터 길이:",
@@ -315,7 +304,7 @@ class UserImageUploadView(APIView):
             "인증된 사용자:",
             request.user.username if request.user.is_authenticated else "인증 안됨",
         )
-
+        """
         serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
 
         if serializer.is_valid():
