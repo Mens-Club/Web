@@ -22,6 +22,24 @@ class PGVecProcess:
             "host": os.getenv("POSTGRES_HOST"),
             "port" : os.getenv("POSTGRES_PORT")
         }
+        
+        # 데이터베이스 연결 메서드 추가
+        self.conn = None
+    
+    def connect(self):
+        """데이터베이스 연결을 설정"""
+        try:
+            self.conn = psycopg2.connect(**self.params)
+            return self.conn.cursor()
+        except Exception as e:
+            print(f"데이터베이스 연결 중 오류 발생: {e}")
+            return None
+    
+    def close(self):
+        """데이터베이스 연결을 닫습니다."""
+        if self.conn:
+            self.conn.close()
+        
     def similarity_search(self, embedding, cursor, top_k=5):
         """
         주어진 임베딩과 가장 유사한 벡터 검색

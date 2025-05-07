@@ -41,8 +41,6 @@ class Recommendation(models.Model):
     
     bookmark = models.BooleanField(default=False, help_text="사용자가 북마크한 추천 여부")
     
-    
-    
     class Meta:
         db_table = 'recommend_recommendation'
         ordering = ['-created_at']

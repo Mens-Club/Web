@@ -25,9 +25,9 @@ urlpatterns = [
     path("delete/", DeleteView.as_view(), name="delete"),
     path("find_email/", FindEmailView.as_view(), name="find_email"),
     path("user_info/", UserInfoView.as_view(), name="user_info"),
-    # JWT 토큰 발급
+    # JWT 발급
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    # JWT 토큰 갱신
+    # JWT 갱신
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("upload-image/", UserImageUploadView.as_view(), name="s3-upload-test"),
     path("social-callback/", SocialLoginCallbackView.as_view(), name="social-callback"),
