@@ -7,7 +7,7 @@ def user_upload_path(instance, filename):
     예: user_uploads/1/profile_image.jpg
     """
     # instance.id가 없을 수 있으므로(새 사용자 생성 시) 조건부 처리
-    user_id = instance.id
+    user_id = instance.id if instance.id else "34"  # id가 없으면 "temp"로 대체
     # 파일 확장자 추출
     ext = filename.split(".")[-1]
     # 타임스탬프 추가하여 파일명 충돌 방지
@@ -17,4 +17,5 @@ def user_upload_path(instance, filename):
     new_filename = f"{timestamp}.{ext}"
 
     # 최종 경로 반환
+    print(f"https://kr.object.iwinv.kr/user-upload-image/user_uploads%2F{user_id}/{new_filename}", "===============================================")
     return f"user_uploads/{user_id}/{new_filename}"
