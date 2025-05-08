@@ -184,10 +184,10 @@ function CameraPage() {
           )}
           {step === 'preview' && (
             <>
-              <button className="upload-text-btn" onClick={retake}>
+              <button className="camera-upload-text-btn" onClick={retake}>
                 다시 찍기
               </button>
-              <button className="upload-text-btn" onClick={sendToServer} disabled={!imgSrc}>
+              <button className="camera-upload-text-btn" onClick={sendToServer} disabled={!imgSrc}>
                 추천 시작하기
               </button>
               {/* <button className="upload-text-btn" onClick={analyzeImage}>
@@ -197,11 +197,11 @@ function CameraPage() {
           )}
           {step === 'analyzed' && (
             <>
-              <button className="upload-text-btn" onClick={retake}>
+              <button className="camera-upload-text-btn" onClick={retake}>
                 다시 찍기
               </button>
               <Link to="/fashion">
-                <button className="upload-text-btn recommend-btn">오늘의 추천 코디 보기</button>
+                <button className="camera-upload-text-btn recommend-btn">오늘의 추천 코디 보기</button>
               </Link>
               {/* <button className="upload-text-btn" onClick={goInit}>
                 처음으로

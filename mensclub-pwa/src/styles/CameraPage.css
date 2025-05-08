@@ -65,7 +65,8 @@
   margin-top: 12px;
 }
 
-.upload-text-btn {
+.camera-upload-text-btn {
+  background-color: #666666;
   color: white;
   border: none;
   padding: 12px 20px;
@@ -74,6 +75,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
+  width: 34%;
 }
 
 /* .recommend-btn {
@@ -87,8 +89,8 @@
   margin-top: 12px;
 } */
 
-.upload-text-btn:hover {
-  background-color: #333;
+.camera-upload-text-btn:hover {
+  background-color: #000000;
 }
 
 /* 업로드 상태 */
