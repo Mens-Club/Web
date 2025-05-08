@@ -134,7 +134,7 @@ function CameraPage() {
     <div className="container">
       <div className="main-content">
         <div className="title-wrapper">
-          <h1>오늘 입을 옷을 촬영해주세요!</h1>
+          <h1>오늘 입을 옷을 촬영해주세요 📸</h1>
         </div>
 
         <div className="upload-box">
@@ -174,10 +174,10 @@ function CameraPage() {
         <div className="button-container">
           {step === 'capture' && (
             <>
-              <button className="upload-text-btn" onClick={capture}>
+              <button className="camera-upload-text-btn" onClick={capture}>
                 사진 촬영
               </button>
-              <button className="upload-text-btn" onClick={switchCamera}>
+              <button className="camera-upload-text-btn" onClick={switchCamera}>
                 카메라 전환
               </button>
             </>
