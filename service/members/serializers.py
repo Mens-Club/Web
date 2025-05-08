@@ -7,7 +7,6 @@ from django.contrib.auth.password_validation import validate_password
 from .utils.custom_base64handle import Base64ImageField
 from .models import UserUpload
 
-
 User = get_user_model()
 
 
