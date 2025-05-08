@@ -22,6 +22,9 @@ from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
 from .main.season_extractor import extract_season_from_text
 
+from .openai.utils import generate_reasoning_task
+from .models import Recommendation
+
 class IntegratedFashionRecommendAPIView(APIView):
     permission_classes = [AllowAny]
     
@@ -133,6 +136,44 @@ class IntegratedFashionRecommendAPIView(APIView):
             
             # 13. 조합 생성
             combinations = generate_proper_combinations(recommend_json, all_items, styles)
+            
+            # 14. 조합 저장 
+            
+            recommendation_ids = []
+            
+            for idx, combo in enumerate(combinations):
+                top_id = combo.get("상의", {}).get("idx")
+                bottom_id = combo.get("하의", {}).get("idx")
+                outer_id = combo.get("아우터", {}).get("idx")
+                shoes_id = combo.get("신발", {}).get("idx")
+                
+                total_price = sum([
+                    int(combo.get("상의", {}).get("price", 0) or 0),
+                    int(combo.get("하의", {}).get("price", 0) or 0),
+                    int(combo.get("아우터", {}).get("price", 0) or 0),
+                    int(combo.get("신발", {}).get("price", 0) or 0),
+                ])
+                
+                recommendation = Recommendation.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    top_id=top_id,
+                    bottom_id=bottom_id,
+                    outer_id=outer_id,
+                    shoes_id=shoes_id,
+                    answer=answer_text,
+                    reasoning_text="",  # 나중에 Celery에서 채움
+                    total_price=total_price
+                )
+                
+                recommendation_ids.append(recommendation.id)
+                
+            generate_reasoning_task.delay(
+                recommendation_ids=recommendation_ids,
+                combinations=combinations,
+                season=season,
+                styles=styles,
+                original_item_info=similar_items[0]
+            )
             
             # 최종 응답
             return Response({
