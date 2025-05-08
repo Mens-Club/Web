@@ -21,6 +21,7 @@ class User(AbstractUser):
     age = models.PositiveIntegerField(null=True, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, default="M")
     body_picture = models.ImageField(upload_to="body_pics/", null=True, blank=True)
+    last_login = models.DateTimeField(blank=True, null=True, verbose_name="last login")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

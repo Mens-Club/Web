@@ -27,6 +27,7 @@ import requests
 ##사용자 정보 캐시 저장
 import hashlib
 from django.core.cache import cache
+from django.utils import timezone  # 로그인 시간 업데이트용
 
 from .models import UserUpload
 
@@ -47,6 +48,10 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data["user"]
+
+            user.last_login = timezone.now()
+            user.save(update_fields=["last_login"])
+
             # JWT 토큰 발급
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
