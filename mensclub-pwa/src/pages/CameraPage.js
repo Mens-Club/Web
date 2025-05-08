@@ -17,6 +17,7 @@ function CameraPage() {
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [step, setStep] = useState('init');
+  const [recommendation, setRecommendation] = useState(null); // ← 이 줄 추가
 
   const [analyzeResult, setAnalyzeResult] = useState(null); // 분석 결과(옷 종류)
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과

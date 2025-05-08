@@ -288,107 +288,132 @@ class UserInfoView(APIView):
         )
 
 
-class UserImageUploadView(APIView):
+from rest_framework.generics import GenericAPIView
+from drf_yasg import openapi
+
+class UserImageUploadView(GenericAPIView):
+    serializer_class = UserImageUploadSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, format=None):
-        serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
+    # def post(self, request, format=None):
+    #     serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
 
+    #     if serializer.is_valid():
+    #         try:
+    #             # 사용자와 연결하여 저장
+    #             upload = serializer.save(user=request.user)
+
+    #             # 이미지가 저장되었는지 확인 (upload 인스턴스 사용)
+    #             if not upload.image:
+    #                 return Response(
+    #                     {
+    #                         "status": "error",
+    #                         "message": "이미지가 업로드되지 않았습니다.",
+    #                     },
+    #                     status=status.HTTP_400_BAD_REQUEST,
+    #                 )
+
+    #             # 이미지 URL 가져오기 (upload 인스턴스 사용)
+    #             try:
+    #                 image_url = request.build_absolute_uri(upload.image.url)
+    #                 print(f"이미지 URL: {image_url}")
+    #             except (AttributeError, ValueError) as e:
+    #                 print(f"이미지 URL 접근 실패: {str(e)}")
+    #                 return Response(
+    #                     {
+    #                         "status": "error",
+    #                         "message": "이미지 URL을 가져오는데 실패했습니다.",
+    #                     },
+    #                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #                 )
+
+    #             # 추천 API 호출
+    #             try:
+    #                 print(f"추천 API 호출: {image_url}")
+    #                 response = requests.post(
+    #                     "http://127.0.0.1:8000/api/recommend/v1/recommed/",
+    #                     json={"image_url": image_url},
+    #                 )
+
+    #                 # 응답 상태 확인
+    #                 if response.status_code != 200:
+    #                     print(
+    #                         f"추천 API 오류 응답: {response.status_code}, {response.text}"
+    #                     )
+    #                     return Response(
+    #                         {
+    #                             "status": "error",
+    #                             "message": f"추천 API 오류: {response.status_code}",
+    #                         },
+    #                         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #                     )
+
+    #                 recommendation_data = response.json()
+
+    #                 # 캐시에 저장
+    #                 token = request.auth.decode("utf-8")
+    #                 token_hash = hashlib.sha256(token.encode()).hexdigest()
+    #                 cache.set(
+    #                     f"recommendation_{token_hash}", recommendation_data, 60 * 30
+    #                 )
+
+    #                 # 초기 답변만 반환
+    #                 return Response(
+    #                     {
+    #                         "status": "success",
+    #                         "message": "이미지가 성공적으로 업로드되었습니다.",
+    #                         "answer": recommendation_data["initial_recommendation"][
+    #                             "answer"
+    #                         ],
+    #                     }
+    #                 )
+
+    #             except requests.exceptions.RequestException as e:
+    #                 print(f"추천 API 호출 중 예외 발생: {str(e)}")
+    #                 return Response(
+    #                     {
+    #                         "status": "error",
+    #                         "message": f"추천 API 호출 중 오류 발생: {str(e)}",
+    #                     },
+    #                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #                 )
+
+    #         except Exception as e:
+    #             # 예상치 못한 오류 처리
+    #             print(f"예상치 못한 오류 발생: {str(e)}")
+    #             return Response(
+    #                 {"status": "error", "message": f"서버 오류: {str(e)}"},
+    #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             )
+    #     else:
+    #         # 시리얼라이저 오류 상세 출력
+    #         print(f"시리얼라이저 오류: {serializer.errors}")
+    #         return Response(
+    #             {
+    #                 "status": "error",
+    #                 "message": "업로드 실패",
+    #                 "errors": serializer.errors,
+    #             },
+    #             status=status.HTTP_400_BAD_REQUEST,
+    #         )
+    @swagger_auto_schema(
+        operation_description="사용자 이미지 업로드",
+        manual_parameters=[],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["image"],
+            properties={
+                "image": openapi.Schema(type=openapi.TYPE_FILE, description="이미지 파일"),
+            },
+        ),
+        responses={200: "이미지가 성공적으로 업로드되었습니다."}
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"user": request.user})
         if serializer.is_valid():
-            try:
-                # 사용자와 연결하여 저장
-                upload = serializer.save(user=request.user)
-
-                # 이미지가 저장되었는지 확인 (upload 인스턴스 사용)
-                if not upload.image:
-                    return Response(
-                        {
-                            "status": "error",
-                            "message": "이미지가 업로드되지 않았습니다.",
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                # 이미지 URL 가져오기 (upload 인스턴스 사용)
-                try:
-                    image_url = request.build_absolute_uri(upload.image.url)
-                    print(f"이미지 URL: {image_url}")
-                except (AttributeError, ValueError) as e:
-                    print(f"이미지 URL 접근 실패: {str(e)}")
-                    return Response(
-                        {
-                            "status": "error",
-                            "message": "이미지 URL을 가져오는데 실패했습니다.",
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
-
-                # 추천 API 호출
-                try:
-                    print(f"추천 API 호출: {image_url}")
-                    response = requests.post(
-                        "http://127.0.0.1:8000/api/recommend/v1/recommed/",
-                        json={"image_url": image_url},
-                    )
-
-                    # 응답 상태 확인
-                    if response.status_code != 200:
-                        print(
-                            f"추천 API 오류 응답: {response.status_code}, {response.text}"
-                        )
-                        return Response(
-                            {
-                                "status": "error",
-                                "message": f"추천 API 오류: {response.status_code}",
-                            },
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        )
-
-                    recommendation_data = response.json()
-
-                    # 캐시에 저장
-                    token = request.auth.decode("utf-8")
-                    token_hash = hashlib.sha256(token.encode()).hexdigest()
-                    cache.set(
-                        f"recommendation_{token_hash}", recommendation_data, 60 * 30
-                    )
-
-                    # 초기 답변만 반환
-                    return Response(
-                        {
-                            "status": "success",
-                            "message": "이미지가 성공적으로 업로드되었습니다.",
-                            "answer": recommendation_data["initial_recommendation"][
-                                "answer"
-                            ],
-                        }
-                    )
-
-                except requests.exceptions.RequestException as e:
-                    print(f"추천 API 호출 중 예외 발생: {str(e)}")
-                    return Response(
-                        {
-                            "status": "error",
-                            "message": f"추천 API 호출 중 오류 발생: {str(e)}",
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
-
-            except Exception as e:
-                # 예상치 못한 오류 처리
-                print(f"예상치 못한 오류 발생: {str(e)}")
-                return Response(
-                    {"status": "error", "message": f"서버 오류: {str(e)}"},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-        else:
-            # 시리얼라이저 오류 상세 출력
-            print(f"시리얼라이저 오류: {serializer.errors}")
-            return Response(
-                {
-                    "status": "error",
-                    "message": "업로드 실패",
-                    "errors": serializer.errors,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            result = serializer.save()
+            return Response({
+                "success": "이미지가 성공적으로 업로드되었습니다.",
+                "image_url": result.image.url  # 실제 접근 가능한 URL 반환
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

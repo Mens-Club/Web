@@ -121,10 +121,13 @@ class UserInfoRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
         return value
 
-
+from .models import UserUpload
 class UserImageUploadSerializer(serializers.ModelSerializer):
-    image = Base64ImageField(required=False)
-
     class Meta:
         model = UserUpload
-        fields = ["image"]
+        fields = ["image"]  # image 필드 직접 받음
+
+    def create(self, validated_data):
+        user = self.context["user"]
+        upload = UserUpload.objects.create(user=user, **validated_data)
+        return upload

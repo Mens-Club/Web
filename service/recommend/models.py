@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from clothes.models import Clothes, Shoes 
 import uuid
 
 User = get_user_model() 
@@ -24,22 +25,20 @@ class Recommendation(models.Model):
         related_name='recommendations'
     )
     
-    top_id = models.IntegerField(null=True, blank=True)
-    bottom_id = models.IntegerField(null=True, blank=True)
-    outer_id = models.IntegerField(null=True, blank=True)
-    shoes_id = models.IntegerField(null=True, blank=True)
+    top = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="top")
+    bottom = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="bottom")
+    outer = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="outer")
+    shoes = models.ForeignKey("clothes.Shoes", on_delete=models.SET_NULL, null=True, blank=True, related_name="shoes")
+ 
         
     # AI 응답 정보
     answer = models.TextField(help_text="AI가 제공한 분석 응답")
-    
+    reasoning_generated = models.BooleanField(default=False, help_text="추천 이유 생성 상태")
+
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now)
-    style = models.CharField(max_length=50, null=True, blank=True, help_text="선택된 스타일 (미니멀, 캐주얼 2개 택)")
-    
-    
+
     total_price = models.IntegerField(null=True, blank=True)
-    
-    
     
     class Meta:
         db_table = 'recommend_recommendation'
