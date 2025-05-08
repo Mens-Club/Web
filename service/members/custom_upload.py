@@ -7,7 +7,7 @@ def user_upload_path(instance, filename):
     예: user_uploads/1/profile_image.jpg
     """
     # instance.id가 없을 수 있으므로(새 사용자 생성 시) 조건부 처리
-    user_id = instance.id if instance.id else "34"  # id가 없으면 "temp"로 대체
+    user_id = instance.user.id 
     # 파일 확장자 추출
     ext = filename.split(".")[-1]
     # 타임스탬프 추가하여 파일명 충돌 방지

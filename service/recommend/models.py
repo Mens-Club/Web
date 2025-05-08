@@ -25,10 +25,10 @@ class Recommendation(models.Model):
         related_name='recommendations'
     )
     
-    top = models.ForeignKey("Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="top")
-    bottom = models.ForeignKey("Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="bottom")
-    outer = models.ForeignKey("Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="outer")
-    shoes = models.ForeignKey("Shoes", on_delete=models.SET_NULL, null=True, blank=True, related_name="shoes")
+    top = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="top")
+    bottom = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="bottom")
+    outer = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="outer")
+    shoes = models.ForeignKey("clothes.Shoes", on_delete=models.SET_NULL, null=True, blank=True, related_name="shoes")
  
         
     # AI 응답 정보
@@ -80,17 +80,3 @@ class RecommendationBookmark(models.Model):
     
     def __str__(self):
         return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"
-    
-    
-
-# 아직 미완성
-class RecommendationReasoning(models.Model):
-    id = models.AutoField(primary_key=True)
-    
-    recommendation = models.OneToOneField(
-        Recommendation,
-        on_delete=models.CASCADE,
-        related_name='reasoning'
-    )
-    
-    
