@@ -1,39 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/BodyInfoPage.css';
+import api from '../api/axios'; // ✅ axios 인스턴스
 
 function BodyInfoPage() {
   const navigate = useNavigate();
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
 
+  // ✅ 기존 체형 정보 불러오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get('/api/account/v1/update/');
+        const { height, weight } = res.data;
+        if (height) setHeight(height);
+        if (weight) setWeight(weight);
+      } catch (err) {
+        console.error('❌ 사용자 정보 요청 실패:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // ✅ 정보 저장
   const handleSubmit = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('로그인이 필요합니다.');
+    if (!height || !weight) {
+      alert('모든 정보를 입력해주세요.');
       return;
     }
 
     try {
-      const response = await fetch('api/account/v1/body_info/', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ height, weight })
+      await api.patch('/api/account/v1/update/', {
+        height: String(height),
+        weight: String(weight),
       });
 
-      if (response.ok) {
-        alert('체형 정보가 저장되었습니다.');
-        navigate('/my');
-      } else {
-        const error = await response.json();
-        alert('저장 실패: ' + (error.detail || '알 수 없는 오류'));
-      }
+      alert('체형 정보가 저장되었습니다.');
+      navigate('/my');
     } catch (err) {
-      console.error('서버 오류:', err);
-      alert('서버 오류가 발생했습니다.');
+      const error = err.response?.data;
+      const message =
+        error?.detail || error?.height?.[0] || error?.weight?.[0] || '알 수 없는 오류';
+      alert('저장 실패: ' + message);
     }
   };
 
@@ -60,7 +70,7 @@ function BodyInfoPage() {
           <input
             type="number"
             value={height}
-            onChange={(e) => setHeight(Number(e.target.value))}
+            onChange={(e) => setHeight(e.target.value)}
             placeholder="예: 175"
             min={100}
             max={250}
@@ -72,7 +82,7 @@ function BodyInfoPage() {
           <input
             type="number"
             value={weight}
-            onChange={(e) => setWeight(Number(e.target.value))}
+            onChange={(e) => setWeight(e.target.value)}
             placeholder="예: 65"
             min={30}
             max={200}

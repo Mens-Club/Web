@@ -35,7 +35,6 @@ function SetPasswordPage() {
       return;
     }
 
-    // 클라이언트 유효성 검사
     const newErrors = {};
     let valid = true;
 
@@ -56,7 +55,7 @@ function SetPasswordPage() {
 
     try {
       await api.put(
-        '/account/v1/change_password/',
+        '/api/account/v1/change_password/',
         {
           current_password: currentPassword,
           new_password: newPassword,
@@ -69,13 +68,24 @@ function SetPasswordPage() {
       );
 
       alert('비밀번호가 성공적으로 변경되었습니다.');
-      navigate('/my'); // 또는 원하는 페이지로 이동
+      navigate('/my');
     } catch (err) {
-      const message = err.response?.data?.detail || '현재 비밀번호가 일치하지 않습니다.';
-      setErrors((prev) => ({
-        ...prev,
-        currentPassword: message,
-      }));
+      const errorData = err.response?.data;
+      const newErrors = {};
+
+      if (errorData?.current_password) {
+        newErrors.currentPassword = errorData.current_password.join(' ');
+      }
+
+      if (errorData?.new_password) {
+        newErrors.newPassword = errorData.new_password.join(' ');
+      }
+
+      if (errorData?.detail) {
+        newErrors.currentPassword = errorData.detail;
+      }
+
+      setErrors(newErrors);
     }
   };
 
@@ -91,7 +101,9 @@ function SetPasswordPage() {
         개인정보를 안전하게 보호하고<br />
         서비스를 더 편리하게 이용할 수 있어요
       </div>
-
+      <div className="edit-tab-menu">
+        <span className="active">회원 개인정보</span>
+      </div>
       <form className="change-form" onSubmit={handleSubmit}>
         <label>
           현재 비밀번호
@@ -116,6 +128,9 @@ function SetPasswordPage() {
             onChange={handleChange}
             required
           />
+          <small className="password-hint">
+            영문자, 숫자, 특수문자를 포함하여 8자 이상 입력하세요.
+          </small>
           {errors.newPassword && (
             <span className="error-message">{errors.newPassword}</span>
           )}

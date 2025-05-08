@@ -202,6 +202,10 @@ class UpdateView(RetrieveUpdateAPIView):
     serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
 
+    def get_object(self):
+        # JWT 토큰에서 인증된 사용자 반환
+        return self.request.user
+
     @swagger_auto_schema(request_body=UpdateSerializer)
     def put(self, request):
         user = request.user  # JWT 토큰을 통해 로그인된 사용자 정보 가져오기
