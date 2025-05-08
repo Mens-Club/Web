@@ -17,6 +17,7 @@ function CameraPage() {
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [step, setStep] = useState('init');
+  const [recommendation, setRecommendation] = useState(null); // ← 이 줄 추가
 
   const [analyzeResult, setAnalyzeResult] = useState(null); // 분석 결과(옷 종류)
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
@@ -40,6 +41,7 @@ function CameraPage() {
   };
 
   // 사진을 서버에 전송 및 분석 결과 받기
+  // 이미지 업로드 → 추천 요청 흐름
   const sendToServer = async () => {
     if (!imgSrc) {
       setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
@@ -47,65 +49,84 @@ function CameraPage() {
     }
     setLoading(true);
     setStatusText('');
-
     const token = localStorage.getItem('accessToken');
 
     try {
-      const response = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
+      // 1. 이미지 blob으로 변환
+      const res = await fetch(imgSrc);
+      const blob = await res.blob();
+
+      // try {
+      //   const response = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       ...(token && { Authorization: `Bearer ${token}` }),
+      //     },
+      //     body: JSON.stringify({ image: imgSrc }),
+      //   });
+
+      //   const responseData = await response.json(); // 💡 JSON 파싱
+
+      //   if (response.ok) {
+      //     setAnalyzeResult(responseData.answer);
+      //     console.log(responseData);
+      //     setStatusText(`분석결과 : ${responseData.answer}입니다. \n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
+      //     setStep('analyzed');
+      //   } else {
+      //     console.error('❌ 서버 오류 응답:', responseData);
+      //     setStatusText(`업로드 실패: ${responseData.detail || '알 수 없는 오류'}`);
+      //   }
+      // } catch (error) {
+      //   console.error('❌ 네트워크 오류:', error);
+      //   setStatusText('서버 통신 오류');
+      // 2. 이미지 업로드 요청
+      const formData = new FormData();
+      formData.append('image', blob, 'photo.jpg');
+
+      const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        throw new Error(uploadData?.detail || '이미지 업로드 실패');
+      }
+
+      const imageUrl = uploadData.image_url;
+
+      // 3. 업로드된 이미지 기반 추천 요청
+      const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/recommend/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({ image: imgSrc }),
+        body: JSON.stringify({
+          image_url: imageUrl,
+        }),
       });
 
-      const responseData = await response.json(); // 💡 JSON 파싱
+      const recommendData = await recommendRes.json();
 
-      if (response.ok) {
-        setAnalyzeResult(responseData.answer);
-        console.log(responseData);
-        setStatusText(`분석결과 : ${responseData.answer}입니다. \n 결과가 맞다면 추천 시작하기 버튼을 눌러주세요`);
-        setStep('analyzed');
-      } else {
-        console.error('❌ 서버 오류 응답:', responseData);
-        setStatusText(`업로드 실패: ${responseData.detail || '알 수 없는 오류'}`);
+      if (!recommendRes.ok) {
+        throw new Error(recommendData?.detail || '추천 요청 실패');
       }
+
+      // 4. 추천 결과 출력
+      console.log('추천 결과:', recommendData);
+      setRecommendation(recommendData); // 예: 상태 업데이트
     } catch (error) {
-      console.error('❌ 네트워크 오류:', error);
-      setStatusText('서버 통신 오류');
+      console.error(error);
+      setStatusText(error.message || '오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
-
-  // 추천 결과 받기
-  const getRecommendation = async (clothType) => {
-    setLoading(true);
-    setStatusText('');
-    setRecommendResult(null);
-
-    try {
-      const response = await fetch('http://localhost:8000/api/account/v1/recommend/', {
-        // 추천 API 엔드포인트 예시
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cloth_type: clothType }),
-      });
-
-      const responseData = await response.json();
-
-      if (response.ok) {
-        setRecommendResult(responseData.recommendation); // 예: '흰색 셔츠와 잘 어울리는 청바지'
-        setStatusText('추천 결과를 확인하세요!');
-        setStep('recommend');
-      } else {
-        setStatusText(`추천 실패: ${responseData.detail || '알 수 없는 오류'}`);
-      }
-    } catch (error) {
-      setStatusText('추천 서버 통신 오류');
-    }
-    setLoading(false);
   };
 
   // 카메라 전환
