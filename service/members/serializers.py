@@ -4,8 +4,8 @@ from .models import UserUpload
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .utils.custom_base64handle import Base64ImageField
-from .models import UserUpload
+import base64
+from django.core.files.base import ContentFile
 
 User = get_user_model()
 
@@ -60,18 +60,15 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         email = data.get("email")
         password = data.get("password")
-
         if email and password:
             # 기본 authenticate는 username 필드를 사용하므로 커스텀 인증 필요
             from django.contrib.auth import get_user_model
 
             User = get_user_model()
-
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 raise serializers.ValidationError("잘못된 로그인 정보입니다.")
-
             user = authenticate(username=user.username, password=password)
             if user:
                 if not user.is_active:
@@ -81,14 +78,13 @@ class LoginSerializer(serializers.Serializer):
                 raise serializers.ValidationError("잘못된 로그인 정보입니다.")
         else:
             raise serializers.ValidationError("모든 필드를 입력해주세요.")
-
         return data
 
 
 class UpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["email", "profile_pic", "height", "weight", "age", "sex"]
+        fields = ["username", "height", "weight", "age", "sex"]
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -120,6 +116,22 @@ class UserInfoRequestSerializer(serializers.Serializer):
         if not User.objects.filter(username=value).exists():
             raise serializers.ValidationError("해당 아이디로 가입된 계정이 없습니다.")
         return value
+
+
+# class Base64ImageField(serializers.ImageField):
+#     """
+#     base64로 인코딩된 이미지를 처리하는 커스텀 필드
+#     """
+#     def to_internal_value(self, data):
+#         if isinstance(data, str) and data.startswith("data:image"):
+#             # base64 데이터에서 형식 및 인코딩 데이터 추출
+#             format, imgstr = data.split(";base64,")
+#             ext = format.split("/")[-1]
+#             # 임시 파일명 생성 (user_upload_path 함수가 최종 경로/파일명 생성)
+#             temp_filename = f"temp.{ext}"
+#             # base64 디코딩 및 ContentFile 생성
+#             data = ContentFile(base64.b64decode(imgstr), name=temp_filename)
+#         return super().to_internal_value(data)
 
 
 class UserImageUploadSerializer(serializers.ModelSerializer):

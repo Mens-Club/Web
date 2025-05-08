@@ -191,7 +191,7 @@ function CameraPage() {
     <div className="container">
       <div className="main-content">
         <div className="title-wrapper">
-          <h1>오늘 입을 옷을 촬영해주세요!</h1>
+          <h1>오늘 입을 옷을 촬영해주세요 📸</h1>
         </div>
 
         <div className="upload-box">
@@ -231,20 +231,20 @@ function CameraPage() {
         <div className="button-container">
           {step === 'capture' && (
             <>
-              <button className="upload-text-btn" onClick={capture}>
+              <button className="camera-upload-text-btn" onClick={capture}>
                 사진 촬영
               </button>
-              <button className="upload-text-btn" onClick={switchCamera}>
+              <button className="camera-upload-text-btn" onClick={switchCamera}>
                 카메라 전환
               </button>
             </>
           )}
           {step === 'preview' && (
             <>
-              <button className="upload-text-btn" onClick={retake}>
+              <button className="camera-upload-text-btn" onClick={retake}>
                 다시 찍기
               </button>
-              <button className="upload-text-btn" onClick={sendToServer} disabled={!imgSrc}>
+              <button className="camera-upload-text-btn" onClick={sendToServer} disabled={!imgSrc}>
                 추천 시작하기
               </button>
               {/* <button className="upload-text-btn" onClick={analyzeImage}>
@@ -254,11 +254,11 @@ function CameraPage() {
           )}
           {step === 'analyzed' && (
             <>
-              <button className="upload-text-btn" onClick={retake}>
+              <button className="camera-upload-text-btn" onClick={retake}>
                 다시 찍기
               </button>
               <Link to="/fashion">
-                <button className="upload-text-btn recommend-btn">오늘의 추천 코디 보기</button>
+                <button className="camera-upload-text-btn recommend-btn">오늘의 추천 코디 보기</button>
               </Link>
               {/* <button className="upload-text-btn" onClick={goInit}>
                 처음으로

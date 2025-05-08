@@ -105,3 +105,14 @@ class RecommendationBookmark(models.Model):
 
     def __str__(self):
         return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"
+
+
+# 아직 미완성
+# class RecommendationReasoning(models.Model):
+#     id = models.AutoField(primary_key=True)
+
+#     recommendation = models.OneToOneField(
+#         Recommendation,
+#         on_delete=models.CASCADE,
+#         related_name='reasoning'
+#     )

@@ -49,10 +49,11 @@ function FindidPage() {
           <div className="input-group">
             <input type="text" placeholder="이름" value={username} onChange={(e) => setName(e.target.value)} />
           </div>
-
+          <div className="input-group">
           <button className="find-btn" onClick={handleFindID}>
             아이디 찾기
           </button>
+          </div>
           <div className="bottom-links">
             <Link to="/login">로그인</Link>
             <Link to="/signup">회원가입</Link>
