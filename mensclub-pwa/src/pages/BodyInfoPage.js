@@ -1,44 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/BodyInfoPage.css'; // 기존 2.css를 리네이밍해서 사용
-
-
-// 이미 정보가 있는 경우, 정보 를 올린후 수정
+import '../styles/BodyInfoPage.css';
+import api from '../api/axios'; // ✅ axios 인스턴스
 
 function BodyInfoPage() {
   const navigate = useNavigate();
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
-  const [agreed, setAgreed] = useState(false);
 
+  // ✅ 기존 체형 정보 불러오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get('/api/account/v1/update/');
+        const { height, weight } = res.data;
+        if (height) setHeight(height);
+        if (weight) setWeight(weight);
+      } catch (err) {
+        console.error('❌ 사용자 정보 요청 실패:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // ✅ 정보 저장
   const handleSubmit = async () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('로그인이 필요합니다.');
+    if (!height || !weight) {
+      alert('모든 정보를 입력해주세요.');
       return;
     }
 
-    // api 수정 해야함 있는걸로
     try {
-      const response = await fetch('api/account/v1/body_info/', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ height, weight })
+      await api.patch('/api/account/v1/update/', {
+        height: String(height),
+        weight: String(weight),
       });
 
-      if (response.ok) {
-        alert('체형 정보가 저장되었습니다.');
-        navigate('/my');
-      } else {
-        const error = await response.json();
-        alert('저장 실패: ' + (error.detail || '알 수 없는 오류'));
-      }
+      alert('체형 정보가 저장되었습니다.');
+      navigate('/my');
     } catch (err) {
-      console.error('서버 오류:', err);
-      alert('서버 오류가 발생했습니다.');
+      const error = err.response?.data;
+      const message =
+        error?.detail || error?.height?.[0] || error?.weight?.[0] || '알 수 없는 오류';
+      alert('저장 실패: ' + message);
     }
   };
 
@@ -61,22 +66,28 @@ function BodyInfoPage() {
 
       <form className="bodyinfo-form" onSubmit={(e) => e.preventDefault()}>
         <label>
-          키
-          <select value={height} onChange={(e) => setHeight(Number(e.target.value))} required>
-            <option value="">선택</option>
-            {Array.from({ length: 81 }, (_, i) => 120 + i).map((cm) => (
-              <option key={cm} value={cm}>{cm}cm</option>
-            ))}
-          </select>
+          키 (cm)
+          <input
+            type="number"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+            placeholder="예: 175"
+            min={100}
+            max={250}
+            required
+          />
         </label>
         <label>
-          몸무게
-          <select value={weight} onChange={(e) => setWeight(Number(e.target.value))} required>
-            <option value="">선택</option>
-            {Array.from({ length: 91 }, (_, i) => 40 + i).map((kg) => (
-              <option key={kg} value={kg}>{kg}kg</option>
-            ))}
-          </select>
+          몸무게 (kg)
+          <input
+            type="number"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            placeholder="예: 65"
+            min={30}
+            max={200}
+            required
+          />
         </label>
       </form>
 

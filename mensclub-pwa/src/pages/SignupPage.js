@@ -240,9 +240,9 @@ function SignupPage() {
                 <option value="F">여자</option>
               </select>
             </div>
-            <button type="submit" className="login-btn2">
-              Sign Up
-            </button>
+            <div className="input-group">
+              <button className="login-btn2">Sign Up</button>
+            </div>
             {status.success && <p style={{ color: 'green' }}>{status.message}</p>}
           </form>
           <div className="bottom-links">

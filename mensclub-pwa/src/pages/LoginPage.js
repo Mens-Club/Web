@@ -63,9 +63,11 @@ function LoginPage() {
               />
             </div>
             {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+            <div className="input-group">
             <button type="submit" className="login-btn2">
               Login
             </button>
+            </div>
           </form>
           <div className="bottom-links">
             <Link to="/signup">회원가입</Link>
