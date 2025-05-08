@@ -30,7 +30,6 @@ class Recommendation(models.Model):
     outer = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="outer")
     shoes = models.ForeignKey("clothes.Shoes", on_delete=models.SET_NULL, null=True, blank=True, related_name="shoes")
 
-        
     # AI 응답 정보
     answer = models.TextField(help_text="AI가 제공한 분석 응답")
     reasoning_generated = models.BooleanField(default=False, help_text="추천 이유 생성 상태")
@@ -80,9 +79,8 @@ class RecommendationBookmark(models.Model):
     
     def __str__(self):
         return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"
-    
-    
 
+      
 # 아직 미완성
 # class RecommendationReasoning(models.Model):
 #     id = models.AutoField(primary_key=True)
@@ -93,4 +91,4 @@ class RecommendationBookmark(models.Model):
 #         related_name='reasoning'
 #     )
     
-    
+
