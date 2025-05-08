@@ -131,6 +131,10 @@ class UserInfoRequestSerializer(serializers.Serializer):
 #         fields = ["image"]
 """
 
+from django.core.files.base import ContentFile
+
+import base64
+
 
 class Base64ImageField(serializers.ImageField):
     """
