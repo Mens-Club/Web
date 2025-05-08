@@ -5,6 +5,3 @@ class RecommendationTestSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecommendationTest
         fields = '__all__'
-
-class RecommendationIDSerializer(serializers.Serializer):
-    id = serializers.IntegerField()

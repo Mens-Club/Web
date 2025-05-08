@@ -6,9 +6,10 @@ from django.conf import settings
 import logging
 from datetime import timedelta
 
+logging.basicConfig(level=logging.DEBUG)
+
 import boto3
 
-logging.basicConfig(level=logging.DEBUG)
 boto3.set_stream_logger("", logging.DEBUG)
 
 load_dotenv()
@@ -56,7 +57,6 @@ INSTALLED_APPS = [
     "members",
     "clothes",
     "Picked",
-    "recommend",
     "storages",
 ]
 
@@ -307,7 +307,7 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_STORE_TOKEN = True
 # LOGIN_REDIRECT_URL = "http://localhost:3000/main"
 LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
-SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "members.tokken_toss.CustomSocialAccountAdapter"
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 

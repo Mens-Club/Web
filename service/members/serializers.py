@@ -122,7 +122,13 @@ class UserInfoRequestSerializer(serializers.Serializer):
         return value
 
 from .models import UserUpload
+
+
 class UserImageUploadSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(required=False)
+
+    image = Base64ImageField(required=False)
+
     class Meta:
         model = UserUpload
         fields = ["image"]  # image 필드 직접 받음
