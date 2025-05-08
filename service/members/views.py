@@ -287,45 +287,31 @@ class UserInfoView(APIView):
         )
 
 
-class UserImageUploadView(APIView):
+from rest_framework.generics import GenericAPIView
+from drf_yasg import openapi
+
+class UserImageUploadView(GenericAPIView):
+    serializer_class = UserImageUploadSerializer
     permission_classes = [IsAuthenticated]
 
-    # def post(self, request, format=None):
-    #     serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
-
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(
-    #             {"success": "이미지가 성공적으로 업로드되었습니다."},
-    #             status=status.HTTP_200_OK,
-    #         )
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def post(self, request, format=None):
-        print("요청 데이터:", request.data.keys())  # 어떤 키가 전송되었는지 확인
-        print(
-            "이미지 데이터 길이:",
-            (
-                len(request.data.get("image", ""))
-                if "image" in request.data
-                else "이미지 키 없음"
-            ),
-        )
-        print(
-            "인증된 사용자:",
-            request.user.username if request.user.is_authenticated else "인증 안됨",
-        )
-
-        serializer = UserImageUploadSerializer(data=request.data, instance=request.user)
-
+    @swagger_auto_schema(
+        operation_description="사용자 이미지 업로드",
+        manual_parameters=[],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["image"],
+            properties={
+                "image": openapi.Schema(type=openapi.TYPE_FILE, description="이미지 파일"),
+            },
+        ),
+        responses={200: "이미지가 성공적으로 업로드되었습니다."}
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"user": request.user})
         if serializer.is_valid():
-            print("시리얼라이저 유효함")
-            serializer.save()
-            print("저장 완료")
-            return Response(
-                {"success": "이미지가 성공적으로 업로드되었습니다."},
-                status=status.HTTP_200_OK,
-            )
-        else:
-            print("시리얼라이저 에러:", serializer.errors)
+            result = serializer.save()
+            return Response({
+                "success": "이미지가 성공적으로 업로드되었습니다.",
+                "image_url": result.image.url  # 실제 접근 가능한 URL 반환
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

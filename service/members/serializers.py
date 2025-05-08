@@ -140,12 +140,13 @@ class Base64ImageField(serializers.ImageField):
 
         return super().to_internal_value(data)
 
-
+from .models import UserUpload
 class UserImageUploadSerializer(serializers.ModelSerializer):
-    upload_picture = Base64ImageField(required=False)
-
     class Meta:
-        model = User
-        fields = ["upload_picture"]
+        model = UserUpload
+        fields = ["image"]  # image 필드 직접 받음
 
-
+    def create(self, validated_data):
+        user = self.context["user"]
+        upload = UserUpload.objects.create(user=user, **validated_data)
+        return upload
