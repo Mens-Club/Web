@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/BodyInfoPage.css'; // 기존 2.css를 리네이밍해서 사용
-
-
-// 이미 정보가 있는 경우, 정보 를 올린후 수정
+import '../styles/BodyInfoPage.css';
 
 function BodyInfoPage() {
   const navigate = useNavigate();
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
-  const [agreed, setAgreed] = useState(false);
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('accessToken');
@@ -18,7 +14,6 @@ function BodyInfoPage() {
       return;
     }
 
-    // api 수정 해야함 있는걸로
     try {
       const response = await fetch('api/account/v1/body_info/', {
         method: 'PATCH',
@@ -61,22 +56,28 @@ function BodyInfoPage() {
 
       <form className="bodyinfo-form" onSubmit={(e) => e.preventDefault()}>
         <label>
-          키
-          <select value={height} onChange={(e) => setHeight(Number(e.target.value))} required>
-            <option value="">선택</option>
-            {Array.from({ length: 81 }, (_, i) => 120 + i).map((cm) => (
-              <option key={cm} value={cm}>{cm}cm</option>
-            ))}
-          </select>
+          키 (cm)
+          <input
+            type="number"
+            value={height}
+            onChange={(e) => setHeight(Number(e.target.value))}
+            placeholder="예: 175"
+            min={100}
+            max={250}
+            required
+          />
         </label>
         <label>
-          몸무게
-          <select value={weight} onChange={(e) => setWeight(Number(e.target.value))} required>
-            <option value="">선택</option>
-            {Array.from({ length: 91 }, (_, i) => 40 + i).map((kg) => (
-              <option key={kg} value={kg}>{kg}kg</option>
-            ))}
-          </select>
+          몸무게 (kg)
+          <input
+            type="number"
+            value={weight}
+            onChange={(e) => setWeight(Number(e.target.value))}
+            placeholder="예: 65"
+            min={30}
+            max={200}
+            required
+          />
         </label>
       </form>
 

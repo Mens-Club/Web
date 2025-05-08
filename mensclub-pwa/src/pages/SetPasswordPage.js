@@ -9,13 +9,13 @@ function SetPasswordPage() {
   const [form, setForm] = useState({
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const [errors, setErrors] = useState({
     currentPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const handleChange = (e) => {
@@ -35,8 +35,9 @@ function SetPasswordPage() {
       return;
     }
 
-    let valid = true;
+    // 클라이언트 유효성 검사
     const newErrors = {};
+    let valid = true;
 
     if (newPassword === currentPassword) {
       newErrors.newPassword = '새 비밀번호는 기존 비밀번호와 달라야 합니다.';
@@ -58,24 +59,22 @@ function SetPasswordPage() {
         '/account/v1/change_password/',
         {
           current_password: currentPassword,
-          new_password: newPassword
+          new_password: newPassword,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       alert('비밀번호가 성공적으로 변경되었습니다.');
-      navigate('/my');
+      navigate('/my'); // 또는 원하는 페이지로 이동
     } catch (err) {
-      console.error('비밀번호 변경 오류:', err);
-      const errorMessage =
-        err.response?.data?.detail || '현재 비밀번호가 일치하지 않습니다.';
+      const message = err.response?.data?.detail || '현재 비밀번호가 일치하지 않습니다.';
       setErrors((prev) => ({
         ...prev,
-        currentPassword: errorMessage
+        currentPassword: message,
       }));
     }
   };
@@ -91,10 +90,6 @@ function SetPasswordPage() {
         <span className="change-info-highlight">안전한 비밀번호를 설정하면</span><br />
         개인정보를 안전하게 보호하고<br />
         서비스를 더 편리하게 이용할 수 있어요
-      </div>
-
-      <div className="change-tab-menu">
-        <span className="active">비밀번호 변경</span>
       </div>
 
       <form className="change-form" onSubmit={handleSubmit}>

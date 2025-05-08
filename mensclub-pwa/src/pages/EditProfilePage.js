@@ -2,10 +2,6 @@ import React, { useState } from 'react';
 import '../styles/EditProfilePage.css';
 import { useNavigate } from 'react-router-dom';
 
-
-// 이미 정보가 있는 경우, 정보 를 올린후 수정
-
-
 function EditProfilePage() {
   const navigate = useNavigate();
 
@@ -15,7 +11,7 @@ function EditProfilePage() {
     password: '',
     confirmPw: '',
     age: '',
-    sex: '',
+    sex: '', // 성별 드롭다운 선택용
   });
 
   const handleChange = (e) => {
@@ -37,13 +33,12 @@ function EditProfilePage() {
       return;
     }
 
-    //api 수정 해야함
     try {
       const response = await fetch('api/account/v1/update_profile/', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           email: form.email,
@@ -70,7 +65,7 @@ function EditProfilePage() {
   return (
     <div className="edit-container">
       <div className="edit-header">
-      <button className="edit-close" onClick={() => navigate(-1)}>×</button>
+        <button className="edit-close" onClick={() => navigate(-1)}>×</button>
         <h2>회원정보 수정</h2>
       </div>
 
@@ -105,16 +100,14 @@ function EditProfilePage() {
           나이
           <input type="number" name="age" value={form.age} onChange={handleChange} required />
         </label>
-        <div className="edit-radio-group">
-          <label>
-            <input type="radio" name="sex" value="male" onChange={handleChange} checked={form.sex === 'male'} />
-            남성
-          </label>
-          <label>
-            <input type="radio" name="sex" value="female" onChange={handleChange} checked={form.sex === 'female'} />
-            여성
-          </label>
-        </div>
+        <label>
+          성별
+          <select name="sex" value={form.sex} onChange={handleChange} required>
+            <option value="">선택</option>
+            <option value="male">남성</option>
+            <option value="female">여성</option>
+          </select>
+        </label>
         <button type="submit" className="edit-save-btn">저장하기</button>
       </form>
     </div>
