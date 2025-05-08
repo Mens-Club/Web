@@ -1,11 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-<<<<<<< HEAD
 
 from clothes.models import Clothes, Shoes
-=======
->>>>>>> parent of 595f838 (Merge branch 'main' into min_pwa)
 import uuid
 
 User = get_user_model()
@@ -25,7 +22,6 @@ class Recommendation(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="recommendations"
     )
-<<<<<<< HEAD
 
     top = models.ForeignKey(
         "clothes.Clothes",
@@ -62,30 +58,17 @@ class Recommendation(models.Model):
         default=False, help_text="추천 이유 생성 상태"
     )
 
-=======
-    
-    top_id = models.IntegerField(null=True, blank=True)
-    bottom_id = models.IntegerField(null=True, blank=True)
-    outer_id = models.IntegerField(null=True, blank=True)
-    shoes_id = models.IntegerField(null=True, blank=True)
-        
-    # AI 응답 정보
-    answer = models.TextField(help_text="AI가 제공한 분석 응답")
-    
->>>>>>> parent of 595f838 (Merge branch 'main' into min_pwa)
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now)
-    style = models.CharField(max_length=50, null=True, blank=True, help_text="선택된 스타일 (미니멀, 캐주얼 2개 택)")
-    
-    
-    total_price = models.IntegerField(null=True, blank=True)
-<<<<<<< HEAD
+    style = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="선택된 스타일 (미니멀, 캐주얼 2개 택)",
+    )
 
-=======
-    
-    
-    
->>>>>>> parent of 595f838 (Merge branch 'main' into min_pwa)
+    total_price = models.IntegerField(null=True, blank=True)
+
     class Meta:
         db_table = "recommend_recommendation"
         ordering = ["-created_at"]
@@ -121,8 +104,4 @@ class RecommendationBookmark(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-<<<<<<< HEAD
         return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"
-=======
-        return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"
->>>>>>> parent of 595f838 (Merge branch 'main' into min_pwa)

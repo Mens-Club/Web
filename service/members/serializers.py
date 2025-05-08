@@ -122,7 +122,6 @@ class UserInfoRequestSerializer(serializers.Serializer):
         return value
 
 
-<<<<<<< HEAD
 """ === 이전 방법
 # class UserImageUploadSerializer(serializers.ModelSerializer):
 #     image = Base64ImageField(required=False)
@@ -160,9 +159,9 @@ class Base64ImageField(serializers.ImageField):
 from .models import UserUpload
 
 
-=======
->>>>>>> parent of 595f838 (Merge branch 'main' into min_pwa)
 class UserImageUploadSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(required=False)
+
     image = Base64ImageField(required=False)
 
     class Meta:

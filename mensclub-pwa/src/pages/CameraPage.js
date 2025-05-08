@@ -17,7 +17,6 @@ function CameraPage() {
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
   const [step, setStep] = useState('init');
-  const [recommendation, setRecommendation] = useState(null); // ← 이 줄 추가
 
   const [analyzeResult, setAnalyzeResult] = useState(null); // 분석 결과(옷 종류)
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
@@ -41,7 +40,6 @@ function CameraPage() {
   };
 
   // 사진을 서버에 전송 및 분석 결과 받기
-  // 이미지 업로드 → 추천 요청 흐름
   const sendToServer = async () => {
     if (!imgSrc) {
       setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
