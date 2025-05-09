@@ -41,7 +41,7 @@ class Recommendation(models.Model):
     class Meta:
         db_table = 'recommend_recommendation'
         ordering = ['-created_at']
-    
+     
     def save(self, *args, **kwargs):
         if not self.recommendation_code:
             self.recommendation_code = str(uuid.uuid4())
