@@ -75,9 +75,33 @@ function MainPage() {
     }
   };
 
+
+  // 찜 추가, 삭제
   const toggleLike = async (recommendId) => {
-    // 좋아요 토글 기능 필요 시 구현
+    try {
+      if (likedMap[recommendId]) {
+        // 찜 삭제 DELETE
+        await api.delete('/api/picked/v1/main_like_cancel/', {
+          params: { recommend_id: recommendId }, // ✅ 여기!!
+        });
+        setLikedMap((prev) => {
+          const updated = { ...prev };
+          delete updated[recommendId];
+          return updated;
+        });
+      } else {
+        // 찜 추가 POST
+        await api.post('/api/picked/v1/main_like/', {
+          main_recommend_id: recommendId,
+        });
+        setLikedMap((prev) => ({ ...prev, [recommendId]: true }));
+      }
+    } catch (err) {
+      console.error('찜 토글 오류:', err.response?.data || err.message);
+    }
   };
+  
+  
 
   const renderCard = (item) => (
     <div className="card" key={item.id}>
@@ -96,6 +120,7 @@ function MainPage() {
       <div className="card-info">
         <h3>{item.style}</h3>
         <p className="price">{item.season}</p>
+        <p className="price">₩{item.total_price?.toLocaleString() || '정보 없음'}</p>
       </div>
     </div>
   );
