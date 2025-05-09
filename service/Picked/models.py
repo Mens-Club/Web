@@ -67,3 +67,47 @@ class ShoesRefine(models.Model):
     class Meta:
         db_table = 'shoes_refine'
         managed = False
+
+class Picked(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        db_column='user_id',
+        related_name='recommendation_picks'
+    )
+    recommendation = models.ForeignKey(
+        Recommend,
+        on_delete=models.CASCADE,
+        db_column='recommend_id',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'picked'
+        managed = False
+
+class MainTable(models.Model):
+    id = models.AutoField(primary_key=True)
+    top_id = models.IntegerField()
+    bottom_id = models.IntegerField()
+    outer_id = models.IntegerField(null=True, blank=True)
+    shoes_id = models.IntegerField()
+    style = models.CharField(max_length=50)
+    total_price = models.IntegerField()
+    detail = models.TextField()
+    created_at = models.DateTimeField(null=False, blank=True)
+        
+    class Meta:
+        db_table = 'main_recommend'
+        managed = False
+
+class MainPicked(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
+    main = models.ForeignKey(MainTable, on_delete=models.CASCADE, db_column='recommend_id')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'main_picked'
+        managed = False
