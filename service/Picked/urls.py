@@ -10,8 +10,8 @@ urlpatterns = [
     path('main/random/', MainRandomAPIView.as_view(), name='main-random'),
     path('main/by-price/', MainByPriceAPIView.as_view(), name='main-by-price'),
     path('main/by-style/', MainByStyleAPIView.as_view(), name='main-by-style'),
-    path('picked/by-time/', PickedByTimeAPIView.as_view(), name='picked-by-time'),
-    path('picked/by-price/', PickedByPriceAPIView.as_view(), name='picked-by-price'),
-    path('picked/by-style/', PickedByStyleAPIView.as_view(), name='picked-by-style'),
+    path('mypage/by-time/', PickedByTimeAPIView.as_view(), name='mypage-by-time'),
+    path('mypage/by-price/', PickedByPriceAPIView.as_view(), name='mypage-by-price'),
+    path('mypage/by-style/', PickedByStyleAPIView.as_view(), name='mypage-by-style'),
 ]
 

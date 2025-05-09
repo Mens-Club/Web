@@ -92,7 +92,7 @@ class MainLikeCancelView(APIView):
 
     @swagger_auto_schema(
         operation_description="main_picked 좋아요 취소",
-        manual_parameters=[
+        manual_parameters=[  # 쿼리 파라미터 설명
             openapi.Parameter(
                 'recommend_id', openapi.IN_QUERY,
                 description="recommend_id 값 (main_recommend 테이블의 id)",
@@ -103,14 +103,15 @@ class MainLikeCancelView(APIView):
     )
     def delete(self, request):
         user = request.user
-        recommend_id = request.query_params.get('recommend_id')
+        recommend_id = request.query_params.get('recommend_id')  # 쿼리 파라미터로 받은 값
 
         if not recommend_id:
             return Response({"error": "recommend_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            picked = MainPicked.objects.get(user_id=user.id, recommend_id=recommend_id)
-            picked.delete()
+            # 여기서 recommend_id를 main_recommend_id로 변경
+            picked = MainPicked.objects.get(user_id=user.id, main_recommend_id=recommend_id)
+            picked.delete()  # 해당 데이터 삭제
             return Response({"message": "좋아요가 취소되었습니다."}, status=status.HTTP_204_NO_CONTENT)
         except MainPicked.DoesNotExist:
             return Response({"error": "좋아요 정보가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
