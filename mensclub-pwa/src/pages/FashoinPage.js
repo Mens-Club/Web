@@ -5,21 +5,34 @@ import api from '../api/axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
-import { useNavigate } from 'react-router-dom'; // ✅ 추가
+import { useNavigate } from 'react-router-dom';
 
 function FashionPage() {
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
   const [liked, setLiked] = useState([]);
   const [userInfo, setUserInfo] = useState({ username: '' });
+  const [recommendations, setRecommendations] = useState([]);
 
-  const data = JSON.parse(localStorage.getItem('recommendationData'));
-  const combinations = data.product_combinations;
-  // null이 아닌 값만 남긴 새 배열 생성
-  const filtered_combinations = combinations.map((comb) =>
-    // comb: {상의: null, 하의: {...}, 신발: null ...}
-    Object.fromEntries(Object.entries(comb).filter(([_, v]) => v !== null))
-  );
-  console.log(filtered_combinations);
+  // ✅ 이미지 클릭 시 상세페이지 이동
+  const handleImageClick = (item, recommendationCode) => {
+    navigate(`/product-detail/${item.idx}?recommendation=${recommendationCode}`);
+  };
+
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem('recommendationData');
+      if (storedData) {
+        const data = JSON.parse(storedData);
+        if (data && data.product_combinations) {
+          // 전체 조합 정보(recommendation_code, total_price 포함) 저장
+          setRecommendations(data.product_combinations);
+          setLiked(new Array(data.product_combinations.length).fill(false));
+        }
+      }
+    } catch (error) {
+      console.error('데이터 로드 오류:', error);
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchUserInfo() {
@@ -69,44 +82,41 @@ function FashionPage() {
     */
   };
 
-  // ✅ 이미지 클릭 시 상세페이지 이동
-  const handleImageClick = (item) => {
-    navigate(`/product-detail/${item.idx}`);
-  };
-
   return (
     <div className="container">
       <div className="content">
         <div className="recommendation-container">
           <h2>🧷 {userInfo.username}님의 추천 코디 👔</h2>
           <div className="recommend-grid">
-            {filtered_combinations.map((combination, index) => {
-              const items = Object.values(combination).filter(Boolean);
+            {recommendations.map((recommendation, index) => {
+              // combination 객체에서 아이템들만 추출 (null 제외)
+              const items = Object.entries(recommendation.combination || {})
+                .filter(([_, item]) => item !== null)
+                .map(([category, item]) => ({ ...item, category }));
+
               return (
-                <div key={index} className={`recommend-card image-grid images-${items.length}`}>
-                  {items.map((item, idx) => {
-                    // 각 아이템의 이미지 배열 만들기
-                    const images = [];
-                    if (item.thumbnail_url) images.push(item.thumbnail_url);
-                    return (
+                <div key={index} className="recommend-card">
+                  <h3>추천 코디 #{index + 1}</h3>
+                  <div className="total-price">총 가격: {recommendation.total_price.toLocaleString()}원</div>
+
+                  <div className={`image-grid images-${items.length}`}>
+                    {items.map((item, idx) => (
                       <div key={idx} className="item-image-group">
-                        {images.map((imgUrl, imgIdx) => (
+                        {item.thumbnail_url && (
                           <img
-                            onClick={() => handleImageClick(item)}
-                            key={imgIdx}
-                            src={imgUrl}
+                            onClick={() => handleImageClick(item, recommendation.recommendation_code)}
+                            src={item.thumbnail_url}
                             alt={item.goods_name}
                             className="thumbnail-img"
-                            style={{
-                              width: images.length === 1 ? '100%' : images.length === 2 ? '48%' : '31%',
-                              marginRight: imgIdx < images.length - 1 ? '2%' : '0',
-                            }}
                           />
-                        ))}
-                        <div className="sub-category-label">{item.sub_category}</div>
+                        )}
+                        <div className="item-info">
+                          <div className="sub-category-label">{item.sub_category || item.category}</div>
+                          <div className="item-price">{item.price?.toLocaleString()}원</div>
+                        </div>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                   <button
                     className="heart-button"
                     onClick={() => toggleLike(index)}

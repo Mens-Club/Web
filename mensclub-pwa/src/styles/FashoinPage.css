@@ -2,13 +2,16 @@
 
 .recommendation-container {
   text-align: center;
+  margin-top: 380px;
+  width: 100%; /* 전체 너비 사용 */
+  max-width: 100%; /* 최대 너비 제한 해제 */
 }
 
 .recommendation-container h2 {
   font-size: 20px;
   font-weight: 600;
   margin-top: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   color: #333;
   letter-spacing: -0.5px;
   position: relative;
@@ -30,17 +33,30 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 600px;
+  max-width: 1000px; /* 더 넓게 설정 */
+  width: 100%; /* 화면 너비의 95%로 설정 */
   margin: 0 auto;
   padding: 0 20px;
   margin-bottom: 70px;
 }
 
+.image-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px; /* 간격 줄임 */
+  width: 100%;
+  overflow-x: auto;
+  padding: 5px 0;
+  flex-wrap: nowrap; /* 이미지가 줄바꿈되지 않도록 */
+}
+
 .recommend-card {
   position: relative;
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column; /* 카드 내부 요소는 세로 배열 유지 */
+  align-items: flex-start;
   gap: 16px;
   background-color: #fff;
   border-radius: 16px;
@@ -61,13 +77,13 @@
 }
 
 .recommend-card img {
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
   border-radius: 12px;
 }
 
-.like-btn {
+.heart-button {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -86,20 +102,18 @@
   transition: all 0.2s ease-in-out;
 }
 
-.like-btn.liked {
+.heart-icon.liked {
   color: #ff3b5c;
-  background: rgba(255, 255, 255, 0.95);
-  transform: scale(1.1);
 }
 
-.like-btn:hover {
+.heart-button:hover .heart-icon {
   color: #ff3b5c;
   transform: scale(1.1);
 }
 
-.thumbnail-img {
-  width: 200px;
-  height: 200px;
+.item-image-group img.thumbnail-img {
+  width: 160px;
+  height: 160px;
   object-fit: cover;
   border-radius: 12px;
   display: block;
@@ -109,7 +123,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 8px;
+  margin-right: 4px;
 }
 
 .sub-category-label {
