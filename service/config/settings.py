@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "clothes",
     "Picked",
     "storages",
+    "recommend"
 ]
 
 # Redis 캐시
@@ -176,7 +177,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Local
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -191,6 +192,7 @@ DATABASES = {
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://localhost:9200"},
 }
+
 
 
 # 인덱스 이름 매핑
@@ -314,3 +316,6 @@ LOGOUT_REDIRECT_URL = "/"
 
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
+
+
+
