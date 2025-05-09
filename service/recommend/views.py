@@ -23,7 +23,7 @@ from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
 from .main.season_extractor import extract_season_from_text
 
-from .openai.utils import generate_reasoning_task
+# from .openai.utils import generate_reasoning_task
 from .models import Recommendation
 
 logger = logging.getLogger(__name__)
@@ -116,7 +116,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                     'raw_output': raw_output
                 }, status=500)
 
-            logger.info("🗓️ STEP 8: 계절 추출")
+            logger.info("STEP 8: 계절 추출")
             answer_text = recommendation_json.get("answer", "")
             season = extract_season_from_text(answer_text)
 
@@ -170,14 +170,14 @@ class IntegratedFashionRecommendAPIView(APIView):
                 )
                 recommendation_ids.append(recommendation.id)
 
-            logger.info("STEP 12: Celery 비동기 reasoning 요청")
-            generate_reasoning_task.delay(
-                recommendation_ids=recommendation_ids,
-                combinations=combinations,
-                season=season,
-                styles=styles,
-                original_item_info=similar_items[0]
-            )
+            # logger.info("STEP 12: Celery 비동기 reasoning 요청")
+            # generate_reasoning_task.delay(
+            #     recommendation_ids=recommendation_ids,
+            #     combinations=combinations,
+            #     season=season,
+            #     styles=styles,
+            #     original_item_info=similar_items[0]
+            # )
 
             logger.info("추천 처리 완료")
             return Response({
