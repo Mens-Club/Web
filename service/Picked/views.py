@@ -1,12 +1,12 @@
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Picked, MainPicked
-from .serializers import LikeSerializer, MainLikeSerializer
+from .models import Picked, MainPicked, MainRecommend
+from .serializers import LikeSerializer, MainLikeSerializer, MainTableSerializer, CombinedPickSerializer, RecommendSerializer
 
 class LikeView(APIView):
     @swagger_auto_schema(
@@ -72,8 +72,7 @@ class LikeCancelView(APIView):
                 'recommend_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                 required=True, description="좋아요를 취소할 recommendation의 ID"
             )
-        ]
-    )
+        ])
     def delete(self, request):
         user = request.user
         recommend_id = request.query_params.get('recommend_id')
@@ -115,3 +114,138 @@ class MainLikeCancelView(APIView):
             return Response({"message": "좋아요가 취소되었습니다."}, status=status.HTTP_204_NO_CONTENT)
         except MainPicked.DoesNotExist:
             return Response({"error": "좋아요 정보가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+def _build_combined_list(user_id):
+    # recommendation 테이블 기반 Picked
+    rec_qs = Picked.objects.filter(user_id=user_id).select_related('recommend')
+    rec_list = [{
+        'source': 'recommend',
+        'pick_id': p.id,
+        'created_at': p.created_at,
+        'combination': RecommendSerializer(p.recommend).data  # adapt if needed
+    } for p in rec_qs]
+
+    # main_table 기반 MainPicked
+    main_qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
+    main_list = [{
+        'source': 'main',
+        'pick_id': p.id,
+        'created_at': p.created_at,
+        'combination': MainTableSerializer(p.main_recommend).data
+    } for p in main_qs]
+
+    return rec_list + main_list
+
+
+# 1. 랜덤 3개 추출
+class MainRandomAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('count', openapi.IN_QUERY, description='추출 개수', type=openapi.TYPE_INTEGER, required=False)
+        ]
+    )
+    def get(self, request):
+        count = int(request.query_params.get('count'))
+        items = MainRecommend.objects.order_by('?')[:count]
+        return Response(MainTableSerializer(items, many=True).data)
+
+
+# 2. 가격대별 3개 추출
+class MainByPriceAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('brackets', openapi.IN_QUERY, description='콤마 구분 가격 구간 (예: 100000,200000,300000)', type=openapi.TYPE_STRING, required=False),
+            openapi.Parameter('per', openapi.IN_QUERY, description='구간당 개수', type=openapi.TYPE_INTEGER, required=False),
+        ]
+    )
+    def get(self, request):
+        raw = request.query_params.get('brackets', '100000,200000,300000')
+        per = int(request.query_params.get('per'))
+        bracket_values = [int(x) for x in raw.split(',') if x.isdigit()]
+        data = {}
+        for b in bracket_values:
+            items = MainRecommend.objects.filter(
+                total_price__gte=b,
+                total_price__lt=b + 100000
+            ).order_by('?')[:per]
+            data[f"{b//10000}만원대"] = MainTableSerializer(items, many=True).data
+        return Response(data)
+
+
+# 3. 스타일별 3개 추출
+class MainByStyleAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('style', openapi.IN_QUERY, description='스타일 필터 (미니멀, 캐주얼)', type=openapi.TYPE_STRING, required=True),
+            openapi.Parameter('count', openapi.IN_QUERY, description='추출 개수', type=openapi.TYPE_INTEGER, required=False)
+        ]
+    )
+    def get(self, request):
+        style = request.query_params.get('style')
+        if style not in ['미니멀', '캐주얼']:
+            return Response({"detail": "style 파라미터: 미니멀 or 캐주얼"}, status=status.HTTP_400_BAD_REQUEST)
+        count = int(request.query_params.get('count'))
+        items = MainRecommend.objects.filter(style=style).order_by('?')[:count]
+        return Response(MainTableSerializer(items, many=True).data)
+
+
+# 4. pick된 항목 시간순 정렬 (recommend + main)
+class PickedByTimeAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter('order', openapi.IN_QUERY, description='정렬 (newest 또는 oldest)', type=openapi.TYPE_STRING, required=False),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        order = request.query_params.get('order', 'newest')
+        if not user_id:
+            return Response({"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST)
+
+        combined = _build_combined_list(user_id)
+        combined.sort(key=lambda x: x['created_at'], reverse=(order == 'newest'))
+        return Response(CombinedPickSerializer(combined, many=True).data)
+
+
+# 5. pick된 항목 가격순 정렬
+class PickedByPriceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter('sort', openapi.IN_QUERY, description='정렬 (high 또는 low)', type=openapi.TYPE_STRING, required=True)
+            ])
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        sort = request.query_params.get('sort')
+        if not user_id or sort not in ['high', 'low']:
+            return Response({"detail": "user_id 및 sort(high/low) 필요"}, status=status.HTTP_400_BAD_REQUEST)
+
+        combined = _build_combined_list(user_id)
+        combined.sort(key=lambda x: x['combination']['total_price'], reverse=(sort == 'high'))
+        return Response(CombinedPickSerializer(combined, many=True).data)
+
+
+# 6. pick된 항목 스타일별 필터
+class PickedByStyleAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter('style', openapi.IN_QUERY, description='스타일 (미니멀 또는 캐주얼)', type=openapi.TYPE_STRING, required=True),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        style = request.query_params.get('style')
+        if not user_id or style not in ['미니멀', '캐주얼']:
+            return Response({"detail": "user_id 및 style(m미니멀/캐주얼) 필요"}, status=status.HTTP_400_BAD_REQUEST)
+
+        combined = _build_combined_list(user_id)
+        filtered = [c for c in combined if c['combination']['style'] == style]
+        return Response(CombinedPickSerializer(filtered, many=True).data)
