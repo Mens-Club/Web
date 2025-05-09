@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom'; // ✅ 추가
 
 function FashionPage() {
   const navigate = useNavigate(); // ✅ 추가
-  const [recommendData, setRecommendData] = useState(null);
   const [liked, setLiked] = useState([]);
   const [userInfo, setUserInfo] = useState({ username: '' });
 
@@ -71,8 +70,8 @@ function FashionPage() {
   };
 
   // ✅ 이미지 클릭 시 상세페이지 이동
-  const handleImageClick = (id) => {
-    navigate(`/outfit/${id}`);
+  const handleImageClick = (item) => {
+    navigate(`/product-detail/${item.idx}`);
   };
 
   return (
@@ -93,7 +92,7 @@ function FashionPage() {
                       <div key={idx} className="item-image-group">
                         {images.map((imgUrl, imgIdx) => (
                           <img
-                            onClick={handleImageClick}
+                            onClick={() => handleImageClick(item)}
                             key={imgIdx}
                             src={imgUrl}
                             alt={item.goods_name}
