@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recommend, Picked, MainRecommend, MainPicked
+from .models import Picked, MainRecommend, MainPicked
 from clothes.models import Clothes, Shoes
 from recommend.models import Recommendation
 
