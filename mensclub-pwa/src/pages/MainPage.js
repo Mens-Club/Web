@@ -8,50 +8,55 @@ import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import api from '../api/axios';
 import AutoSwiper from './AutoSwiper';
 
-// mainpage 개요 - 추천코디 & 찜 목록
+// 남성 패션 추천 웹앱의 mainPage
+// 로그인후 토큰 저장, 추천된 패션 코디 데이터 API 가져오기
+// 찜하기 기능 API 가져오기, 스타일/가격대/랜덤 추천 섹션 렌더링
 
 function MainPage() {
-  // 전체 추천 코디 데이터 저장 & 어떤 추천이 찜 되었는지 ID 기준으로 저장
+   // 전체 추천 코디 데이터 저장 & 어떤 추천이 찜 되었는지 ID 기준으로 저장
   const [recommends, setRecommends] = useState([]);
+  const [randomRecommends, setRandomRecommends] = useState([]);
   const [likedMap, setLikedMap] = useState({});
   const [styleFilter, setStyleFilter] = useState('미니멀');
   const [priceFilter, setPriceFilter] = useState('10만원대');
   const location = useLocation(); // 현재 URL 정보를 가져오기 위한 hook 추가
 
+  
   useEffect(() => {
-    document.body.style.overflow = 'auto';
+    const el = document.querySelector('.main-content');
+  
+    if (el) {
+      el.style.overflowY = 'auto';   // ✅ 스크롤 허용
+      el.style.overflowX = 'hidden'; // ✅ 수평 스크롤 방지
+    }
+  
     return () => {
-      document.body.style.overflow = 'hidden';
+      if (el) el.style.overflowY = 'hidden'; // ✅ 언마운트 시 스크롤 제거
     };
   }, []);
-
+  
+  
   // 소셜 로그인 후 URL에서 토큰 추출하여 저장하는 로직 추가
   // 소셜 로그인 후 URL에서 토큰 추출하여 저장하는 로직
   useEffect(() => {
-    // URL에서 토큰 추출
+    //url에서 토큰 추출출
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const refresh = urlParams.get('refresh');
 
     if (token) {
-      // 토큰 저장
+      //토큰 저장
       localStorage.setItem('accessToken', token);
       if (refresh) {
         localStorage.setItem('refreshToken', refresh);
       }
-
-      console.log('URL 전체:', window.location.href);
-      console.log('URL 파라미터:', window.location.search);
-      console.log('토큰:', token);
-      console.log('리프레시:', refresh);
-
       // URL에서 쿼리 파라미터 제거 (깔끔한 URL 유지)
       window.history.replaceState({}, document.title, '/main');
 
       // 토큰이 저장되었는지 확인
       console.log('저장된 토큰:', localStorage.getItem('accessToken'));
     }
-  }, []); // 컴포넌트가 마운트될 때만 실행
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,12 +65,18 @@ function MainPage() {
       try {
         // 추천 코디 전체 목록 가져옴
         // 현재 사용자가 찜한 항목 목록 가져옴
-        const recommendRes = await api.get('/clothes/v1/recommends/');
+        const recommendRes = await api.POS('/api/recommend/v1/recommend/');
         const picksRes = await api.get('/clothes/v1/picks/', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setRecommends(recommendRes.data.results);
+        const allRecommends = recommendRes.data.results;
+        setRecommends(allRecommends);
+
+        const randomItems = allRecommends.filter(r => r.category === 'random');
+        const shuffled = randomItems.sort(() => 0.5 - Math.random());
+        setRandomRecommends(shuffled.slice(0, 4));
+
         const map = {};
         picksRes.data.results.forEach((p) => {
           map[p.recommend] = p.id;
@@ -193,7 +204,9 @@ function MainPage() {
             <h2>오늘의 랜덤 추천</h2>
           </div>
           <div className="coordination-slider">
-            <div className="coordination-cards">{filterAndRender('random')}</div>
+            <div className="coordination-cards">
+              {randomRecommends.map(renderCard)}
+            </div>
           </div>
         </div>
 
