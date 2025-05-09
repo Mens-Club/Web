@@ -127,8 +127,10 @@ class IntegratedFashionRecommendAPIView(APIView):
             recommend_json = filtered_recommendation.get("recommend", {})
             styles = ["미니멀", "캐주얼"]
             color_palette = COLOR_PALETTE_BY_SEASON.get(season, [])
+            
             all_items = search_items_by_category(recommend_json, season, color_palette, styles)
             logger.debug("STEP 10 결과 all_items: %s", all_items)
+            
             logger.info("STEP 11: 조합 생성")
             combinations = generate_proper_combinations(recommend_json, all_items, styles)
             logger.debug("STEP 11 결과 조합들: %s", combinations)
@@ -136,7 +138,7 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             for idx, combo in enumerate(combinations):
                 if combo is None:
-                    logger.warning(f"⚠️ STEP 11-1: 조합 #{idx}가 None입니다. 건너뜁니다.")
+                    logger.warning(f"STEP 11-1: 조합 #{idx}가 None입니다. 건너뜁니다.")
                     continue
 
                 top = combo.get("상의")
@@ -168,7 +170,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                 )
                 recommendation_ids.append(recommendation.id)
 
-            logger.info("📤 STEP 12: Celery 비동기 reasoning 요청")
+            logger.info("STEP 12: Celery 비동기 reasoning 요청")
             generate_reasoning_task.delay(
                 recommendation_ids=recommendation_ids,
                 combinations=combinations,
@@ -177,7 +179,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                 original_item_info=similar_items[0]
             )
 
-            logger.info("✅ 추천 처리 완료")
+            logger.info("추천 처리 완료")
             return Response({
                 'status': 'success',
                 'initial_recommendation': filtered_recommendation,
@@ -186,5 +188,6 @@ class IntegratedFashionRecommendAPIView(APIView):
             }, status=200)
 
         except Exception as e:
-            logger.exception("🔥 처리 중 알 수 없는 예외 발생")
+            
+            logger.exception("처리 중 알 수 없는 예외 발생")
             return Response({'status': 'error', 'message': str(e)}, status=500)
