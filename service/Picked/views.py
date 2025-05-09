@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .models import Picked, MainPicked, MainRecommend
-from .serializers import LikeSerializer, MainLikeSerializer, MainTableSerializer, CombinedPickSerializer, RecommendSerializer
+from .serializers import LikeSerializer, MainLikeSerializer, MainTableSerializer, PickedSerializer, MainPickedSerializer
 
 class LikeView(APIView):
     @swagger_auto_schema(
@@ -114,30 +114,7 @@ class MainLikeCancelView(APIView):
             return Response({"message": "좋아요가 취소되었습니다."}, status=status.HTTP_204_NO_CONTENT)
         except MainPicked.DoesNotExist:
             return Response({"error": "좋아요 정보가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
-        
-def _build_combined_list(user_id):
-    # recommendation 테이블 기반 Picked
-    rec_qs = Picked.objects.filter(user_id=user_id).select_related('recommend')
-    rec_list = [{
-        'source': 'recommend',
-        'pick_id': p.id,
-        'created_at': p.created_at,
-        'combination': RecommendSerializer(p.recommend).data  # adapt if needed
-    } for p in rec_qs]
 
-    # main_table 기반 MainPicked
-    main_qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
-    main_list = [{
-        'source': 'main',
-        'pick_id': p.id,
-        'created_at': p.created_at,
-        'combination': MainTableSerializer(p.main_recommend).data
-    } for p in main_qs]
-
-    return rec_list + main_list
-
-
-# 1. 랜덤 3개 추출
 class MainRandomAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
@@ -149,8 +126,6 @@ class MainRandomAPIView(APIView):
         items = MainRecommend.objects.order_by('?')[:count]
         return Response(MainTableSerializer(items, many=True).data)
 
-
-# 2. 가격대별 3개 추출
 class MainByPriceAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
@@ -171,8 +146,6 @@ class MainByPriceAPIView(APIView):
             data[f"{b//10000}만원대"] = MainTableSerializer(items, many=True).data
         return Response(data)
 
-
-# 3. 스타일별 3개 추출
 class MainByStyleAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
@@ -188,8 +161,6 @@ class MainByStyleAPIView(APIView):
         items = MainRecommend.objects.filter(style=style).order_by('?')[:count]
         return Response(MainTableSerializer(items, many=True).data)
 
-
-# 4. pick된 항목 시간순 정렬 (recommend + main)
 class PickedByTimeAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -205,12 +176,15 @@ class PickedByTimeAPIView(APIView):
         if not user_id:
             return Response({"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST)
 
-        combined = _build_combined_list(user_id)
-        combined.sort(key=lambda x: x['created_at'], reverse=(order == 'newest'))
-        return Response(CombinedPickSerializer(combined, many=True).data)
+        qs = Picked.objects.filter(user_id=user_id).select_related('recommend')
+        if order == 'newest':
+            qs = qs.order_by('-created_at')
+        else:
+            qs = qs.order_by('created_at')
 
+        serializer = PickedSerializer(qs, many=True)
+        return Response(serializer.data)
 
-# 5. pick된 항목 가격순 정렬
 class PickedByPriceAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -218,19 +192,23 @@ class PickedByPriceAPIView(APIView):
         manual_parameters=[
             openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
             openapi.Parameter('sort', openapi.IN_QUERY, description='정렬 (high 또는 low)', type=openapi.TYPE_STRING, required=True)
-            ])
+        ]
+    )
     def get(self, request):
         user_id = request.query_params.get('user_id')
         sort = request.query_params.get('sort')
         if not user_id or sort not in ['high', 'low']:
             return Response({"detail": "user_id 및 sort(high/low) 필요"}, status=status.HTTP_400_BAD_REQUEST)
 
-        combined = _build_combined_list(user_id)
-        combined.sort(key=lambda x: x['combination']['total_price'], reverse=(sort == 'high'))
-        return Response(CombinedPickSerializer(combined, many=True).data)
+        qs = Picked.objects.filter(user_id=user_id).select_related('recommend')
+        if sort == 'high':
+            qs = qs.order_by('-recommend__total_price')
+        else:
+            qs = qs.order_by('recommend__total_price')
 
+        serializer = PickedSerializer(qs, many=True)
+        return Response(serializer.data)
 
-# 6. pick된 항목 스타일별 필터
 class PickedByStyleAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -244,8 +222,75 @@ class PickedByStyleAPIView(APIView):
         user_id = request.query_params.get('user_id')
         style = request.query_params.get('style')
         if not user_id or style not in ['미니멀', '캐주얼']:
-            return Response({"detail": "user_id 및 style(m미니멀/캐주얼) 필요"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "user_id 및 style(미니멀/캐주얼) 필요"}, status=status.HTTP_400_BAD_REQUEST)
 
-        combined = _build_combined_list(user_id)
-        filtered = [c for c in combined if c['combination']['style'] == style]
-        return Response(CombinedPickSerializer(filtered, many=True).data)
+        qs = Picked.objects.filter(user_id=user_id, recommend__style=style).select_related('recommend')
+        serializer = PickedSerializer(qs, many=True)
+        return Response(serializer.data)
+
+class MainPickedByTimeAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter('order', openapi.IN_QUERY, description='정렬 (newest 또는 oldest)', type=openapi.TYPE_STRING, required=False),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        order = request.query_params.get('order', 'newest')
+        if not user_id:
+            return Response({"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST)
+
+        qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
+        if order == 'newest':
+            qs = qs.order_by('-created_at')
+        else:
+            qs = qs.order_by('created_at')
+
+        serializer = MainPickedSerializer(qs, many=True)
+        return Response(serializer.data)
+
+class MainPickedByPriceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter('sort', openapi.IN_QUERY, description='정렬 (high 또는 low)', type=openapi.TYPE_STRING, required=True)
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        sort = request.query_params.get('sort')
+        if not user_id or sort not in ['high', 'low']:
+            return Response({"detail": "user_id 및 sort(high/low) 필요"}, status=status.HTTP_400_BAD_REQUEST)
+
+        qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
+        if sort == 'high':
+            qs = qs.order_by('-main_recommend__total_price')
+        else:
+            qs = qs.order_by('main_recommend__total_price')
+
+        serializer = MainPickedSerializer(qs, many=True)
+        return Response(serializer.data)
+
+class MainPickedByStyleAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter('style', openapi.IN_QUERY, description='스타일 (미니멀 또는 캐주얼)', type=openapi.TYPE_STRING, required=True),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        style = request.query_params.get('style')
+        if not user_id or style not in ['미니멀', '캐주얼']:
+            return Response({"detail": "user_id 및 style(미니멀/캐주얼) 필요"}, status=status.HTTP_400_BAD_REQUEST)
+
+        qs = MainPicked.objects.filter(user_id=user_id, main_recommend__style=style).select_related('main_recommend')
+        serializer = MainPickedSerializer(qs, many=True)
+        return Response(serializer.data)

@@ -1,6 +1,10 @@
 from django.urls import path
-from .views import LikeView, MainLikeView, LikeCancelView, MainLikeCancelView
-from .views import MainRandomAPIView, MainByPriceAPIView, MainByStyleAPIView, PickedByTimeAPIView, PickedByPriceAPIView,PickedByStyleAPIView
+from .views import (
+    LikeView, MainLikeView, LikeCancelView, MainLikeCancelView,
+    MainRandomAPIView, MainByPriceAPIView, MainByStyleAPIView,
+    PickedByTimeAPIView, PickedByPriceAPIView, PickedByStyleAPIView,
+    MainPickedByTimeAPIView, MainPickedByPriceAPIView, MainPickedByStyleAPIView
+)
 
 urlpatterns = [
     path('like/', LikeView.as_view(), name='like_recommendation'),
@@ -13,5 +17,7 @@ urlpatterns = [
     path('picked/by-time/', PickedByTimeAPIView.as_view(), name='picked-by-time'),
     path('picked/by-price/', PickedByPriceAPIView.as_view(), name='picked-by-price'),
     path('picked/by-style/', PickedByStyleAPIView.as_view(), name='picked-by-style'),
+    path('main_picked/by-time/', MainPickedByTimeAPIView.as_view(), name='main-picked-by-time'),
+    path('main_picked/by-price/', MainPickedByPriceAPIView.as_view(), name='main-picked-by-price'),
+    path('main_picked/by-style/', MainPickedByStyleAPIView.as_view(), name='main-picked-by-style'),
 ]
-
