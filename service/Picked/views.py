@@ -1,122 +1,385 @@
-# Picked/views.py
-from rest_framework import status
-from rest_framework.viewsets import ViewSet
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from .models import RecommendationTest
-from .serializers import RecommendationTestSerializer
-
-# Swagger parameter decorators
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework import status, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from .models import Picked, MainPicked, MainRecommend
+from .serializers import (
+    LikeSerializer,
+    MainLikeSerializer,
+    MainTableSerializer,
+    CombinedPickSerializer,
+    RecommendSerializer,
+)
 
-class RecommendationTestViewSet(ViewSet):
-    serializer_class = RecommendationTestSerializer
 
-    def get_base_queryset(self, request, require_user=False):
-        qs = RecommendationTest.objects.filter(liked=True)
-        user_id = request.query_params.get('user_id')
-        if require_user or user_id:
-            qs = qs.filter(user_id=user_id)
-        return qs
+class LikeView(APIView):
+    @swagger_auto_schema(
+        operation_description="좋아요를 누른 후 추천 항목을 기록합니다.",
+        request_body=LikeSerializer,
+        responses={
+            201: openapi.Response("Liked successfully!", schema=LikeSerializer),
+            200: openapi.Response("Already liked.", schema=LikeSerializer),
+            400: openapi.Response("Bad Request"),
+        },
+    )
+    def post(self, request):
+        serializer = LikeSerializer(data=request.data)
+        if serializer.is_valid():
+            recommend_id = serializer.validated_data["recommend_id"]
+            user = request.user
 
-    @swagger_auto_schema(auto_schema=None)
-    def list(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            if Picked.objects.filter(user=user, recommend_id=recommend_id).exists():
+                return Response(
+                    {"message": "Already liked."}, status=status.HTTP_200_OK
+                )
 
-    @swagger_auto_schema(auto_schema=None)
-    def retrieve(self, request, pk=None):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            Picked.objects.create(
+                user=user, recommend_id=recommend_id, created_at=timezone.now()
+            )
+            return Response(
+                {"message": "Liked successfully!"}, status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MainLikeView(APIView):
+    @swagger_auto_schema(
+        operation_description="Main 추천 항목을 선택하여 저장합니다.",
+        request_body=MainLikeSerializer,
+        responses={
+            201: openapi.Response(
+                "Main picked successfully!", schema=MainLikeSerializer
+            ),
+            200: openapi.Response("Already picked.", schema=MainLikeSerializer),
+            400: openapi.Response("Bad Request"),
+        },
+    )
+    def post(self, request):
+        serializer = MainLikeSerializer(data=request.data)
+        if serializer.is_valid():
+            main_recommend_id = serializer.validated_data["main_recommend_id"]
+            user = request.user
+
+            if MainPicked.objects.filter(
+                user=user, recommend_id=main_recommend_id
+            ).exists():
+                return Response(
+                    {"message": "Already picked."}, status=status.HTTP_200_OK
+                )
+
+            MainPicked.objects.create(
+                user=user, recommend_id=main_recommend_id, created_at=timezone.now()
+            )
+            return Response(
+                {"message": "Main picked successfully!"}, status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LikeCancelView(APIView):
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('bracket', openapi.IN_QUERY, '기준 금액 (콤마 구분)', type=openapi.TYPE_STRING),
-            openapi.Parameter('per', openapi.IN_QUERY, '구간당 개수', type=openapi.TYPE_INTEGER),
-            openapi.Parameter('user_id', openapi.IN_QUERY, '사용자 ID', type=openapi.TYPE_INTEGER),
-            openapi.Parameter('sort', openapi.IN_QUERY, '마이: 가격 정렬 옵션 (high 또는 low)', type=openapi.TYPE_STRING),
+            openapi.Parameter(
+                "recommend_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                required=True,
+                description="좋아요를 취소할 recommendation의 ID",
+            )
         ]
     )
-    @action(detail=False, methods=['get'])
-    def price(self, request):
-        brackets = request.query_params.get('bracket', '100000,200000,300000')
-        per = int(request.query_params.get('per', 3))
-        user_id = request.query_params.get('user_id')
-        bracket_values = [int(x) for x in brackets.split(',') if x.isdigit()]
-        base_qs = self.get_base_queryset(request)
-        data = {}   
-        if user_id:
-            sort = request.query_params.get('sort')
-            if not sort or sort not in ('high', 'low'):
-                return Response({"detail": "sort 파라미터 필요 (high or low)"}, status=status.HTTP_400_BAD_REQUEST)
-            qs = base_qs.filter(user_id=user_id)
-            qs = qs.order_by('-total_price') if sort == 'high' else qs.order_by('total_price')
-            return Response(self.serializer_class(qs, many=True).data)
-        
-            # base_qs = base_qs.filter(user_id=user_id)
-            # # 마이 페이지: 전체 반환
-            # for b in bracket_values:
-            #     lower, upper = b, b + 100000
-            #     qs = base_qs.filter(total_price__gte=lower, total_price__lt=upper)
-            #     data[f"{b//10000}만원대"] = self.serializer_class(qs, many=True).data
-        else:
-            # 메인 페이지: 랜덤 샘플 per개
-            for b in bracket_values:
-                lower, upper = b, b + 100000
-                qs = base_qs.filter(total_price__gte=lower, total_price__lt=upper).order_by('?')[:per]
-                data[f"{b//10000}만원대"] = self.serializer_class(qs, many=True).data
+    def delete(self, request):
+        user = request.user
+        recommend_id = request.query_params.get("recommend_id")
+
+        if not recommend_id:
+            return Response(
+                {"error": "recommend_id가 필요합니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            picked = Picked.objects.get(user_id=user.id, recommend_id=recommend_id)
+            picked.delete()
+            return Response(
+                {"message": "좋아요가 취소되었습니다."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Picked.DoesNotExist:
+            return Response(
+                {"error": "좋아요가 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class MainLikeCancelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="main_picked 좋아요 취소",
+        manual_parameters=[  # 쿼리 파라미터 설명
+            openapi.Parameter(
+                "recommend_id",
+                openapi.IN_QUERY,
+                description="recommend_id 값 (main_recommend 테이블의 id)",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            )
+        ],
+    )
+    def delete(self, request):
+        user = request.user
+        recommend_id = request.query_params.get(
+            "recommend_id"
+        )  # 쿼리 파라미터로 받은 값
+
+        if not recommend_id:
+            return Response(
+                {"error": "recommend_id가 필요합니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # 여기서 recommend_id를 main_recommend_id로 변경
+            picked = MainPicked.objects.get(
+                user_id=user.id, main_recommend_id=recommend_id
+            )
+            picked.delete()  # 해당 데이터 삭제
+            return Response(
+                {"message": "좋아요가 취소되었습니다."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except MainPicked.DoesNotExist:
+            return Response(
+                {"error": "좋아요 정보가 존재하지 않습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+def _build_combined_list(user_id):
+    # recommendation 테이블 기반 Picked
+    rec_qs = Picked.objects.filter(user_id=user_id).select_related("recommend")
+    rec_list = [
+        {
+            "source": "recommend",
+            "pick_id": p.id,
+            "created_at": p.created_at,
+            "combination": RecommendSerializer(p.recommend).data,  # adapt if needed
+        }
+        for p in rec_qs
+    ]
+
+    # main_table 기반 MainPicked
+    main_qs = MainPicked.objects.filter(user_id=user_id).select_related(
+        "main_recommend"
+    )
+    main_list = [
+        {
+            "source": "main",
+            "pick_id": p.id,
+            "created_at": p.created_at,
+            "combination": MainTableSerializer(p.main_recommend).data,
+        }
+        for p in main_qs
+    ]
+
+    return rec_list + main_list
+
+
+# 1. 랜덤 3개 추출
+class MainRandomAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "count",
+                openapi.IN_QUERY,
+                description="추출 개수",
+                type=openapi.TYPE_INTEGER,
+                required=False,
+            )
+        ]
+    )
+    def get(self, request):
+        count = int(request.query_params.get("count"))
+        items = MainRecommend.objects.order_by("?")[:count]
+        return Response(MainTableSerializer(items, many=True).data)
+
+
+# 2. 가격대별 3개 추출
+class MainByPriceAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "brackets",
+                openapi.IN_QUERY,
+                description="콤마 구분 가격 구간 (예: 100000,200000,300000)",
+                type=openapi.TYPE_STRING,
+                required=False,
+            ),
+            openapi.Parameter(
+                "per",
+                openapi.IN_QUERY,
+                description="구간당 개수",
+                type=openapi.TYPE_INTEGER,
+                required=False,
+            ),
+        ]
+    )
+    def get(self, request):
+        raw = request.query_params.get("brackets", "100000,200000,300000")
+        per = int(request.query_params.get("per"))
+        bracket_values = [int(x) for x in raw.split(",") if x.isdigit()]
+        data = {}
+        for b in bracket_values:
+            items = MainRecommend.objects.filter(
+                total_price__gte=b, total_price__lt=b + 100000
+            ).order_by("?")[:per]
+            data[f"{b//10000}만원대"] = MainTableSerializer(items, many=True).data
         return Response(data)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter('style', openapi.IN_QUERY, '스타일명', type=openapi.TYPE_STRING, required=True),
-            openapi.Parameter('per', openapi.IN_QUERY, '추출 개수', type=openapi.TYPE_INTEGER),
-            openapi.Parameter('user_id', openapi.IN_QUERY, '사용자 ID', type=openapi.TYPE_INTEGER),
-        ]
-    )
-    @action(detail=False, methods=['get'])
-    def style(self, request):
-        style = request.query_params.get('style')
-        per = int(request.query_params.get('per', 3))
-        user_id = request.query_params.get('user_id')
-        if not style:
-            return Response({"detail": "style 파라미터 필요"}, status=400)
-        base_qs = self.get_base_queryset(request)
 
-        if user_id:
-            qs = base_qs.filter(style=style)
-            my_qs = qs.filter(user_id=user_id)
-            return Response(self.serializer_class(my_qs, many=True).data)
-        else:
-            qs = base_qs.filter(style=style).order_by('?')[:per]
-            return Response(self.serializer_class(qs, many=True).data)
-        
+# 3. 스타일별 3개 추출
+class MainByStyleAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('user_id', openapi.IN_QUERY, '사용자 ID', type=openapi.TYPE_INTEGER, required=True),
+            openapi.Parameter(
+                "style",
+                openapi.IN_QUERY,
+                description="스타일 필터 (미니멀, 캐주얼)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+            openapi.Parameter(
+                "count",
+                openapi.IN_QUERY,
+                description="추출 개수",
+                type=openapi.TYPE_INTEGER,
+                required=False,
+            ),
         ]
     )
-    @action(detail=False, methods=['get'])
-    def newest(self, request):
-        qs = self.get_base_queryset(request, require_user=True).order_by('-created_at')
-        return Response(self.serializer_class(qs, many=True).data)
+    def get(self, request):
+        style = request.query_params.get("style")
+        if style not in ["미니멀", "캐주얼"]:
+            return Response(
+                {"detail": "style 파라미터: 미니멀 or 캐주얼"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        count = int(request.query_params.get("count"))
+        items = MainRecommend.objects.filter(style=style).order_by("?")[:count]
+        return Response(MainTableSerializer(items, many=True).data)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter('user_id', openapi.IN_QUERY, '사용자 ID', type=openapi.TYPE_INTEGER, required=True),
-        ]
-    )
-    @action(detail=False, methods=['get'])
-    def oldest(self, request):
-        qs = self.get_base_queryset(request, require_user=True).order_by('created_at')
-        return Response(self.serializer_class(qs, many=True).data)
+
+# 4. pick된 항목 시간순 정렬 (recommend + main)
+class PickedByTimeAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('count', openapi.IN_QUERY, '추출 개수', type=openapi.TYPE_INTEGER),
+            openapi.Parameter(
+                "user_id",
+                openapi.IN_QUERY,
+                description="사용자 ID",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+            openapi.Parameter(
+                "order",
+                openapi.IN_QUERY,
+                description="정렬 (newest 또는 oldest)",
+                type=openapi.TYPE_STRING,
+                required=False,
+            ),
         ]
     )
-    @action(detail=False, methods=['get'])
-    def random(self, request):
-        count = int(request.query_params.get('count', 3))
-        qs = self.get_base_queryset(request).order_by('?')[:count]
-        return Response(self.serializer_class(qs, many=True).data)
+    def get(self, request):
+        user_id = request.query_params.get("user_id")
+        order = request.query_params.get("order", "newest")
+        if not user_id:
+            return Response(
+                {"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        combined = _build_combined_list(user_id)
+        combined.sort(key=lambda x: x["created_at"], reverse=(order == "newest"))
+        return Response(CombinedPickSerializer(combined, many=True).data)
+
+
+# 5. pick된 항목 가격순 정렬
+class PickedByPriceAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "user_id",
+                openapi.IN_QUERY,
+                description="사용자 ID",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+            openapi.Parameter(
+                "sort",
+                openapi.IN_QUERY,
+                description="정렬 (high 또는 low)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get("user_id")
+        sort = request.query_params.get("sort")
+        if not user_id or sort not in ["high", "low"]:
+            return Response(
+                {"detail": "user_id 및 sort(high/low) 필요"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        combined = _build_combined_list(user_id)
+        combined.sort(
+            key=lambda x: x["combination"]["total_price"], reverse=(sort == "high")
+        )
+        return Response(CombinedPickSerializer(combined, many=True).data)
+
+
+# 6. pick된 항목 스타일별 필터
+class PickedByStyleAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "user_id",
+                openapi.IN_QUERY,
+                description="사용자 ID",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+            openapi.Parameter(
+                "style",
+                openapi.IN_QUERY,
+                description="스타일 (미니멀 또는 캐주얼)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get("user_id")
+        style = request.query_params.get("style")
+        if not user_id or style not in ["미니멀", "캐주얼"]:
+            return Response(
+                {"detail": "user_id 및 style(m미니멀/캐주얼) 필요"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        combined = _build_combined_list(user_id)
+        filtered = [c for c in combined if c["combination"]["style"] == style]
+        return Response(CombinedPickSerializer(filtered, many=True).data)

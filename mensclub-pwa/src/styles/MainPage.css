@@ -4,7 +4,7 @@ body {
     'Helvetica Neue', sans-serif;
   background-color: #ffffff48;
   height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* 레이아웃 */
@@ -17,6 +17,7 @@ body {
   overflow-y: auto;
   margin: 0 auto;
   width: 100%;
+  height: 100dvh; /* ✅ 전체 높이를 보장 */
 }
 
 .main-content {
@@ -25,6 +26,9 @@ body {
   padding: 20px 24px;
   max-width: 100%;
   align-items: center;
+  overflow-y: auto;
+  /* margin-top: 80px; */
+  margin-bottom: 20px;
 }
 
 .header-section,
@@ -383,3 +387,23 @@ h1 {
     font-size: 14px;
   }
 }
+
+/* 바텀값이 너무 작아서 키움 - 모바일에서만 */
+@media (max-width: 768px) {
+  .main-content {
+    padding-bottom: 100px;
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 9px !important; /* 📉 더 작게 */
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+  }
+}
+
+
+
+

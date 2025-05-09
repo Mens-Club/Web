@@ -43,3 +43,14 @@ export const updateBodyInfo = async (height, weight) => {
   });
   return res.data;
 };
+
+// 회원 프로필 수정 (이름, 비밀번호, 나이, 성별)
+export const updateProfile = async (formData) => {
+  const res = await api.patch('/api/account/v1/update_profile/', {
+    username: formData.username,
+    password: formData.password,
+    age: formData.age,
+    sex: formData.sex,
+  });
+  return res.data;
+};
