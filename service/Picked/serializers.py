@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Recommend, Picked, MainRecommend, MainPicked
 from clothes.models import Clothes, Shoes
+from recommend.models import Recommendation
 
 class LikeSerializer(serializers.Serializer):
     recommend_id = serializers.IntegerField()
@@ -35,7 +36,7 @@ class RecommendSerializer(serializers.ModelSerializer):
     shoes = ShoesSerializer()
 
     class Meta:
-        model = Recommend
+        model = Recommendation
         fields = '__all__'
 
 class PickedSerializer(serializers.ModelSerializer):
