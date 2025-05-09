@@ -47,7 +47,7 @@ class Picked(models.Model):
 class MainPicked(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, db_column='user_id', on_delete=models.CASCADE)
-    recommend = models.ForeignKey('MainRecommend', db_column='recommend_id', on_delete=models.CASCADE)
+    main_recommend = models.ForeignKey('MainRecommend', db_column='recommend_id', on_delete=models.CASCADE)
     created_at = models.DateTimeField()
 
     class Meta:
@@ -67,3 +67,4 @@ class ShoesRefine(models.Model):
     class Meta:
         db_table = 'shoes_refine'
         managed = False
+
