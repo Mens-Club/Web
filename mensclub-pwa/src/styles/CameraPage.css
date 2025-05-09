@@ -1,3 +1,11 @@
+.camera-content {
+  flex: 1;
+  margin-top: -30px;
+  padding: 20px 24px;
+  max-width: 100%;
+  align-items: center;
+}
+
 .title-wrapper {
   text-align: center;
   margin-top: 100px;

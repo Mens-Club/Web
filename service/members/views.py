@@ -302,6 +302,9 @@ from drf_yasg import openapi
 
 
 class UserImageUploadView(GenericAPIView):
+    serializer_class = UserImageUploadSerializer
+    permission_classes = [IsAuthenticated]
+
     @swagger_auto_schema(
         operation_description="사용자 이미지 업로드",
         manual_parameters=[],

@@ -130,7 +130,7 @@ MIDDLEWARE = [
 ]
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # 액세스 토큰 유효기간: 60분
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5000),  # 액세스 토큰 유효기간: 60분
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # 리프레시 토큰 유효기간: 1일
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
