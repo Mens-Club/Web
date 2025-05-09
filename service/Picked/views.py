@@ -1,15 +1,11 @@
-# Picked/views.py
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from .models import Picked, MainPicked
-from django.utils import timezone
 from .serializers import LikeSerializer, MainLikeSerializer
 
 class LikeView(APIView):
@@ -28,11 +24,9 @@ class LikeView(APIView):
             recommend_id = serializer.validated_data['recommend_id']
             user = request.user
 
-            # 이미 추천을 눌렀는지 확인
             if Picked.objects.filter(user=user, recommend_id=recommend_id).exists():
                 return Response({'message': 'Already liked.'}, status=status.HTTP_200_OK)
 
-            # 추천을 추가
             Picked.objects.create(
                 user=user,
                 recommend_id=recommend_id,
@@ -57,11 +51,9 @@ class MainLikeView(APIView):
             main_recommend_id = serializer.validated_data['main_recommend_id']
             user = request.user
 
-            # 이미 선택된 항목인지 확인
             if MainPicked.objects.filter(user=user, recommend_id=main_recommend_id).exists():
                 return Response({'message': 'Already picked.'}, status=status.HTTP_200_OK)
 
-            # 선택 항목 추가
             MainPicked.objects.create(
                 user=user,
                 recommend_id=main_recommend_id,
@@ -70,3 +62,56 @@ class MainLikeView(APIView):
             return Response({'message': 'Main picked successfully!'}, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class LikeCancelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'recommend_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                required=True, description="좋아요를 취소할 recommendation의 ID"
+            )
+        ]
+    )
+    def delete(self, request):
+        user = request.user
+        recommend_id = request.query_params.get('recommend_id')
+
+        if not recommend_id:
+            return Response({"error": "recommend_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            picked = Picked.objects.get(user_id=user.id, recommend_id=recommend_id)
+            picked.delete()
+            return Response({"message": "좋아요가 취소되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+        except Picked.DoesNotExist:
+            return Response({"error": "좋아요가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+        
+class MainLikeCancelView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="main_picked 좋아요 취소",
+        manual_parameters=[
+            openapi.Parameter(
+                'recommend_id', openapi.IN_QUERY,
+                description="recommend_id 값 (main_recommend 테이블의 id)",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            )
+        ]
+    )
+    def delete(self, request):
+        user = request.user
+        recommend_id = request.query_params.get('recommend_id')
+
+        if not recommend_id:
+            return Response({"error": "recommend_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            picked = MainPicked.objects.get(user_id=user.id, recommend_id=recommend_id)
+            picked.delete()
+            return Response({"message": "좋아요가 취소되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+        except MainPicked.DoesNotExist:
+            return Response({"error": "좋아요 정보가 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
