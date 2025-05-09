@@ -237,6 +237,7 @@ h1 {
   -ms-overflow-style: none;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  margin-bottom: 20px;
 }
 
 .card {

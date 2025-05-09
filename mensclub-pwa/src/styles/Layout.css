@@ -22,7 +22,7 @@ body {
   /* flex-direction: column; */
   /* min-height: calc(100vh - 80px - 80px); top-nav + bottom-nav 제외한 높이 */
   /* padding-bottom: 120px; bottom-nav와 겹치지 않도록 여백 추가 */
-  overflow: hidden;
+  overflow: auto;
   margin: 0 auto;
   width: 100%;
 }

@@ -54,3 +54,19 @@ export const updateProfile = async (formData) => {
   });
   return res.data;
 };
+
+// 추천 찜 추가
+export const addLike = async (recommendId) => {
+  const res = await api.post('/api/picked/v1/main_like/', {
+    main_recommend_id: recommendId,
+  });
+  return res.data;
+};
+
+// 추천 찜 삭제
+export const cancelLike = async (recommendId) => {
+  const res = await api.delete('/api/picked/v1/main_like_cancel/', {
+    data: { recommend_id: recommendId },
+  });
+  return res.data;
+};
