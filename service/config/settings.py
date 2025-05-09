@@ -189,6 +189,17 @@ DATABASES = {
     }
 }
 
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "http://localhost:9200"},
+}
+
+
+
+# 인덱스 이름 매핑
+ELASTICSEARCH_INDEX_NAMES = {
+    "clothes.documents.ClothesDocument": "clothes",
+    "clothes.documents.ShoesDocument": "shoes",
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -305,19 +316,6 @@ LOGOUT_REDIRECT_URL = "/"
 
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
-
-# 인덱스 이름 매핑
-ELASTICSEARCH_INDEX_NAMES = {
-    "clothes.documents.ClothesDocument": "clothes",
-    "clothes.documents.ShoesDocument": "shoes",
-}
-
-# Celery 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-
-
 
 
 
