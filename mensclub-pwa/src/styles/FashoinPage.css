@@ -2,13 +2,14 @@
 
 .recommendation-container {
   text-align: center;
+  margin-top: 320px;
 }
 
 .recommendation-container h2 {
   font-size: 20px;
   font-weight: 600;
   margin-top: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   color: #333;
   letter-spacing: -0.5px;
   position: relative;

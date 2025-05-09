@@ -64,14 +64,14 @@ class MainLikeView(APIView):
             user = request.user
 
             if MainPicked.objects.filter(
-                user=user, recommend_id=main_recommend_id
+                user=user, main_recommend_id=main_recommend_id
             ).exists():
                 return Response(
                     {"message": "Already picked."}, status=status.HTTP_200_OK
                 )
 
             MainPicked.objects.create(
-                user=user, recommend_id=main_recommend_id, created_at=timezone.now()
+                user=user,main_recommend_id=main_recommend_id, created_at=timezone.now()
             )
             return Response(
                 {"message": "Main picked successfully!"}, status=status.HTTP_201_CREATED
