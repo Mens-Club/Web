@@ -1,6 +1,9 @@
 from openai import OpenAI
 import os 
 
+os.getenv('OPENAI_API_KEY')
+client = OpenAI()
+
 def generate_recommendation_reasoning(combination, season, style, original_item=None):
     """
     OpenAI API를 사용하여 패션 조합에 대한 추천 이유 생성
@@ -14,7 +17,7 @@ def generate_recommendation_reasoning(combination, season, style, original_item=
     Returns:
         str: 생성된 추천 이유
     """
-    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+   
     
     # 조합에서 필요한 정보 추출
     top = combination.get('상의', {})
@@ -27,8 +30,17 @@ def generate_recommendation_reasoning(combination, season, style, original_item=
     
     # 원래 이미지의 아이템 정보 추가
     if original_item:
-        items_info.append(f"기존 아이템: {original_item.get('category', '')} - {original_item.get('sub_category', '')}, 색상: {original_item.get('color', '')}")
-    
+        base = f"기존 아이템: {original_item.get('category', '')} - {original_item.get('sub_category', '')}"
+        color = original_item.get("color")
+        style = original_item.get("style")
+
+        if color:
+            base += f", 색상: {color}"
+        if style:
+            base += f", 스타일: {style}"
+        
+        items_info.append(base)
+        
     # 조합 아이템 정보 추가
     if top:
         items_info.append(f"상의: {top.get('goods_name', '')}, 색상: {top.get('color', '')}, 스타일: {top.get('style', '')}")
@@ -52,10 +64,9 @@ def generate_recommendation_reasoning(combination, season, style, original_item=
     {items_text}
     
     이 조합이 왜 어울리는지, 다음 관점에서 설명해주세요:
-    1. 색상 조화 - 해당 색상들이 어떻게 조화를 이루는지
-    2. 계절 적합성 - {season} 계절에 어떻게 적합한지
-    3. 스타일 통일성 - {style} 스타일을 어떻게 표현하는지
-    4. 착용 시 기대효과 - 이 조합을 입었을 때의 인상
+    1. 계절 적합성 - {season} 계절에 어떻게 적합한지
+    2. 스타일 통일성 - {style} 스타일을 어떻게 표현하는지
+    3. 착용 시 기대효과 - 이 조합을 입었을 때의 인상
     
     150~200자 내로 간결하게 설명해주세요.
     """

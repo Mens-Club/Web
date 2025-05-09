@@ -6,17 +6,12 @@ import torch
 
 class Encoding:
     
-    def __init__(self, model="ViT-B/32", device=None):
-        
-        # GPU Device 장착 
-        if device is None:
-            self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        else:
-            self.device = device
-        
+    def __init__(self, model="ViT-B/32", device=None, jit=False):
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+
         try:
-            self.model, self.preprocess = clip.load(model, device=self.device)
-            self.model.eval()  # 평가 모드로 설정
+            self.model, self.preprocess = clip.load(model, device=self.device, jit=jit)
+            self.model.eval()
         except Exception as e:
             raise RuntimeError(f"CLIP 모델 로딩 중 오류 발생: {e}")
     

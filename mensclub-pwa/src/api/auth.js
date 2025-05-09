@@ -43,3 +43,30 @@ export const updateBodyInfo = async (height, weight) => {
   });
   return res.data;
 };
+
+// 회원 프로필 수정 (이름, 비밀번호, 나이, 성별)
+export const updateProfile = async (formData) => {
+  const res = await api.patch('/api/account/v1/update_profile/', {
+    username: formData.username,
+    password: formData.password,
+    age: formData.age,
+    sex: formData.sex,
+  });
+  return res.data;
+};
+
+// 추천 찜 추가
+export const addLike = async (recommendId) => {
+  const res = await api.post('/api/picked/v1/main_like/', {
+    main_recommend_id: recommendId,
+  });
+  return res.data;
+};
+
+// 추천 찜 삭제
+export const cancelLike = async (recommendId) => {
+  const res = await api.delete('/api/picked/v1/main_like_cancel/', {
+    data: { recommend_id: recommendId },
+  });
+  return res.data;
+};

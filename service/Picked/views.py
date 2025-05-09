@@ -156,22 +156,30 @@ class MainLikeCancelView(APIView):
         
 def _build_combined_list(user_id):
     # recommendation 테이블 기반 Picked
-    rec_qs = Picked.objects.filter(user_id=user_id).select_related('recommend')
-    rec_list = [{
-        'source': 'recommend',
-        'pick_id': p.id,
-        'created_at': p.created_at,
-        'combination': RecommendSerializer(p.recommend).data  # adapt if needed
-    } for p in rec_qs]
+    rec_qs = Picked.objects.filter(user_id=user_id).select_related("recommend")
+    rec_list = [
+        {
+            "source": "recommend",
+            "pick_id": p.id,
+            "created_at": p.created_at,
+            "combination": RecommendSerializer(p.recommend).data,  # adapt if needed
+        }
+        for p in rec_qs
+    ]
 
     # main_table 기반 MainPicked
-    main_qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
-    main_list = [{
-        'source': 'main',
-        'pick_id': p.id,
-        'created_at': p.created_at,
-        'combination': MainTableSerializer(p.main_recommend).data
-    } for p in main_qs]
+    main_qs = MainPicked.objects.filter(user_id=user_id).select_related(
+        "main_recommend"
+    )
+    main_list = [
+        {
+            "source": "main",
+            "pick_id": p.id,
+            "created_at": p.created_at,
+            "combination": MainTableSerializer(p.main_recommend).data,
+        }
+        for p in main_qs
+    ]
 
     return rec_list + main_list
 
@@ -360,10 +368,12 @@ class MainPickedByTimeAPIView(APIView):
         ]
     )
     def get(self, request):
-        user_id = request.query_params.get('user_id')
-        order = request.query_params.get('order', 'newest')
+        user_id = request.query_params.get("user_id")
+        order = request.query_params.get("order", "newest")
         if not user_id:
-            return Response({"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
         if order == 'newest':
@@ -384,10 +394,13 @@ class MainPickedByPriceAPIView(APIView):
         ]
     )
     def get(self, request):
-        user_id = request.query_params.get('user_id')
-        sort = request.query_params.get('sort')
-        if not user_id or sort not in ['high', 'low']:
-            return Response({"detail": "user_id 및 sort(high/low) 필요"}, status=status.HTTP_400_BAD_REQUEST)
+        user_id = request.query_params.get("user_id")
+        sort = request.query_params.get("sort")
+        if not user_id or sort not in ["high", "low"]:
+            return Response(
+                {"detail": "user_id 및 sort(high/low) 필요"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         qs = MainPicked.objects.filter(user_id=user_id).select_related('main_recommend')
         if sort == 'high':
@@ -403,8 +416,20 @@ class MainPickedByStyleAPIView(APIView):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('user_id', openapi.IN_QUERY, description='사용자 ID', type=openapi.TYPE_INTEGER, required=True),
-            openapi.Parameter('style', openapi.IN_QUERY, description='스타일 (미니멀 또는 캐주얼)', type=openapi.TYPE_STRING, required=True),
+            openapi.Parameter(
+                "user_id",
+                openapi.IN_QUERY,
+                description="사용자 ID",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+            openapi.Parameter(
+                "style",
+                openapi.IN_QUERY,
+                description="스타일 (미니멀 또는 캐주얼)",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
         ]
     )
     def get(self, request):

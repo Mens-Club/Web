@@ -15,7 +15,7 @@ class Recommendation(models.Model):
         max_length=50, 
         unique=True, 
         editable=False,
-        default=''
+        blank=True,  # ← 추가
     )
     
     # 사용자 정보
@@ -25,24 +25,23 @@ class Recommendation(models.Model):
         related_name='recommendations'
     )
     
-    top = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="top")
-    bottom = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="bottom")
-    outer = models.ForeignKey("clothes.Clothes", on_delete=models.SET_NULL, null=True, blank=True, related_name="outer")
-    shoes = models.ForeignKey("clothes.Shoes", on_delete=models.SET_NULL, null=True, blank=True, related_name="shoes")
-
+    top = models.ForeignKey("clothes.Clothes",to_field="idx", on_delete=models.SET_NULL, null=True, blank=True, related_name="top")
+    bottom = models.ForeignKey("clothes.Clothes",to_field="idx", on_delete=models.SET_NULL, null=True, blank=True, related_name="bottom")
+    outer = models.ForeignKey("clothes.Clothes",to_field="idx", on_delete=models.SET_NULL, null=True, blank=True, related_name="outer")
+    shoes = models.ForeignKey("clothes.Shoes",to_field="idx", on_delete=models.SET_NULL, null=True, blank=True, related_name="shoes")
+        
     # AI 응답 정보
     answer = models.TextField(help_text="AI가 제공한 분석 응답")
-    reasoning_generated = models.BooleanField(default=False, help_text="추천 이유 생성 상태")
-
+    reasoning_text = models.TextField(help_text="추천 이유")
+    
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now)
-
     total_price = models.IntegerField(null=True, blank=True)
     
     class Meta:
         db_table = 'recommend_recommendation'
         ordering = ['-created_at']
-    
+     
     def save(self, *args, **kwargs):
         if not self.recommendation_code:
             self.recommendation_code = str(uuid.uuid4())
@@ -55,7 +54,6 @@ class Recommendation(models.Model):
 class RecommendationBookmark(models.Model):
     
     id = models.AutoField(primary_key=True)
-    
     user = models.ForeignKey(
         User, 
         on_delete=models.CASCADE,
@@ -79,16 +77,7 @@ class RecommendationBookmark(models.Model):
     
     def __str__(self):
         return f"{self.user.username}의 추천 {self.recommendation.id} 북마크"
-
-      
-# 아직 미완성
-# class RecommendationReasoning(models.Model):
-#     id = models.AutoField(primary_key=True)
     
-#     recommendation = models.OneToOneField(
-#         Recommendation,
-#         on_delete=models.CASCADE,
-#         related_name='reasoning'
-#     )
     
 
+    

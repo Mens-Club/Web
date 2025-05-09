@@ -3,8 +3,10 @@ from .models import Picked, MainRecommend, MainPicked
 from clothes.models import Clothes, Shoes
 from recommend.models import Recommendation
 
+
 class LikeSerializer(serializers.Serializer):
     recommend_id = serializers.IntegerField()
+
 
 class MainLikeSerializer(serializers.Serializer):
     main_recommend_id = serializers.IntegerField()
@@ -39,12 +41,14 @@ class RecommendSerializer(serializers.ModelSerializer):
         model = Recommendation
         fields = '__all__'
 
+
 class PickedSerializer(serializers.ModelSerializer):
-    recommendation = RecommendSerializer(source='recommend')
+    recommendation = RecommendSerializer(source="recommend")
 
     class Meta:
         model = Picked
-        fields = '__all__'
+        fields = "__all__"
+
 
 class MainTableSerializer(serializers.ModelSerializer):
     top = ClothesSerializer()
@@ -54,10 +58,11 @@ class MainTableSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainRecommend
-        fields = '__all__'
+        fields = "__all__"
+
 
 class MainPickedSerializer(serializers.ModelSerializer):
-    main = MainTableSerializer(source='main_recommend')
+    main = MainTableSerializer(source="main_recommend")
 
     class Meta:
         model = MainPicked
