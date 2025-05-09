@@ -134,7 +134,7 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 11: 조합 생성")
             combinations = generate_proper_combinations(recommend_json, all_items, styles)
             logger.debug("STEP 11 결과 조합들: %s", combinations)
-            recommendation_ids = []
+            recommendation_outputs = []
 
             for idx, combo in enumerate(combinations):
                 if combo is None:
@@ -168,7 +168,12 @@ class IntegratedFashionRecommendAPIView(APIView):
                     reasoning_text="",
                     total_price=total_price
                 )
-                recommendation_ids.append(recommendation.id)
+                
+                recommendation_outputs.append({
+                    "recommendation_code": recommendation.recommendation_code,
+                    "combination": combo,
+                    "total_price": total_price
+                })
 
             # logger.info("STEP 12: Celery 비동기 reasoning 요청")
             # generate_reasoning_task.delay(
@@ -184,7 +189,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                 'status': 'success',
                 'initial_recommendation': filtered_recommendation,
                 'detected_season': season,
-                'product_combinations': combinations,
+                'product_combinations': recommendation_outputs, 
             }, status=200)
 
         except Exception as e:
