@@ -6,9 +6,10 @@ from django.conf import settings
 import logging
 from datetime import timedelta
 
+logging.basicConfig(level=logging.DEBUG)
+
 import boto3
 
-logging.basicConfig(level=logging.DEBUG)
 boto3.set_stream_logger("", logging.DEBUG)
 
 load_dotenv()
@@ -51,14 +52,24 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "rest_framework.authtoken",
     "corsheaders",
-    'django_elasticsearch_dsl',  
+    "django_elasticsearch_dsl",
     "drf_yasg",
     "members",
     "clothes",
     "Picked",
-    "recommend",
     "storages",
 ]
+
+# Redis 캐시
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
 
 
 # settings.py
@@ -119,7 +130,7 @@ MIDDLEWARE = [
 ]
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # 액세스 토큰 유효기간: 60분
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5000),  # 액세스 토큰 유효기간: 60분
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # 리프레시 토큰 유효기간: 1일
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -182,7 +193,6 @@ ELASTICSEARCH_DSL = {
 }
 
 
-
 # 인덱스 이름 매핑
 ELASTICSEARCH_INDEX_NAMES = {
     "clothes.documents.ClothesDocument": "clothes",
@@ -239,10 +249,10 @@ USE_TZ = False  # Django 시간대
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -297,13 +307,10 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_STORE_TOKEN = True
 # LOGIN_REDIRECT_URL = "http://localhost:3000/main"
 LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
-SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "members.tokken_toss.CustomSocialAccountAdapter"
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
 
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
-
-
-

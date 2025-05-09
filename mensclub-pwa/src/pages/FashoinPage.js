@@ -2,29 +2,25 @@ import '../styles/FashoinPage.css';
 import React, { useRef, useState, useEffect } from 'react';
 import '../styles/Layout.css';
 import api from '../api/axios';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
-import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import { useNavigate } from 'react-router-dom'; // ✅ 추가
 
 function FashionPage() {
   const navigate = useNavigate(); // ✅ 추가
-
-  const dummyData = [
-    { id: 1, imageUrl: '/images/outfit1.jpg' },
-    { id: 2, imageUrl: '/images/outfit2.jpg' },
-    { id: 3, imageUrl: '/images/outfit3.jpg' },
-    { id: 4, imageUrl: '/images/outfit4.jpg' },
-  ];
-
-  const [outfits, setOutfits] = useState([]);
+  const [recommendData, setRecommendData] = useState(null);
   const [liked, setLiked] = useState([]);
   const [userInfo, setUserInfo] = useState({ username: '' });
 
-  useEffect(() => {
-    setOutfits(dummyData);
-    setLiked(new Array(dummyData.length).fill(false));
-  }, []);
+  const data = JSON.parse(localStorage.getItem('recommendationData'));
+  const combinations = data.product_combinations;
+  // null이 아닌 값만 남긴 새 배열 생성
+  const filtered_combinations = combinations.map((comb) =>
+    // comb: {상의: null, 하의: {...}, 신발: null ...}
+    Object.fromEntries(Object.entries(comb).filter(([_, v]) => v !== null))
+  );
+  console.log(filtered_combinations);
 
   useEffect(() => {
     async function fetchUserInfo() {
@@ -32,6 +28,8 @@ function FashionPage() {
         const token = localStorage.getItem('accessToken');
         if (!token) {
           console.error('❌ 토큰이 없습니다. 로그인 필요.');
+          alert('로그인이 필요한 서비스 입니다.');
+          navigate('/login');
           return;
         }
         const response = await api.get('/api/account/v1/user_info/', {
@@ -41,11 +39,13 @@ function FashionPage() {
         const { username } = response.data;
         setUserInfo({ username });
       } catch (error) {
+        alert('로그인 정보가 유효하지 않습니다. 재 로그인해주세요.');
+        navigate('/login');
         console.error('❌ 사용자 정보 불러오기 실패:', error);
       }
     }
     fetchUserInfo();
-  }, []);
+  }, [navigate]);
 
   const toggleLike = (index) => {
     const newLiked = [...liked];
@@ -81,26 +81,45 @@ function FashionPage() {
         <div className="recommendation-container">
           <h2>🧷 {userInfo.username}님의 추천 코디 👔</h2>
           <div className="recommend-grid">
-            {outfits.map((item, index) => (
-              <div key={item.id} className="recommend-card">
-                <img
-                  src={item.imageUrl}
-                  alt={`recommend ${index + 1}`}
-                  onClick={() => handleImageClick(item.id)} // ✅ 클릭 핸들러
-                  className="clickable-img"
-                />
-                <button
-                  className="heart-button"
-                  onClick={() => toggleLike(index)}
-                  aria-label={liked[index] ? "찜 해제" : "찜 추가"}
-                >
-                  <FontAwesomeIcon
-                    icon={liked[index] ? solidHeart : regularHeart}
-                    className={`heart-icon ${liked[index] ? "liked" : ""}`}
-                  />
-                </button>
-              </div>
-            ))}
+            {filtered_combinations.map((combination, index) => {
+              const items = Object.values(combination).filter(Boolean);
+              return (
+                <div key={index} className={`recommend-card image-grid images-${items.length}`}>
+                  {items.map((item, idx) => {
+                    // 각 아이템의 이미지 배열 만들기
+                    const images = [];
+                    if (item.thumbnail_url) images.push(item.thumbnail_url);
+                    return (
+                      <div key={idx} className="item-image-group">
+                        {images.map((imgUrl, imgIdx) => (
+                          <img
+                            onClick={handleImageClick}
+                            key={imgIdx}
+                            src={imgUrl}
+                            alt={item.goods_name}
+                            className="thumbnail-img"
+                            style={{
+                              width: images.length === 1 ? '100%' : images.length === 2 ? '48%' : '31%',
+                              marginRight: imgIdx < images.length - 1 ? '2%' : '0',
+                            }}
+                          />
+                        ))}
+                        <div className="sub-category-label">{item.sub_category}</div>
+                      </div>
+                    );
+                  })}
+                  <button
+                    className="heart-button"
+                    onClick={() => toggleLike(index)}
+                    aria-label={liked[index] ? '찜 해제' : '찜 추가'}>
+                    <FontAwesomeIcon
+                      icon={liked[index] ? solidHeart : regularHeart}
+                      className={`heart-icon ${liked[index] ? 'liked' : ''}`}
+                    />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
