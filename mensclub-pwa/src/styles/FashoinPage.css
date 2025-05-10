@@ -2,7 +2,7 @@
 
 .recommendation-container {
   text-align: center;
-  margin-top: 380px;
+  margin-top: 320px;
   width: 100%; /* 전체 너비 사용 */
   max-width: 100%; /* 최대 너비 제한 해제 */
 }
@@ -100,6 +100,20 @@
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
+  z-index: 10;
+}
+
+/* 클릭 영역 확장을 위한 가상 요소 추가 */
+.heart-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px; /* 실제 버튼보다 20px 더 큰 영역 */
+  height: 60px; /* 실제 버튼보다 20px 더 큰 영역 */
+  border-radius: 50%;
+  z-index: -1; /* 버튼 아이콘 뒤에 위치 */
 }
 
 .heart-icon.liked {
