@@ -1,69 +1,20 @@
 from rest_framework import serializers
-from .models import Picked, MainRecommend, MainPicked
-from clothes.models import Clothes, Shoes
-from recommend.models import Recommendation
+from recommend.models import RecommendationBookmark, MainRecommendation, MainRecommendationBookmark
 
 
-class LikeSerializer(serializers.Serializer):
-    recommend_id = serializers.IntegerField()
-
-
-class MainLikeSerializer(serializers.Serializer):
-    main_recommend_id = serializers.IntegerField()
-
-class ClothesSerializer(serializers.ModelSerializer):
+class MainRecommendationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Clothes
-        fields = [
-            'idx', 'style', 'season', 'fit', 'color', 'goods_name',
-            'thumbnail_url', 'is_soldout', 'goods_url', 'brand',
-            'normal_price', 'price', 'main_category', 'sub_category',
-            'created_at', 'updated_at', 'image_id', 's3_path'
-        ]
+        model = MainRecommendation
+        fields = '__all__' 
 
-class ShoesSerializer(serializers.ModelSerializer):
+class RecommendationBookmarkSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Shoes
-        fields = [
-            'idx', 'color', 'sub_category', 'season', 'goods_name',
-            'thumbnail_url', 'is_soldout', 'goods_url', 'brand',
-            'normal_price', 'price', 'created_at', 'updated_at',
-            'image_id', 's3_path'
-        ]
-
-class RecommendSerializer(serializers.ModelSerializer):
-    top = ClothesSerializer()
-    bottom = ClothesSerializer()
-    outer = ClothesSerializer()
-    shoes = ShoesSerializer()
-
-    class Meta:
-        model = Recommendation
+        model = RecommendationBookmark
         fields = '__all__'
 
-
-class PickedSerializer(serializers.ModelSerializer):
-    recommendation = RecommendSerializer(source="recommend")
-
+class MainRecommendationBookmarkSerializer(serializers.ModelSerializer):
+    main_recommendation = MainRecommendationSerializer()
+    
     class Meta:
-        model = Picked
-        fields = "__all__"
-
-
-class MainTableSerializer(serializers.ModelSerializer):
-    top = ClothesSerializer()
-    bottom = ClothesSerializer()
-    outer = ClothesSerializer()
-    shoes = ShoesSerializer()
-
-    class Meta:
-        model = MainRecommend
-        fields = "__all__"
-
-
-class MainPickedSerializer(serializers.ModelSerializer):
-    main = MainTableSerializer(source="main_recommend")
-
-    class Meta:
-        model = MainPicked
-        fields = '__all__'
+        model = MainRecommendationBookmark
+        fields = ['id', 'user', 'main_recommendation', 'created_at']
