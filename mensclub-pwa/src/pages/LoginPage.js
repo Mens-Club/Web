@@ -23,8 +23,8 @@ function LoginPage() {
       const { access_token, refresh_token } = response.data;
 
       // ✅ 토큰 저장
-      localStorage.setItem('accessToken', access_token);
-      localStorage.setItem('refreshToken', refresh_token);
+      sessionStorage.setItem('accessToken', access_token);
+      sessionStorage.setItem('refreshToken', refresh_token);
 
       // ✅ 홈으로 이동
       navigate('/main');
@@ -64,9 +64,9 @@ function LoginPage() {
             </div>
             {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
             <div className="input-group">
-            <button type="submit" className="login-btn2">
-              Login
-            </button>
+              <button type="submit" className="login-btn2">
+                Login
+              </button>
             </div>
           </form>
           <div className="bottom-links">

@@ -5,6 +5,7 @@
   margin-top: 320px;
   width: 100%; /* 전체 너비 사용 */
   max-width: 100%; /* 최대 너비 제한 해제 */
+  margin-bottom: 60px;
 }
 
 .recommendation-container h2 {
@@ -50,6 +51,14 @@
   overflow-x: auto;
   padding: 5px 0;
   flex-wrap: nowrap; /* 이미지가 줄바꿈되지 않도록 */
+
+  /* 스크롤바 숨기기 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.image-grid::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .recommend-card {
@@ -145,6 +154,68 @@
   font-size: 15px;
   color: #666;
   text-align: center;
+}
+
+.action-container {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: -30px;
+  padding-bottom: 10px;
+}
+
+.action-button {
+  background-color: #666666;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 34%;
+}
+
+.action-button:hover {
+  background-color: #000000;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.image-grid.dragging * {
+  pointer-events: none;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

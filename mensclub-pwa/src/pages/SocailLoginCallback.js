@@ -11,9 +11,9 @@ function SocialLoginCallback() {
 
     if (token) {
       // 토큰 저장
-      localStorage.setItem('accessToken', token);
+      sessionStorage.setItem('accessToken', token);
       if (refresh) {
-        localStorage.setItem('refreshToken', refresh);
+        sessionStorage.setItem('refreshToken', refresh);
       }
 
       // 지연 후 리다이렉트 (토큰 저장 시간 확보)

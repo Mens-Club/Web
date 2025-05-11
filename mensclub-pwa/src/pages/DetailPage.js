@@ -22,7 +22,7 @@ function DetailPage() {
 
         if (recommendationCode) {
           // 로컬 스토리지에서 데이터 확인
-          const storedData = localStorage.getItem('recommendationData');
+          const storedData = sessionStorage.getItem('recommendationData');
 
           if (storedData) {
             const data = JSON.parse(storedData);
