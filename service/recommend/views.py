@@ -11,8 +11,8 @@ import requests
 import base64
 import json
 
-from .RAG.clip_loader import clip_model_instance
 from .RAG.rag_context_generator import create_rag_context
+from .RAG.encoding_elements import Encoding
 
 from .connect.connect_to_database import PGVecProcess
 
@@ -28,6 +28,7 @@ from .models import Recommendation
 
 logger = logging.getLogger(__name__)
 
+clip_model_instance = Encoding()
 
 class IntegratedFashionRecommendAPIView(APIView):
     permission_classes = [AllowAny]
