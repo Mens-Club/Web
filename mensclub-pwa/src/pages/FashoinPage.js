@@ -106,7 +106,12 @@ function FashionPage() {
 
     // 클릭 처리 (상세 페이지로 이동)
     if (items && items.length > 0) {
-      navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationId}`);
+      navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationId}`, {
+        state: {
+          likedItems: liked,
+          recommendations: recommendations,
+        },
+      });
     }
   };
 
@@ -142,10 +147,54 @@ function FashionPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 새 추천 결과 저장
-      sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
-      setRecommendations(recommendRes.data.product_combinations);
-      setLiked(new Array(recommendRes.data.product_combinations.length).fill(false));
+      // 결과 유효성 검사
+      if (!isValidRecommendationResult(recommendRes.data)) {
+        // 유효하지 않은 결과면 자동 재시도 (최대 3번)
+        let retryCount = 0;
+        const maxRetries = 3;
+        let validResult = null;
+
+        while (retryCount < maxRetries) {
+          console.log(`❌ 유효하지 않은 추천 결과, 자동 재시도 중... (${retryCount + 1}/${maxRetries})`);
+
+          // 지수 백오프 적용 (1초, 2초, 4초...)
+          const delay = 1000 * Math.pow(2, retryCount);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+
+          try {
+            const retryRes = await api.post(
+              '/api/recommend/v1/recommned/',
+              { image_url: imageUrl },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (isValidRecommendationResult(retryRes.data)) {
+              validResult = retryRes;
+              console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries})`);
+              break;
+            }
+          } catch (error) {
+            console.error(`❌ 재시도 요청 실패 (${retryCount + 1}/${maxRetries}):`, error);
+          }
+
+          retryCount++;
+        }
+
+        if (validResult) {
+          // 유효한 결과를 찾았으면 그것을 사용
+          sessionStorage.setItem('recommendationData', JSON.stringify(validResult.data));
+          setRecommendations(validResult.data.product_combinations);
+          setLiked(new Array(validResult.data.product_combinations.length).fill(false));
+        } else {
+          // 모든 재시도 실패 시 알림
+          alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
+        }
+      } else {
+        // 유효한 결과면 바로 사용
+        sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
+        setRecommendations(recommendRes.data.product_combinations);
+        setLiked(new Array(recommendRes.data.product_combinations.length).fill(false));
+      }
     } catch (error) {
       console.error('재추천 요청 실패:', error);
       alert('추천을 다시 받는 중 오류가 발생했습니다.');
@@ -214,8 +263,8 @@ function FashionPage() {
   //
   // 찜 기능 구현 부분
   //
+  // 찜 토글 함수 수정 (기존 함수 대체)
   const toggleLike = async (e, index) => {
-    // 이벤트 버블링 방지
     e.stopPropagation();
 
     try {
@@ -229,12 +278,19 @@ function FashionPage() {
       const recommendation = recommendations[index];
       const recommendationId = recommendation.recommendation_id;
 
-      // 현재 찜 상태 변경
+      // 현재 찜 상태 확인
+      const isCurrentlyLiked = liked[index];
+
+      // 상태 먼저 업데이트 (낙관적 UI 업데이트)
       const newLiked = [...liked];
-      newLiked[index] = !newLiked[index];
+      newLiked[index] = !isCurrentlyLiked;
+      setLiked(newLiked);
+
+      // 세션스토리지에 찜 상태 저장
+      sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
 
       // 서버에 찜 상태 업데이트
-      if (newLiked[index]) {
+      if (!isCurrentlyLiked) {
         // 찜 추가
         await api.post(
           '/api/picked/v1/like_add/',
@@ -250,12 +306,17 @@ function FashionPage() {
         });
         console.log('✅ 찜 삭제 성공:', recommendationId);
       }
-
-      // 상태 업데이트 (서버 요청 성공 후)
-      setLiked(newLiked);
     } catch (error) {
       console.error('❌ 찜 상태 업데이트 실패:', error);
-      alert('찜 기능 처리 중 오류가 발생했습니다.');
+
+      // 에러 발생 시 상태 롤백
+      fetchLikedItems();
+
+      if (error.response?.data?.error === 'You have already bookmarked this recommendation.') {
+        alert('이미 찜한 상품입니다.');
+      } else {
+        alert('찜 기능 처리 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -264,11 +325,27 @@ function FashionPage() {
   //
 
   useEffect(() => {
-    if (recommendations.length > 0) {
-      fetchLikedItems();
-    }
-  }, [recommendations]);
+    try {
+      const storedData = sessionStorage.getItem('recommendationData');
+      if (storedData) {
+        const data = JSON.parse(storedData);
+        if (data && data.product_combinations) {
+          // 전체 조합 정보 저장
+          setRecommendations(data.product_combinations);
 
+          // 세션스토리지에서 찜 상태 불러오기
+          const storedLiked = sessionStorage.getItem('likedItems');
+          if (storedLiked) {
+            setLiked(JSON.parse(storedLiked));
+          } else {
+            setLiked(new Array(data.product_combinations.length).fill(false));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('데이터 로드 오류:', error);
+    }
+  }, []);
   // 찜 목록 가져오기
   const fetchLikedItems = async () => {
     try {
@@ -279,17 +356,35 @@ function FashionPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 서버에서 받아온 찜 목록 (item.recommendation_id 배열)
-      const likedCodes = response.data.map((item) => item.recommendation_id);
+      // 서버에서 받아온 찜 목록
+      const likedIds = response.data.map((item) => item.recommendation_id);
+      console.log('서버에서 받은 찜 목록 ID:', likedIds);
 
       // 현재 recommendations 배열과 비교하여 liked 상태 업데이트
-      const newLiked = recommendations.map((recommendation) => likedCodes.includes(recommendation.recommendation_id));
+      const newLiked = recommendations.map((recommendation) => {
+        return likedIds.includes(Number(recommendation.recommendation_id));
+      });
 
+      console.log('업데이트된 liked 상태:', newLiked);
       setLiked(newLiked);
-      console.log('✅ 찜 목록 로드 성공');
+
+      // 세션스토리지에 찜 상태 저장
+      sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
     } catch (error) {
       console.error('❌ 찜 목록 로드 실패:', error);
     }
+  };
+
+  //추천 결과 유효성 검증
+  const isValidRecommendationResult = (data) => {
+    if (!data || !data.product_combinations || data.product_combinations.length === 0) {
+      return false;
+    }
+    // 하나 이상의 조합에 null이 아닌 아이템이 있는지 확인
+    return data.product_combinations.some((combo) => {
+      if (!combo.combination) return false;
+      return Object.values(combo.combination).some((item) => item !== null);
+    });
   };
 
   return (
@@ -297,51 +392,55 @@ function FashionPage() {
       <div className="content">
         <div className="recommendation-container">
           <h2>🧷 {userInfo.username}님의 추천 코디 👔</h2>
-          <div className="recommend-grid">
-            {recommendations.map((recommendation, index) => {
-              // combination 객체에서 아이템들만 추출 (null 제외)
-              const items = Object.entries(recommendation.combination || {})
-                .filter(([_, item]) => item !== null)
-                .map(([category, item]) => ({ ...item, category }));
+          {recommendations.length > 0 ? (
+            <div className="recommend-grid">
+              {recommendations.map((recommendation, index) => {
+                // combination 객체에서 아이템들만 추출 (null 제외)
+                const items = Object.entries(recommendation.combination || {})
+                  .filter(([_, item]) => item !== null)
+                  .map(([category, item]) => ({ ...item, category }));
 
-              return (
-                <div
-                  key={index}
-                  className="recommend-card"
-                  onClick={() => handleCardClick(items, recommendation.recommendation_id)}
-                  style={{ cursor: 'pointer' }}>
-                  <h3>추천 코디 #{index + 1}</h3>
-                  <div className="total-price">총 가격: {recommendation.total_price.toLocaleString()}원</div>
-
+                return (
                   <div
-                    className={`image-grid images-${items.length}`}
-                    ref={(el) => setImageGridRef(index, el)}
-                    style={{ cursor: 'grab' }}>
-                    {items.map((item, idx) => (
-                      <div key={idx} className="item-image-group">
-                        {item.thumbnail_url && (
-                          <img src={item.thumbnail_url} alt={item.goods_name} className="thumbnail-img" />
-                        )}
-                        <div className="item-info">
-                          <div className="sub-category-label">{item.sub_category || item.category}</div>
-                          <div className="item-price">{item.price?.toLocaleString()}원</div>
+                    key={index}
+                    className="recommend-card"
+                    onClick={() => handleCardClick(items, recommendation.recommendation_id)}
+                    style={{ cursor: 'pointer' }}>
+                    <h3>추천 코디 #{index + 1}</h3>
+                    <div className="total-price">총 가격: {recommendation.total_price.toLocaleString()}원</div>
+
+                    <div
+                      className={`image-grid images-${items.length}`}
+                      ref={(el) => setImageGridRef(index, el)}
+                      style={{ cursor: 'grab' }}>
+                      {items.map((item, idx) => (
+                        <div key={idx} className="item-image-group">
+                          {item.thumbnail_url && (
+                            <img src={item.thumbnail_url} alt={item.goods_name} className="thumbnail-img" />
+                          )}
+                          <div className="item-info">
+                            <div className="sub-category-label">{item.sub_category || item.category}</div>
+                            <div className="item-price">{item.price?.toLocaleString()}원</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <button
+                      className="heart-button"
+                      onClick={(e) => toggleLike(e, index)}
+                      aria-label={liked[index] ? '찜 해제' : '찜 추가'}>
+                      <FontAwesomeIcon
+                        icon={liked[index] ? solidHeart : regularHeart}
+                        className={`heart-icon ${liked[index] ? 'liked' : ''}`}
+                      />
+                    </button>
                   </div>
-                  <button
-                    className="heart-button"
-                    onClick={(e) => toggleLike(e, index)}
-                    aria-label={liked[index] ? '찜 해제' : '찜 추가'}>
-                    <FontAwesomeIcon
-                      icon={liked[index] ? solidHeart : regularHeart}
-                      className={`heart-icon ${liked[index] ? 'liked' : ''}`}
-                    />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="loading-message">추천 코디를 불러오는 중입니다...</div>
+          )}
           {/* 버튼 컨테이너 추가 */}
           <div className="action-container">
             <button className="action-button" onClick={handleRetryRecommendation} disabled={isLoading}>

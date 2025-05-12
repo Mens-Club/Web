@@ -24,34 +24,69 @@ function MyPage() {
 
   const getOutfits = async () => {
     const { order, style } = filter;
-    const email = userInfo.email;
-    const user_id = sessionStorage.getItem('userId');
+    const name = userInfo.name;
+    const token = sessionStorage.getItem('accessToken');
 
-    if (!email || !user_id) return;
+    if (!name) return;
 
     try {
+      // 먼저 현재 사용자 정보를 가져옴
+      const userResponse = await api.get('/api/account/v1/user_info/', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const user_id = userResponse.data.user_id; // 백엔드에서 반환한 사용자 ID
+
+      console.log('유저 아이디:', user_id);
+
       let res;
+      const headers = { Authorization: `Bearer ${token}` };
 
       if (tab === 'ai') {
-        res = await api.get('/clothes/v1/picked_clothes/mypage/', {
-          params: { email },
-        });
-        setAiOutfits(res.data);
-      } else {
+        // AI 탭의 경우
         if (order === 'newest' || order === 'oldest') {
-          res = await api.get('/picked/v1/mypage/by-time/', {
+          res = await api.get('/api/picked/v1/recommend_picked/by-time/', {
+            headers: { Authorization: `Bearer ${token}` },
             params: { user_id, order },
           });
         } else if (order === 'high' || order === 'low') {
-          res = await api.get('/picked/v1/mypage/by-price/', {
+          res = await api.get('/api/picked/v1/recommend_picked/by-price/', {
+            headers: { Authorization: `Bearer ${token}` },
             params: { user_id, sort: order },
           });
         } else if (style) {
-          res = await api.get('/picked/v1/mypage/by-style/', {
+          res = await api.get('/api/picked/v1/recommend_picked/by-style/', {
+            headers: { Authorization: `Bearer ${token}` },
             params: { user_id, style },
           });
         } else {
-          res = await api.get('/picked/v1/mypage/by-time/', {
+          res = await api.get('/api/picked/v1/recommend_picked/by-time/', {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { user_id, order: 'newest' },
+          });
+        }
+        console.log('AI 찜 목록 응답:', res.data);
+        setAiOutfits(res.data);
+      } else {
+        // CLUB 탭의 경우
+        if (order === 'newest' || order === 'oldest') {
+          res = await api.get('/api/picked/v1/main_picked/by-time/', {
+            headers,
+            params: { user_id, order },
+          });
+        } else if (order === 'high' || order === 'low') {
+          res = await api.get('/api/picked/v1/main_picked/by-price/', {
+            headers,
+            params: { user_id, sort: order },
+          });
+        } else if (style) {
+          res = await api.get('/api/picked/v1/main_picked/by-style/', {
+            headers,
+            params: { user_id, style },
+          });
+        } else {
+          res = await api.get('/api/picked/v1/main_picked/by-time/', {
+            headers,
             params: { user_id, order: 'newest' },
           });
         }
@@ -60,11 +95,12 @@ function MyPage() {
 
       const newLikedMap = {};
       res.data.forEach((item) => {
-        newLikedMap[item.uuid || item.id] = true;
+        newLikedMap[item.uuid || item.id || item.recommendation?.id || item.main_recommendation?.id] = true;
       });
       setLikedMap(newLikedMap);
     } catch (error) {
       console.error('❌ 아웃핏 불러오기 실패:', error);
+      console.error('에러 상세:', error.response?.data || error.message);
     }
   };
 
@@ -76,7 +112,7 @@ function MyPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { username, height, weight } = res.data;
-        setUserInfo({ email: username, height, weight });
+        setUserInfo({ name: username, height, weight });
       } catch (e) {
         console.error('❌ 사용자 정보 실패', e);
       }
@@ -87,7 +123,7 @@ function MyPage() {
   useEffect(() => {
     getOutfits();
     setPage(0);
-  }, [userInfo.email, tab, filter]);
+  }, [userInfo.name, tab, filter]);
 
   const toggleLike = async (item) => {
     const token = sessionStorage.getItem('accessToken');
@@ -120,7 +156,7 @@ function MyPage() {
         <div className="profile-section">
           <div className="profile-header">
             <div className="profile-info">
-              <h2>{userInfo.email} 님 안녕하세요 😄</h2>
+              <h2>{userInfo.name} 님 안녕하세요 😄</h2>
               {userInfo.height && userInfo.weight && (
                 <p>
                   {userInfo.height}cm / {userInfo.weight}kg
@@ -172,15 +208,10 @@ function MyPage() {
                     <div key={item.uuid || item.id} className="outfit-card">
                       <div className="image-container">
                         <img
-                          src={
-                            data.image ||
-                            item.thumbnail_url ||
-                            item.image_url ||
-                            'https://via.placeholder.com/200x250?text=No+Image'
-                          }
+                          src={data.image || item.thumbnail_url || item.image_url || ''}
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/200x250?text=No+Image';
+                            e.target.src = '';
                           }}
                           alt={data.goods_name || 'Outfit'}
                           className="outfit-img"
