@@ -25,11 +25,11 @@ function SettingPage() {
 
   const handleAction = () => {
     hidePopup();
-  
+
     setTimeout(() => {
       if (currentAction === 'logout') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('refreshToken');
         navigate('/');
       } else if (currentAction === 'edit') {
         navigate('/edit-profile');
@@ -42,7 +42,6 @@ function SettingPage() {
       }
     }, 500); // ✅ 팝업 닫는 애니메이션 고려
   };
-  
 
   const popupMessages = {
     edit: '회원정보를 수정하시겠습니까?',
@@ -56,35 +55,36 @@ function SettingPage() {
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const token = localStorage.getItem('accessToken');
+        const token = sessionStorage.getItem('accessToken');
         if (!token) {
           console.error('❌ 토큰이 없습니다. 로그인 필요.');
           return;
         }
-  
+
         const response = await api.get('/api/account/v1/user_info/', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          withCredentials: true,  // ✅ 추가
+          withCredentials: true, // ✅ 추가
         });
-  
+
         const { username, email } = response.data;
         setUserInfo({ username, email });
       } catch (error) {
         console.error('❌ 사용자 정보 불러오기 실패:', error);
       }
     }
-  
+
     fetchUserInfo();
   }, []);
-  
 
   return (
     <div className="setting-container">
       <div className="setting-content">
         <div className="setting-header">
-          <button className="setting-back-btn" onClick={() => navigate(-1)}>‹</button>
+          <button className="setting-back-btn" onClick={() => navigate(-1)}>
+            ‹
+          </button>
           <h1 className="setting-title">내 정보</h1>
         </div>
 
@@ -133,8 +133,12 @@ function SettingPage() {
           <div className="setting-popup-content">
             <div className="setting-popup-text">{popupMessages[currentAction]}</div>
             <div className="setting-popup-buttons">
-              <button className="setting-popup-btn cancel" onClick={hidePopup}>취소</button>
-              <button className="setting-popup-btn confirm" onClick={handleAction}>확인</button>
+              <button className="setting-popup-btn cancel" onClick={hidePopup}>
+                취소
+              </button>
+              <button className="setting-popup-btn confirm" onClick={handleAction}>
+                확인
+              </button>
             </div>
           </div>
         </div>

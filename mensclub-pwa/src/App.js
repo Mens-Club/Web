@@ -158,7 +158,7 @@ function AppWithNav() {
           />
 
           <Route
-            path="/product-detail"
+            path="/product-detail/:itemId"
             element={
               <PageWrapper>
                 <DetailPage />

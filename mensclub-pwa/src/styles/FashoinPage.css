@@ -3,6 +3,9 @@
 .recommendation-container {
   text-align: center;
   margin-top: 320px;
+  width: 100%; /* 전체 너비 사용 */
+  max-width: 100%; /* 최대 너비 제한 해제 */
+  margin-bottom: 60px;
 }
 
 .recommendation-container h2 {
@@ -31,17 +34,38 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 600px;
+  max-width: 1000px; /* 더 넓게 설정 */
+  width: 100%; /* 화면 너비의 95%로 설정 */
   margin: 0 auto;
   padding: 0 20px;
   margin-bottom: 70px;
 }
 
+.image-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px; /* 간격 줄임 */
+  width: 100%;
+  overflow-x: auto;
+  padding: 5px 0;
+  flex-wrap: nowrap; /* 이미지가 줄바꿈되지 않도록 */
+
+  /* 스크롤바 숨기기 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.image-grid::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 .recommend-card {
   position: relative;
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column; /* 카드 내부 요소는 세로 배열 유지 */
+  align-items: flex-start;
   gap: 16px;
   background-color: #fff;
   border-radius: 16px;
@@ -62,13 +86,13 @@
 }
 
 .recommend-card img {
-  width: 200px;
-  height: 200px;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
   border-radius: 12px;
 }
 
-.like-btn {
+.heart-button {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -85,22 +109,34 @@
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
+  z-index: 10;
 }
 
-.like-btn.liked {
+/* 클릭 영역 확장을 위한 가상 요소 추가 */
+.heart-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px; /* 실제 버튼보다 20px 더 큰 영역 */
+  height: 60px; /* 실제 버튼보다 20px 더 큰 영역 */
+  border-radius: 50%;
+  z-index: -1; /* 버튼 아이콘 뒤에 위치 */
+}
+
+.heart-icon.liked {
   color: #ff3b5c;
-  background: rgba(255, 255, 255, 0.95);
+}
+
+.heart-button:hover .heart-icon {
+  color: #ff3b5c;
   transform: scale(1.1);
 }
 
-.like-btn:hover {
-  color: #ff3b5c;
-  transform: scale(1.1);
-}
-
-.thumbnail-img {
-  width: 200px;
-  height: 200px;
+.item-image-group img.thumbnail-img {
+  width: 160px;
+  height: 160px;
   object-fit: cover;
   border-radius: 12px;
   display: block;
@@ -110,7 +146,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 8px;
+  margin-right: 4px;
 }
 
 .sub-category-label {
@@ -118,6 +154,68 @@
   font-size: 15px;
   color: #666;
   text-align: center;
+}
+
+.action-container {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: -30px;
+  padding-bottom: 10px;
+}
+
+.action-button {
+  background-color: #666666;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 34%;
+}
+
+.action-button:hover {
+  background-color: #000000;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.image-grid.dragging * {
+  pointer-events: none;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

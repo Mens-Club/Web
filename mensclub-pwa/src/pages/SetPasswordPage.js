@@ -28,7 +28,7 @@ function SetPasswordPage() {
     e.preventDefault();
 
     const { currentPassword, newPassword, confirmPassword } = form;
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
 
     if (!token) {
       alert('로그인이 필요합니다.');
@@ -92,13 +92,17 @@ function SetPasswordPage() {
   return (
     <div className="change-container">
       <div className="change-header">
-        <button className="change-close" onClick={() => navigate(-1)}>×</button>
+        <button className="change-close" onClick={() => navigate(-1)}>
+          ×
+        </button>
         <h2>비밀번호 설정</h2>
       </div>
 
       <div className="change-info-text">
-        <span className="change-info-highlight">안전한 비밀번호를 설정하면</span><br />
-        개인정보를 안전하게 보호하고<br />
+        <span className="change-info-highlight">안전한 비밀번호를 설정하면</span>
+        <br />
+        개인정보를 안전하게 보호하고
+        <br />
         서비스를 더 편리하게 이용할 수 있어요
       </div>
       <div className="edit-tab-menu">
@@ -107,51 +111,27 @@ function SetPasswordPage() {
       <form className="change-form" onSubmit={handleSubmit}>
         <label>
           현재 비밀번호
-          <input
-            type="password"
-            name="currentPassword"
-            value={form.currentPassword}
-            onChange={handleChange}
-            required
-          />
-          {errors.currentPassword && (
-            <span className="error-message">{errors.currentPassword}</span>
-          )}
+          <input type="password" name="currentPassword" value={form.currentPassword} onChange={handleChange} required />
+          {errors.currentPassword && <span className="error-message">{errors.currentPassword}</span>}
         </label>
 
         <label>
           새 비밀번호
-          <input
-            type="password"
-            name="newPassword"
-            value={form.newPassword}
-            onChange={handleChange}
-            required
-          />
-          <small className="password-hint">
-            영문자, 숫자, 특수문자를 포함하여 8자 이상 입력하세요.
-          </small>
-          {errors.newPassword && (
-            <span className="error-message">{errors.newPassword}</span>
-          )}
+          <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange} required />
+          <small className="password-hint">영문자, 숫자, 특수문자를 포함하여 8자 이상 입력하세요.</small>
+          {errors.newPassword && <span className="error-message">{errors.newPassword}</span>}
         </label>
 
         <label>
           새 비밀번호 확인
-          <input
-            type="password"
-            name="confirmPassword"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          {errors.confirmPassword && (
-            <span className="error-message">{errors.confirmPassword}</span>
-          )}
+          <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} required />
+          {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
         </label>
 
         <div className="button-row">
-          <button type="submit" className="change-save-btn">변경하기</button>
+          <button type="submit" className="change-save-btn">
+            변경하기
+          </button>
         </div>
       </form>
     </div>

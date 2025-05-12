@@ -51,7 +51,7 @@ function CameraPage() {
     }
     setLoading(true);
     setStatusText('');
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
 
     try {
       // 1. 이미지 blob으로 변환
@@ -77,6 +77,8 @@ function CameraPage() {
       }
 
       const imageUrl = uploadData.image_url;
+      // 이미지 URL을 세션스토리지에 저장
+      sessionStorage.setItem('capturedImageUrl', imageUrl);
 
       // 3. 업로드된 이미지 기반 추천 요청
       const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/recommned/', {
@@ -111,7 +113,7 @@ function CameraPage() {
   // 패션 추천 페이지로 이동 (전체 데이터 전달)
   const goToFashionPage = () => {
     // 상태를 통해 데이터를 전달하거나, 로컬 스토리지 사용
-    localStorage.setItem('recommendationData', JSON.stringify(recommendResult));
+    sessionStorage.setItem('recommendationData', JSON.stringify(recommendResult));
     navigate('/fashion');
   };
 
