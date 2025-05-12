@@ -1,3 +1,5 @@
+
+
 /* ✅ 기본 설정 */
 .profile-section,
 .saved-outfits {
@@ -286,5 +288,89 @@
 .saved-outfits-header h2 {
   margin-bottom: 0;
   font-size: 20px;
+  margin-right: 30px;
 }
 
+
+/* 모바일 버전 ui 추가 */
+@media (max-width: 768px) {
+
+  .saved-outfits {
+    min-height: 350px;  /* 원하는 높이만큼 늘릴 수 있어요 */
+  }
+
+  .profile-header h2,
+  .profile-info h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .saved-outfits h2 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    /* gap: 30px; */
+  }
+  
+  .filters select {
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #666;
+    min-width: 90px;
+  }
+
+ .saved-outfits-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.saved-outfits h2 {
+  font-size: 18px;
+  font-weight: 700;
+  align-items: center;
+  margin: 0; 
+}
+
+.filters {
+  margin: 0; /* 불필요한 여백 제거 */
+}
+
+.filters select {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #666;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+}
+
+.filters {
+  margin-left: auto;
+  padding-right: 1px; /* 선택적으로 우측 여백 조정 */
+}
+
+.profile-info p {
+  font-size: 13px;  
+  margin-top: 6px;
+}
+
+.empty-message {
+  font-size: 14px;
+
+}
+
+.tab-buttons button {
+  font-size: 13px; 
+}
+
+}

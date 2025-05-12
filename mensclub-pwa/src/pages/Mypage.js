@@ -135,7 +135,7 @@ function MyPage() {
 
         <div className="saved-outfits">
           <div className="saved-outfits-header">
-            <h2>Saved Outfits 👕</h2>
+            <h2>찜한 상품</h2>
             <div className="filters">
               <select
                 onChange={(e) => {

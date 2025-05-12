@@ -127,6 +127,8 @@ function MainPage() {
 
   return (
     <div className="container">
+
+
       <main className="main-content">
         <div className="header-section">
           <AutoSwiper
