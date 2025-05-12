@@ -16,6 +16,20 @@ function MainPage() {
   const [styleFilter, setStyleFilter] = useState('미니멀');
   const [priceFilter, setPriceFilter] = useState('10만원대');
 
+  //토큰추출
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const refresh = params.get('refresh');
+
+    if (token && refresh) {
+      sessionStorage.setItem('accessToken', token);
+      sessionStorage.setItem('refreshToken', refresh);
+      // URL에서 토큰 파라미터 제거
+      window.history.replaceState({}, document.title, '/main');
+    }
+  }, []);
+
   useEffect(() => {
     const el = document.querySelector('.main-content');
     if (el) {
@@ -75,7 +89,6 @@ function MainPage() {
     }
   };
 
-
   // 찜 추가, 삭제
   const toggleLike = async (recommendId) => {
     try {
@@ -100,8 +113,6 @@ function MainPage() {
       console.error('찜 토글 오류:', err.response?.data || err.message);
     }
   };
-  
-  
 
   const renderCard = (item) => (
     <div className="card" key={item.id}>
@@ -135,7 +146,7 @@ function MainPage() {
               '/images/banner1.png',
               '/images/banner5.png',
               '/images/banner3.png',
-              '/images/banner2.png'
+              '/images/banner2.png',
             ]}
           />
           <div className="title-area">
@@ -171,9 +182,7 @@ function MainPage() {
           <div className="section-header">
             <h2>오늘의 랜덤 추천</h2>
           </div>
-          <div className="coordination-cards">
-            {randomRecommends.map(renderCard)}
-          </div>
+          <div className="coordination-cards">{randomRecommends.map(renderCard)}</div>
         </div>
 
         {/* 가격대별 추천 섹션 */}
@@ -191,9 +200,7 @@ function MainPage() {
               ))}
             </div>
           </div>
-          <div className="coordination-cards">
-            {priceRecommends.map(renderCard)}
-          </div>
+          <div className="coordination-cards">{priceRecommends.map(renderCard)}</div>
         </div>
 
         {/* 스타일별 추천 섹션 */}
@@ -211,9 +218,7 @@ function MainPage() {
               ))}
             </div>
           </div>
-          <div className="coordination-cards">
-            {styleRecommends.map(renderCard)}
-          </div>
+          <div className="coordination-cards">{styleRecommends.map(renderCard)}</div>
         </div>
       </main>
     </div>
