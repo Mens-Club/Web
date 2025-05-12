@@ -29,7 +29,7 @@ function DetailPage() {
 
             // 해당 추천 코드에 맞는 조합 찾기
             const recommendationData = data.product_combinations.find(
-              (combo) => combo.recommendation_code === recommendationCode
+              (combo) => combo.recommendation_id === parseInt(recommendationCode)
             );
 
             if (recommendationData) {

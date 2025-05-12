@@ -98,7 +98,7 @@ function FashionPage() {
   }, [location.key, recommendations]);
 
   // 카드 전체 클릭 시 대표 아이템으로 이동
-  const handleCardClick = (items, recommendationCode) => {
+  const handleCardClick = (items, recommendationId) => {
     // 드래깅 중이면 클릭 이벤트 무시
     if (isDraggingRef.current) {
       return;
@@ -106,7 +106,7 @@ function FashionPage() {
 
     // 클릭 처리 (상세 페이지로 이동)
     if (items && items.length > 0) {
-      navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationCode}`);
+      navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationId}`);
     }
   };
 
@@ -176,7 +176,7 @@ function FashionPage() {
       if (storedData) {
         const data = JSON.parse(storedData);
         if (data && data.product_combinations) {
-          // 전체 조합 정보(recommendation_code, total_price 포함) 저장
+          // 전체 조합 정보(recommendation_id, total_price 포함) 저장
           setRecommendations(data.product_combinations);
           setLiked(new Array(data.product_combinations.length).fill(false));
         }
@@ -227,7 +227,7 @@ function FashionPage() {
       }
 
       const recommendation = recommendations[index];
-      const recommendationCode = recommendation.recommendation_code;
+      const recommendationId = recommendation.recommendation_id;
 
       // 현재 찜 상태 변경
       const newLiked = [...liked];
@@ -237,18 +237,18 @@ function FashionPage() {
       if (newLiked[index]) {
         // 찜 추가
         await api.post(
-          '/api/picked/v1/like/',
-          { recommendation_code: recommendationCode },
+          '/api/picked/v1/like_add/',
+          { recommendation_id: recommendationId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        console.log('✅ 찜 추가 성공:', recommendationCode);
+        console.log('✅ 찜 추가 성공:', recommendationId);
       } else {
         // 찜 삭제
-        await api.delete('/api/picked/v1/like_cancel/', {
+        await api.delete('/api/picked/v1/like_delete/', {
           headers: { Authorization: `Bearer ${token}` },
-          params: { recommendation_code: recommendationCode },
+          data: { recommendation_id: recommendationId },
         });
-        console.log('✅ 찜 삭제 성공:', recommendationCode);
+        console.log('✅ 찜 삭제 성공:', recommendationId);
       }
 
       // 상태 업데이트 (서버 요청 성공 후)
@@ -263,21 +263,27 @@ function FashionPage() {
   // 이미 찜 한 코디인지 확인을 위한 찜 목록 가지고 오기
   //
 
+  useEffect(() => {
+    if (recommendations.length > 0) {
+      fetchLikedItems();
+    }
+  }, [recommendations]);
+
   // 찜 목록 가져오기
   const fetchLikedItems = async () => {
     try {
       const token = sessionStorage.getItem('accessToken');
       if (!token) return;
 
-      const response = await api.get('/api/clothes/v1/picked_clothes/list/', {
+      const response = await api.get('/api/picked/v1/bookmark/by-time/', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 서버에서 받아온 찜 목록 (recommendation_code 배열)
-      const likedCodes = response.data.map((item) => item.recommendation_code);
+      // 서버에서 받아온 찜 목록 (item.recommendation_id 배열)
+      const likedCodes = response.data.map((item) => item.recommendation_id);
 
       // 현재 recommendations 배열과 비교하여 liked 상태 업데이트
-      const newLiked = recommendations.map((recommendation) => likedCodes.includes(recommendation.recommendation_code));
+      const newLiked = recommendations.map((recommendation) => likedCodes.includes(recommendation.recommendation_id));
 
       setLiked(newLiked);
       console.log('✅ 찜 목록 로드 성공');
@@ -302,7 +308,7 @@ function FashionPage() {
                 <div
                   key={index}
                   className="recommend-card"
-                  onClick={() => handleCardClick(items, recommendation.recommendation_code)}
+                  onClick={() => handleCardClick(items, recommendation.recommendation_id)}
                   style={{ cursor: 'pointer' }}>
                   <h3>추천 코디 #{index + 1}</h3>
                   <div className="total-price">총 가격: {recommendation.total_price.toLocaleString()}원</div>
