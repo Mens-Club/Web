@@ -8,12 +8,13 @@ from rest_framework.permissions import IsAuthenticated
 from recommend.models import Recommendation, RecommendationBookmark, MainRecommendation, MainRecommendationBookmark
 from .serializers import MainRecommendationSerializer, RecommendationBookmarkSerializer, MainRecommendationBookmarkSerializer
 
-class LikeAddView(APIView):
+
+class RecommendPicked(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="좋아요 추가",
-        operation_description="recommendation_id를 받아 좋아요(Bookmark)를 추가합니다.",
+        operation_summary="추천 좋아요 토글",
+        operation_description="recommendation_id를 받아 좋아요(Bookmark)를 토글합니다. 없으면 생성하고, 있으면 삭제합니다.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=["recommendation_id"],
@@ -22,8 +23,9 @@ class LikeAddView(APIView):
             },
         ),
         responses={
+            200: openapi.Response(description="Bookmark toggled successfully."),
             201: openapi.Response(description="Bookmark created."),
-            400: openapi.Response(description="recommendation_id is required or already bookmarked."),
+            400: openapi.Response(description="recommendation_id is required."),
             404: openapi.Response(description="Recommendation not found."),
         }
     )
@@ -39,57 +41,34 @@ class LikeAddView(APIView):
         except Recommendation.DoesNotExist:
             return Response({"error": "Recommendation not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # 이미 좋아요한 경우
-        if RecommendationBookmark.objects.filter(user=user, recommendation=recommendation).exists():
-            return Response({"error": "You have already bookmarked this recommendation."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 좋아요 추가
-        RecommendationBookmark.objects.create(
-            user=user,
-            recommendation=recommendation,
-            created_at=timezone.now()
-        )
-        return Response({"message": "Bookmark created."}, status=status.HTTP_201_CREATED)
-    
-class LikeDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_summary="좋아요 삭제",
-        operation_description="recommendation_id를 받아 사용자의 좋아요(Bookmark)를 삭제합니다.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["recommendation_id"],
-            properties={
-                "recommendation_id": openapi.Schema(type=openapi.TYPE_INTEGER, description="추천 ID"),
-            },
-        ),
-        responses={
-            200: openapi.Response(description="Bookmark deleted."),
-            400: openapi.Response(description="recommendation_id is required."),
-            404: openapi.Response(description="Bookmark not found."),
-        }
-    )
-    def delete(self, request):
-        user = request.user
-        recommendation_id = request.data.get("recommendation_id")
-
-        if not recommendation_id:
-            return Response({"error": "recommendation_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+        # 기존 북마크가 있는지 확인
         try:
-            bookmark = RecommendationBookmark.objects.get(user=user, recommendation_id=recommendation_id)
+            bookmark = RecommendationBookmark.objects.get(user=user, recommendation=recommendation)
+            # 북마크가 있으면 삭제
             bookmark.delete()
-            return Response({"message": "Bookmark deleted."}, status=status.HTTP_200_OK)
+            return Response({
+                "message": "Bookmark deleted.",
+                "status": "deleted"
+            }, status=status.HTTP_200_OK)
         except RecommendationBookmark.DoesNotExist:
-            return Response({"error": "Bookmark not found."}, status=status.HTTP_404_NOT_FOUND)
+            # 북마크가 없으면 생성
+            RecommendationBookmark.objects.create(
+                user=user,
+                recommendation=recommendation,
+                created_at=timezone.now()
+            )
+            return Response({
+                "message": "Bookmark created.",
+                "status": "created"
+            }, status=status.HTTP_201_CREATED)
 
-class MainLikeAddView(APIView):
+
+class MainPicked(APIView):
     permission_classes = [IsAuthenticated]
     
     @swagger_auto_schema(
-        operation_summary="추천 추가 좋아요",
-        operation_description="main_recommendation_id를 받아 MainRecommendation에 좋아요(Bookmark)를 추가합니다.",
+        operation_summary="메인 추천 좋아요 토글",
+        operation_description="main_recommendation_id를 받아 MainRecommendation에 좋아요(Bookmark)를 토글합니다. 없으면 생성하고, 있으면 삭제합니다.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=["main_recommendation_id"],
@@ -98,8 +77,9 @@ class MainLikeAddView(APIView):
             },
         ),
         responses={
+            200: openapi.Response(description="Bookmark toggled successfully."),
             201: openapi.Response(description="Bookmark created."),
-            400: openapi.Response(description="main_recommendation_id is required or already bookmarked."),
+            400: openapi.Response(description="main_recommendation_id is required."),
             404: openapi.Response(description="MainRecommendation not found."),
         }
     )
@@ -115,51 +95,26 @@ class MainLikeAddView(APIView):
         except MainRecommendation.DoesNotExist:
             return Response({"error": "MainRecommendation not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # 이미 좋아요한 경우
-        if MainRecommendationBookmark.objects.filter(user=user, main_recommendation=main_recommendation).exists():
-            return Response({"error": "You have already bookmarked this recommendation."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 좋아요 추가
-        MainRecommendationBookmark.objects.create(
-            user=user,
-            main_recommendation=main_recommendation,
-            created_at=timezone.now()
-        )
-        return Response({"message": "Bookmark created."}, status=status.HTTP_201_CREATED)
-    
-class MainLikeDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_summary="추천 삭제 좋아요",
-        operation_description="main_recommendation_id를 받아 사용자의 MainRecommendation에 대한 좋아요(Bookmark)를 삭제합니다.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["main_recommendation_id"],
-            properties={
-                "main_recommendation_id": openapi.Schema(type=openapi.TYPE_INTEGER, description="MainRecommendation ID"),
-            },
-        ),
-        responses={
-            200: openapi.Response(description="Bookmark deleted."),
-            400: openapi.Response(description="main_recommendation_id is required."),
-            404: openapi.Response(description="Bookmark not found."),
-        }
-    )
-    def delete(self, request):
-        user = request.user
-        main_recommendation_id = request.data.get("main_recommendation_id")
-
-        if not main_recommendation_id:
-            return Response({"error": "main_recommendation_id is required."}, status=status.HTTP_400_BAD_REQUEST)
-
+        # 기존 북마크가 있는지 확인
         try:
-            # 사용자의 북마크가 존재하는지 확인
-            bookmark = MainRecommendationBookmark.objects.get(user=user, main_recommendation_id=main_recommendation_id)
+            bookmark = MainRecommendationBookmark.objects.get(user=user, main_recommendation=main_recommendation)
+            # 북마크가 있으면 삭제
             bookmark.delete()
-            return Response({"message": "Bookmark deleted."}, status=status.HTTP_200_OK)
+            return Response({
+                "message": "Bookmark deleted.",
+                "status": "deleted"
+            }, status=status.HTTP_200_OK)
         except MainRecommendationBookmark.DoesNotExist:
-            return Response({"error": "Bookmark not found."}, status=status.HTTP_404_NOT_FOUND)
+            # 북마크가 없으면 생성
+            MainRecommendationBookmark.objects.create(
+                user=user,
+                main_recommendation=main_recommendation,
+                created_at=timezone.now()
+            )
+            return Response({
+                "message": "Bookmark created.",
+                "status": "created"
+            }, status=status.HTTP_201_CREATED)
         
 class MainRandomAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -217,7 +172,7 @@ class MainByPriceAPIView(APIView):
         return Response(data)
 
 class MainByStyleAPIView(APIView):
-    permission_classes = [IsAuthenticated] # 추후수정정
+    permission_classes = [IsAuthenticated] # 추후수정
 
     @swagger_auto_schema(
         manual_parameters=[
