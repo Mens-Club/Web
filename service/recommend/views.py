@@ -160,21 +160,7 @@ class IntegratedFashionRecommendAPIView(APIView):
             )
 
             logger.info("STEP 10: 상품 검색 시작")
-            recommend_json = filtered_recommendation.get("recommend", {})
-            
-            # 빈 리스트가 나오는 오류 핸들링
-            if all(not items for items in recommend_json.values()):
-                logger.warning("추천 항목이 모두 빈 리스트임")
-                return Response(
-                    {
-                        "status": "error",
-                        "message": "추천 결과가 모두 빈 리스트입니다. 재시도해주세요.",
-                        "raw_answer": answer_text,
-                        "raw_recommend": recommend_json,
-                    },
-                    status=500,
-                )
-            
+            recommend_json = filtered_recommendation.get("recommend", {})            
             styles = ["미니멀", "캐주얼"]
             color_palette = COLOR_PALETTE_BY_SEASON.get(season, [])
 
