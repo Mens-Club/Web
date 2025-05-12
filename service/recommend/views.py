@@ -233,28 +233,28 @@ class IntegratedFashionRecommendAPIView(APIView):
 
 class RecommendationDetailAPIView(APIView):
     @swagger_auto_schema(
-        operation_description="recommendation_code로 Recommendation 객체의 모든 필드 값 조회",
+        operation_description="recommendation_id로 Recommendation 객체의 모든 필드 값 조회",
         manual_parameters=[
             openapi.Parameter(
-                "recommendation_code",
+                "recommendation_id",
                 openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
+                type=openapi.TYPE_INTEGER,
                 required=True,
-                description="추천 코드",
+                description="추천 ID",
             )
         ],
         responses={200: "조회 성공", 404: "데이터 없음", 400: "잘못된 요청"},
     )
     def get(self, request):
-        code = request.query_params.get("recommendation_code")
-        if not code:
+        id_param = request.query_params.get("recommendation_id")
+        if not id_param:
             return Response(
-                {"status": "error", "message": "recommendation_code는 필수입니다."},
+                {"status": "error", "message": "recommendation_id는 필수입니다."},
                 status=400,
             )
 
         try:
-            recommendation = Recommendation.objects.get(recommendation_code=code)
+            recommendation = Recommendation.objects.get(id=id_param)
             data = model_to_dict(recommendation)
             return Response({"status": "success", "data": data}, status=200)
 
