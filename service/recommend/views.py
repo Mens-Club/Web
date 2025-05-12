@@ -199,7 +199,7 @@ class IntegratedFashionRecommendAPIView(APIView):
 
                 recommendation_outputs.append(
                     {
-                        "recommendation_code": recommendation.recommendation_code,
+                        "recommendation_id": recommendation.id,
                         "combination": combo,
                         "total_price": total_price,
                     }
