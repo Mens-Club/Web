@@ -32,6 +32,3 @@ class Encoding:
         except Exception as e:
             print(f"이미지 처리 중 오류 발생 - {image_url}: {e}")
             return None
-        
-
-clip_model_instance = Encoding()

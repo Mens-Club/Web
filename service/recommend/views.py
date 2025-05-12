@@ -17,12 +17,12 @@ from .RAG.encoding_elements import Encoding
 from .connect.connect_to_database import PGVecProcess
 
 from .main.recommendation_item import get_recommendation
-from .main.categorical_data import COLOR_PALETTE_BY_SEASON
+from .main.categorical_data import COLOR_PALETTE_BY_SEASON, VALIDATION_CATEGORY
 from .main.recommendation_filter import filter_recommendation_by_season
 from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
 from .main.season_extractor import extract_season_from_text
-
+from .main.validate_answer_categories import validate_answer_categories
 # from .openai.utils import generate_reasoning_task
 from .models import Recommendation
 
@@ -140,6 +140,19 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 8: 계절 추출")
             answer_text = recommendation_json.get("answer", "")
             season = extract_season_from_text(answer_text)
+            matched_categories = validate_answer_categories(answer_text, VALIDATION_CATEGORY)
+            
+            logger.info("STEP 8-1: 카테고리 검증")
+            if not matched_categories:
+                logger.warning("유효한 카테고리가 answer_text에 포함되지 않음")
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "추천 결과에 유효한 카테고리가 포함되어 있지 않습니다. 재시도해주세요.",
+                        "raw_answer": answer_text
+                    },
+                    status=500,
+                )
 
             logger.info("STEP 9: 계절 필터링 적용")
             filtered_recommendation = filter_recommendation_by_season(
@@ -148,6 +161,20 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("STEP 10: 상품 검색 시작")
             recommend_json = filtered_recommendation.get("recommend", {})
+            
+            # 빈 리스트가 나오는 오류 핸들링
+            if all(not items for items in recommend_json.values()):
+                logger.warning("추천 항목이 모두 빈 리스트임")
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "추천 결과가 모두 빈 리스트입니다. 재시도해주세요.",
+                        "raw_answer": answer_text,
+                        "raw_recommend": recommend_json,
+                    },
+                    status=500,
+                )
+            
             styles = ["미니멀", "캐주얼"]
             color_palette = COLOR_PALETTE_BY_SEASON.get(season, [])
 
