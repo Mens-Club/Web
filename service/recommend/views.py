@@ -11,23 +11,24 @@ import requests
 import base64
 import json
 
-from .RAG.clip_loader import clip_model_instance
 from .RAG.rag_context_generator import create_rag_context
+from .RAG.encoding_elements import Encoding
 
 from .connect.connect_to_database import PGVecProcess
 
 from .main.recommendation_item import get_recommendation
-from .main.categorical_data import COLOR_PALETTE_BY_SEASON
+from .main.categorical_data import COLOR_PALETTE_BY_SEASON, VALIDATION_CATEGORY
 from .main.recommendation_filter import filter_recommendation_by_season
 from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
 from .main.season_extractor import extract_season_from_text
-
+from .main.validate_answer_categories import validate_answer_categories
 # from .openai.utils import generate_reasoning_task
 from .models import Recommendation
 
 logger = logging.getLogger(__name__)
 
+clip_model_instance = Encoding()
 
 class IntegratedFashionRecommendAPIView(APIView):
     permission_classes = [AllowAny]
@@ -139,6 +140,19 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 8: 계절 추출")
             answer_text = recommendation_json.get("answer", "")
             season = extract_season_from_text(answer_text)
+            matched_categories = validate_answer_categories(answer_text, VALIDATION_CATEGORY)
+            
+            logger.info("STEP 8-1: 카테고리 검증")
+            if not matched_categories:
+                logger.warning("유효한 카테고리가 answer_text에 포함되지 않음")
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "추천 결과에 유효한 카테고리가 포함되어 있지 않습니다. 재시도해주세요.",
+                        "raw_answer": answer_text
+                    },
+                    status=500,
+                )
 
             logger.info("STEP 9: 계절 필터링 적용")
             filtered_recommendation = filter_recommendation_by_season(
@@ -146,7 +160,7 @@ class IntegratedFashionRecommendAPIView(APIView):
             )
 
             logger.info("STEP 10: 상품 검색 시작")
-            recommend_json = filtered_recommendation.get("recommend", {})
+            recommend_json = filtered_recommendation.get("recommend", {})            
             styles = ["미니멀", "캐주얼"]
             color_palette = COLOR_PALETTE_BY_SEASON.get(season, [])
 
@@ -233,28 +247,28 @@ class IntegratedFashionRecommendAPIView(APIView):
 
 class RecommendationDetailAPIView(APIView):
     @swagger_auto_schema(
-        operation_description="recommendation_code로 Recommendation 객체의 모든 필드 값 조회",
+        operation_description="recommendation_id로 Recommendation 객체의 모든 필드 값 조회",
         manual_parameters=[
             openapi.Parameter(
-                "recommendation_code",
+                "recommendation_id",
                 openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
+                type=openapi.TYPE_INTEGER,
                 required=True,
-                description="추천 코드",
+                description="추천 ID",
             )
         ],
         responses={200: "조회 성공", 404: "데이터 없음", 400: "잘못된 요청"},
     )
     def get(self, request):
-        code = request.query_params.get("recommendation_code")
-        if not code:
+        id_param = request.query_params.get("recommendation_id")
+        if not id_param:
             return Response(
-                {"status": "error", "message": "recommendation_code는 필수입니다."},
+                {"status": "error", "message": "recommendation_id는 필수입니다."},
                 status=400,
             )
 
         try:
-            recommendation = Recommendation.objects.get(recommendation_code=code)
+            recommendation = Recommendation.objects.get(id=id_param)
             data = model_to_dict(recommendation)
             return Response({"status": "success", "data": data}, status=200)
 
