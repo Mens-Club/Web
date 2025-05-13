@@ -10,7 +10,8 @@
 }
 
 .content {
-  padding-top: 200px; /* 위쪽 패딩 추가 */
+  /* --> 이 패딩때문에 전체 패딩이 이상해짐 */
+  /* padding-top: 200px; 위쪽 패딩 추가 */
   margin-bottom: -40px;
 }
 
