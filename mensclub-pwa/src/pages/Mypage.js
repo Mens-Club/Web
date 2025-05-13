@@ -324,61 +324,27 @@ function MyPage() {
                         onClick={() => handleCardClick(item)}
                         style={{ cursor: 'pointer' }}>
                         <div className="image-container">
-                          {tab === 'ai' ? (
-                            <div className={`outfit-items-grid items-${getItemCount(item.recommendation)}`}>
-                              {item.recommendation?.top?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.top.s3_path}
-                                    alt="Top"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
+                                                    {tab === 'ai' ? (
+                          <div className="outfit-items-grid items-4">
+                            {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
+                              const s3 = item.recommendation?.[part]?.s3_path;
+                              return (
+                                <div className="grid-item" key={i}>
+                                  {s3 ? (
+                                    <img
+                                      src={s3}
+                                      alt={part}
+                                      className="item-thumbnail"
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '';
+                                      }}
+                                    />
+                                  ) : null}
                                 </div>
-                              )}
-                              {item.recommendation?.bottom?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.bottom.s3_path}
-                                    alt="Bottom"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              {item.recommendation?.outer?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.outer.s3_path}
-                                    alt="Outer"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              {item.recommendation?.shoes?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.shoes.s3_path}
-                                    alt="Shoes"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </div>
+                              );
+                            })}
+                          </div>
                           ) : (
                        <div
                         className="outfit-items-grid"
