@@ -123,6 +123,49 @@
   color: #ff3b30;
 }
 
+.outfit-items-grid {
+  display: grid;
+  gap: 4px;
+  height: 220px;
+  width: 100%;
+}
+
+.grid-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.item-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 아이템 개수에 따른 그리드 레이아웃 */
+.outfit-items-grid.items-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.outfit-items-grid.items-2 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.outfit-items-grid.items-3 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.outfit-items-grid.items-3 .grid-item:first-child {
+  grid-column: 1 / span 2;
+}
+
+.outfit-items-grid.items-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
 .outfit-items {
   display: flex;
   flex-wrap: wrap;

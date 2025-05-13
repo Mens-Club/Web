@@ -281,6 +281,14 @@ function FashionPage() {
       // 현재 찜 상태 확인
       const isCurrentlyLiked = liked[index];
 
+      // 찜이 되어 있는 경우에만 확인 창 표시
+      if (isCurrentlyLiked) {
+        const confirmUnlike = window.confirm('찜을 해제하시겠습니까?');
+        if (!confirmUnlike) {
+          return; // 사용자가 취소한 경우 함수 종료
+        }
+      }
+
       // 상태 먼저 업데이트 (낙관적 UI 업데이트)
       const newLiked = [...liked];
       newLiked[index] = !isCurrentlyLiked;
@@ -289,22 +297,20 @@ function FashionPage() {
       // 세션스토리지에 찜 상태 저장
       sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
 
-      // 서버에 찜 상태 업데이트
-      if (!isCurrentlyLiked) {
-        // 찜 추가
-        await api.post(
-          '/api/picked/v1/like_add/',
-          { recommendation_id: recommendationId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      // 서버에 찜 상태 업데이트 (토글 API 사용)
+      const response = await api.post(
+        '/api/picked/v1/recommend_picked/toggle',
+        { recommendation_id: recommendationId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // 응답 상태에 따라 로그 출력
+      if (response.data && response.data.status === 'added') {
         console.log('✅ 찜 추가 성공:', recommendationId);
-      } else {
-        // 찜 삭제
-        await api.delete('/api/picked/v1/like_delete/', {
-          headers: { Authorization: `Bearer ${token}` },
-          data: { recommendation_id: recommendationId },
-        });
+      } else if (response.data && response.data.status === 'removed') {
         console.log('✅ 찜 삭제 성공:', recommendationId);
+      } else {
+        console.log('⚠️ 찜 상태 변경 결과:', response.data);
       }
     } catch (error) {
       console.error('❌ 찜 상태 업데이트 실패:', error);
