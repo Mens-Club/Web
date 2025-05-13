@@ -55,7 +55,7 @@ function MainPage() {
   const fetchPrice = async () => {
     try {
       const brackets = '100000,200000,300000';
-      const res = await api.get('/api/picked/v1/main/by-price/', {
+      const res = await api.get('/api/picked/v1/main_picked/by-price/', {
         params: { brackets, per: 4 },
       });
       setPriceRecommends(res.data[priceFilter] || []);
@@ -66,7 +66,7 @@ function MainPage() {
 
   const fetchStyle = async (style) => {
     try {
-      const res = await api.get('/api/picked/v1/main/by-style/', {
+      const res = await api.get('/api/picked/v1/main_picked/by-style/', {
         params: { style, count: 4 },
       });
       setStyleRecommends(res.data);
@@ -127,8 +127,6 @@ function MainPage() {
 
   return (
     <div className="container">
-
-
       <main className="main-content">
         <div className="header-section">
           <AutoSwiper

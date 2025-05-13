@@ -16,7 +16,7 @@ class Recommendation(models.Model):
         max_length=50,
         unique=True,
         editable=False,
-        blank=True,  # ← 추가
+        blank=True,  
     )
 
     # 사용자 정보
@@ -24,7 +24,7 @@ class Recommendation(models.Model):
         User, on_delete=models.CASCADE, related_name="recommendations"
     )
 
-    top = models.ForeignKey(
+    top = models.ForeignKey(    
         "clothes.Clothes",
         to_field="idx",
         on_delete=models.SET_NULL,
@@ -59,7 +59,9 @@ class Recommendation(models.Model):
 
     # AI 응답 정보
     answer = models.TextField(help_text="AI가 제공한 분석 응답")
-    reasoning_text = models.TextField(help_text="추천 이유", null=True)  # ?
+    reasoning_text = models.TextField(help_text="추천 이유", null=True)  
+    
+    style = models.CharField(max_length=50, blank=True, null=True)
 
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now)
@@ -91,8 +93,7 @@ class RecommendationBookmark(models.Model):
 
     # 북마크 생성 시간
     created_at = models.DateTimeField(default=timezone.now)
-
-    # whether_main = models.BooleanField(default=False, help_text="메인에 업데이트 되어있는가")
+    whether_main = models.BooleanField(default=False, help_text="메인에 업데이트 되어있는가")
 
     class Meta:
         db_table = "recommend_bookmark"
@@ -143,7 +144,7 @@ class MainRecommendation(models.Model):
     )
 
     reasoning_text = models.TextField(help_text="추천 이유")
-    style = models.TextField(null=True)
+    style = models.CharField(max_length=50, blank=True, null=True)
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now)
     total_price = models.IntegerField(null=True, blank=True)

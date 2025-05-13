@@ -216,9 +216,94 @@ function CameraPage() {
                   <div className="initial-recommendResult">
                     <p id="status-text" style={{ whiteSpace: 'pre-line' }}>
                       {(() => {
+                        const productList = [
+                          '데님 팬츠',
+                          '슈트 팬츠&슬랙스',
+                          '니트&스웨터 - 긴소매',
+                          '겨울 더블 코트',
+                          '피케&카라 티셔츠 - 반소매',
+                          '긴소매 티셔츠',
+                          '로퍼',
+                          '패딩 베스트',
+                          '환절기 코트',
+                          '나일론&코치 재킷',
+                          '셔츠&블라우스 - 반소매',
+                          '플리스&뽀글이',
+                          '더비 슈즈',
+                          '슈트&블레이저 재킷',
+                          '사파리&헌팅 재킷',
+                          '패션스니커즈화',
+                          '겨울 기타 코트',
+                          '블루종&MA-1',
+                          '앵클/숏 부츠',
+                          '후드 티셔츠',
+                          '스트레이트 팁',
+                          '니트&스웨터 - 반소매',
+                          '워커',
+                          '롱패딩&헤비 아우터',
+                          '트레이닝 재킷',
+                          '반소매 티셔츠',
+                          '셔츠&블라우스 - 긴소매',
+                          '스포츠/캐주얼 샌들',
+                          '모카신',
+                          '트레이닝&조거 팬츠',
+                          '쪼리/플립플랍',
+                          '트러커 재킷',
+                          '피케&카라 티셔츠 - 긴소매',
+                          '코튼 팬츠',
+                          '무스탕&퍼',
+                          '후드 집업',
+                          '스타디움 재킷',
+                          '미들/하프 부츠',
+                          '겨울 싱글 코트',
+                          '캔버스/단화',
+                          '맨투맨&스웨트',
+                          '숏패딩&헤비 아우터',
+                          '카디건',
+                          '아노락 재킷',
+                          '숏팬츠',
+                        ];
                         const answer = recommendResult.initial_recommendation.answer;
                         // "상품은" 다음부터 "로 보이며" 또는 "입니다" 앞까지의 텍스트 추출
+                        // 먼저 기존 정규식으로 시도
                         const match = answer.match(/상품은\s*(.*?)(?:로 보이며|입니다)/);
+                        let detectedItem = match && match[1] ? match[1].trim() : '';
+
+                        // 정규식으로 추출한 텍스트가 없거나 짧을 경우, 전체 텍스트에서 상품 리스트와 가장 일치하는 항목 찾기
+                        if (!detectedItem || detectedItem.length < 2) {
+                          // 전체 텍스트에서 상품 리스트의 각 항목이 포함되어 있는지 확인
+                          const foundItems = productList.filter((product) =>
+                            answer.toLowerCase().includes(product.toLowerCase())
+                          );
+
+                          if (foundItems.length > 0) {
+                            // 가장 긴 일치 항목 선택 (더 구체적인 항목일 가능성이 높음)
+                            detectedItem = foundItems.reduce(
+                              (longest, current) => (current.length > longest.length ? current : longest),
+                              ''
+                            );
+                          }
+                        } else {
+                          // 정규식으로 추출한 텍스트가 있을 경우, 가장 유사한 상품 찾기
+                          const similarItems = productList.filter((product) => {
+                            // 추출된 텍스트와 상품명 사이의 유사도 검사
+                            // 간단한 포함 관계 체크
+                            return (
+                              detectedItem.toLowerCase().includes(product.toLowerCase()) ||
+                              product.toLowerCase().includes(detectedItem.toLowerCase())
+                            );
+                          });
+
+                          if (similarItems.length > 0) {
+                            // 가장 유사한 항목 선택
+                            detectedItem = similarItems.reduce((closest, current) => {
+                              // 더 짧은 길이 차이를 가진 항목 선택
+                              const currentDiff = Math.abs(current.length - detectedItem.length);
+                              const closestDiff = Math.abs(closest.length - detectedItem.length);
+                              return currentDiff < closestDiff ? current : closest;
+                            }, similarItems[0]);
+                          }
+                        }
                         if (match && match[1]) {
                           return (
                             <>

@@ -1,8 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
 import '../styles/DetailPage.css';
 import api from '../api/axios';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 
 function DetailPage() {
   const { itemId } = useParams(); // URL에서 itemId 가져오기
@@ -10,10 +14,39 @@ function DetailPage() {
   const queryParams = new URLSearchParams(location.search);
   const recommendationCode = queryParams.get('recommendation'); // URL 쿼리에서 recommendation 코드 가져오기
 
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const sliderRef = useRef(null);
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    if (recommendationCode) {
+      try {
+        // 세션스토리지에서 찜 상태와 추천 정보 불러오기
+        const storedLiked = sessionStorage.getItem('likedItems');
+        const storedData = sessionStorage.getItem('recommendationData');
+
+        if (storedLiked && storedData) {
+          const likedArray = JSON.parse(storedLiked);
+          const data = JSON.parse(storedData);
+
+          // 현재 추천 코드에 해당하는 인덱스 찾기
+          const index = data.product_combinations.findIndex(
+            (combo) => combo.recommendation_id === parseInt(recommendationCode)
+          );
+
+          if (index !== -1 && index < likedArray.length) {
+            setIsLiked(likedArray[index]);
+          }
+        }
+      } catch (error) {
+        console.error('찜 상태 로드 오류:', error);
+      }
+    }
+  }, [recommendationCode]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,7 +62,7 @@ function DetailPage() {
 
             // 해당 추천 코드에 맞는 조합 찾기
             const recommendationData = data.product_combinations.find(
-              (combo) => combo.recommendation_code === recommendationCode
+              (combo) => combo.recommendation_id === parseInt(recommendationCode)
             );
 
             if (recommendationData) {
@@ -181,6 +214,69 @@ function DetailPage() {
     };
   }, [[location.key]]);
 
+  const toggleLike = async (e) => {
+    e.stopPropagation();
+
+    try {
+      const token = sessionStorage.getItem('accessToken');
+      if (!token) {
+        alert('로그인이 필요한 서비스입니다.');
+        navigate('/login');
+        return;
+      }
+
+      // 현재 찜 상태 확인
+      const newIsLiked = !isLiked;
+
+      // 서버에 찜 상태 업데이트
+      if (!isLiked) {
+        // 찜 추가
+        await api.post(
+          '/api/picked/v1/like_add/',
+          { recommendation_id: parseInt(recommendationCode) },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        console.log('✅ 찜 추가 성공:', recommendationCode);
+      } else {
+        // 찜 삭제
+        await api.delete('/api/picked/v1/like_delete/', {
+          headers: { Authorization: `Bearer ${token}` },
+          data: { recommendation_id: parseInt(recommendationCode) },
+        });
+        console.log('✅ 찜 삭제 성공:', recommendationCode);
+      }
+
+      // UI 상태 업데이트
+      setIsLiked(newIsLiked);
+
+      // 세션스토리지의 찜 상태도 업데이트
+      try {
+        const storedLiked = sessionStorage.getItem('likedItems');
+        const storedData = sessionStorage.getItem('recommendationData');
+
+        if (storedLiked && storedData) {
+          const likedArray = JSON.parse(storedLiked);
+          const data = JSON.parse(storedData);
+
+          // 현재 추천 코드에 해당하는 인덱스 찾기
+          const index = data.product_combinations.findIndex(
+            (combo) => combo.recommendation_id === parseInt(recommendationCode)
+          );
+
+          if (index !== -1 && index < likedArray.length) {
+            likedArray[index] = newIsLiked;
+            sessionStorage.setItem('likedItems', JSON.stringify(likedArray));
+          }
+        }
+      } catch (error) {
+        console.error('찜 상태 저장 오류:', error);
+      }
+    } catch (error) {
+      console.error('❌ 찜 상태 업데이트 실패:', error);
+      alert('찜 기능 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   // 로딩 중이거나 에러 발생 시 처리
   if (loading) return <div className="loading">로딩 중...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -200,9 +296,16 @@ function DetailPage() {
               <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" />
             </div>
           ))}
-
           {/* 빈 셀 추가 (짝수 맞추기) */}
           {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
+          {recommendationCode && (
+            <button className="heart-button" onClick={toggleLike} aria-label={isLiked ? '찜 해제' : '찜 추가'}>
+              <FontAwesomeIcon
+                icon={isLiked ? solidHeart : regularHeart}
+                className={`heart-icon ${isLiked ? 'liked' : ''}`}
+              />
+            </button>
+          )}
         </div>
 
         {/* 상품 카드 슬라이더 */}

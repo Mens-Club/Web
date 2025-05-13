@@ -1,5 +1,6 @@
 /* 메인 이미지 그리드 */
 .main-image-grid {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
