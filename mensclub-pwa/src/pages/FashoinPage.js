@@ -106,47 +106,75 @@ function FashionPage() {
 
     // 클릭 처리 (상세 페이지로 이동)
     if (items && items.length > 0) {
-      navigate(`/product-detail/${items[0].idx}?recommendationCode=${recommendationId}&source=fashion`, {
-        state: {
+      // 현재 상태를 history state에 저장
+      window.history.replaceState(
+        {
           likedItems: likedMap,
           recommendations: recommendations,
         },
-      });
+        ''
+      );
+
+      // 상세 페이지로 이동 (API 경로 포함)
+      navigate(
+        `/product-detail/${items[0].idx}?recommendationCode=${recommendationId}&source=fashion&apiPath=/api/picked/v1/recommend_picked/${recommendationId}`
+      );
     }
   };
 
-  // 다른 코디 추천받기 (재요청)
-  const handleRetryRecommendation = async () => {
-    if (!window.confirm('다른 코디 추천을 진행하시겠습니까?')) {
+  // 처음부터 다시하기 (카메라 페이지로 이동)
+  const handleResetAndGoCamera = () => {
+    if (!window.confirm('새로운 상품을 촬영하시겠습니까?')) {
       return; // 사용자가 취소를 누르면 함수 종료
     }
+    navigate('/camera');
+  };
+
+  // 메인으로 돌아가기
+  const handleGoHome = () => {
+    if (!window.confirm('메인 화면으로 돌아가시겠 습니까?')) {
+      return; // 사용자가 취소를 누르면 함수 종료
+    }
+    navigate('/main');
+  };
+
+  // 공통 추천 요청 함수 (초기 로드 및 재요청에 모두 사용)
+  const fetchRecommendation = async (isRetry = false) => {
+    // 재요청인 경우에만 확인 창 표시
+    if (isRetry) {
+      const userConfirmed = window.confirm('다른 코디 추천을 진행하시겠습니까?');
+      if (!userConfirmed) {
+        return false; // 사용자가 취소를 누르면 함수 종료하고 false 반환
+      }
+    }
+
     try {
       setIsLoading(true); // 로딩 시작
       const token = sessionStorage.getItem('accessToken');
       if (!token) {
         alert('로그인이 필요한 서비스입니다.');
         navigate('/login');
-        return;
+        return false;
       }
 
-      //저장된 세션 삭제
-      sessionStorage.removeItem('likedItemsMap');
-      setLikedMap({}); // 상태도 초기화
-
-      // 로딩 상태 표시
-      setIsLoading(true);
+      // 재요청인 경우에만 세션 스토리지 및 상태 초기화
+      if (isRetry) {
+        sessionStorage.removeItem('likedItemsMap');
+        setLikedMap({}); // 상태도 초기화
+      }
 
       // 세션스토리지에서 이미지 URL 가져오기
       const imageUrl = sessionStorage.getItem('capturedImageUrl');
 
       if (!imageUrl) {
         alert('이미지 정보가 없습니다. 처음부터 다시 시작해주세요.');
-        return;
+        navigate('/camera');
+        return false;
       }
 
-      // 새로운 추천 요청 보내기
+      // 추천 요청 보내기
       const recommendRes = await api.post(
-        '/api/recommend/v1/recommned/',
+        '/api/recommend/v1/generator/',
         { image_url: imageUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -167,7 +195,7 @@ function FashionPage() {
 
           try {
             const retryRes = await api.post(
-              '/api/recommend/v1/recommned/',
+              '/api/recommend/v1/generator/',
               { image_url: imageUrl },
               { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -177,6 +205,7 @@ function FashionPage() {
               console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries})`);
               break;
             }
+            // 여기서 return false; 제거 (오타였고, 함수를 종료시키는 문제가 있음)
           } catch (error) {
             console.error(`❌ 재시도 요청 실패 (${retryCount + 1}/${maxRetries}):`, error);
           }
@@ -189,59 +218,37 @@ function FashionPage() {
           sessionStorage.setItem('recommendationData', JSON.stringify(validResult.data));
           setRecommendations(validResult.data.product_combinations);
           setLikedMap(new Array(validResult.data.product_combinations.length).fill(false));
+          return true; // 성공 반환
         } else {
           // 모든 재시도 실패 시 알림
           alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
+          navigate('/camera'); // 카메라 페이지로 이동
+          return false; // 실패 반환
         }
       } else {
         // 유효한 결과면 바로 사용
         sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
         setRecommendations(recommendRes.data.product_combinations);
         setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
+        return true; // 성공 반환
       }
     } catch (error) {
-      console.error('재추천 요청 실패:', error);
-      alert('추천을 다시 받는 중 오류가 발생했습니다.');
+      console.error(`❌ ${isRetry ? '재추천' : '초기 추천'} 요청 실패:`, error);
+      alert(`추천을 ${isRetry ? '다시 ' : ''}받는 중 오류가 발생했습니다.`);
+      if (!isRetry) {
+        navigate('/camera'); // 초기 로드 실패 시에만 카메라 페이지로 이동
+      }
+      return false; // 실패 반환
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 처음부터 다시하기 (카메라 페이지로 이동)
-  const handleResetAndGoCamera = () => {
-    if (!window.confirm('새로운 상품을 촬영하시겠습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/camera');
+  // 다른 코디 추천받기 버튼 클릭 핸들러
+  const handleRetryRecommendation = async () => {
+    await fetchRecommendation(true);
+    // 결과 처리는 fetchRecommendation 내부에서 이루어짐
   };
-
-  // 메인으로 돌아가기
-  const handleGoHome = () => {
-    if (!window.confirm('메인 화면으로 돌아가시겠 습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/main');
-  };
-
-  useEffect(() => {
-    try {
-      const storedData = sessionStorage.getItem('recommendationData');
-      if (storedData) {
-        const data = JSON.parse(storedData);
-        if (data && data.product_combinations) {
-          setRecommendations(data.product_combinations);
-
-          // 세션스토리지에서 찜 맵 불러오기
-          const storedLikedMap = sessionStorage.getItem('likedItemsMap');
-          if (storedLikedMap) {
-            setLikedMap(JSON.parse(storedLikedMap));
-          }
-        }
-      }
-    } catch (error) {
-      console.error('데이터 로드 오류:', error);
-    }
-  }, []);
 
   useEffect(() => {
     async function fetchUserInfo() {
@@ -356,7 +363,7 @@ function FashionPage() {
       const token = sessionStorage.getItem('accessToken');
       if (!token) return;
 
-      const response = await api.get('/api/picked/v1/bookmark/by-time/', {
+      const response = await api.get('/api/picked/v1/by-time/', {
         headers: { Authorization: `Bearer ${token}` },
       });
 

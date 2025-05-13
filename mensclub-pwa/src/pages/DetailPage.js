@@ -14,10 +14,17 @@ function DetailPage() {
   const queryParams = new URLSearchParams(location.search);
   const recommendationCode = queryParams.get('recommendationCode'); // URL 쿼리에서 recommendation 코드 가져오기
 
+  // URL에서 쿼리 파라미터 추출
+  const recommendationId = queryParams.get('recommendationCode');
+  const apiPath = queryParams.get('apiPath');
+
+  // 이전 상태 복원 (뒤로가기 시)
+  const previousState = location.state || window.history.state;
+
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const sliderRef = useRef(null);
   const [isLiked, setIsLiked] = useState(false);
@@ -43,11 +50,17 @@ function DetailPage() {
       try {
         setLoading(true);
         const source = new URLSearchParams(location.search).get('source') || '';
+        const token = sessionStorage.getItem('accessToken');
+        // recommendationId 파라미터 추가 - URL에서 가져옴
+        const recommendationId = new URLSearchParams(location.search).get('recommendationId') || recommendationCode;
+
+        console.log('소스:', source);
+        console.log('아이템 ID:', itemId);
+        console.log('추천 ID:', recommendationId);
 
         // 소스 파라미터를 먼저 확인하여 처리
         if (source === 'mypage') {
           try {
-            const token = sessionStorage.getItem('accessToken');
             const response = await api.get(`/api/picked/v1/recommend_picked/${itemId}/`, {
               headers: { Authorization: `Bearer ${token}` },
             });
@@ -64,22 +77,24 @@ function DetailPage() {
               if (productData.outer) allItems.push({ ...productData.outer, category: 'outer' });
               if (productData.shoes) allItems.push({ ...productData.shoes, category: 'shoes' });
 
-              // 각 아이템에 필요한 속성 추가 (thumbnail_url, price, goods_name 등)
+              // 각 아이템에 필요한 속성 추가
               const itemsWithDetails = allItems.map((item) => ({
                 ...item,
-                thumbnail_url: item.s3_path, // s3_path를 thumbnail_url로 매핑
+                thumbnail_url: item.s3_path,
                 price: item.price || 0,
                 goods_name: item.goods_name || '상품명 없음',
-                // 추가 정보를 포함하여 디테일 페이지에서 필요한 형식으로 변환
                 total_price: productData.total_price,
                 recommendation_code: productData.recommendation_code,
                 created_at: productData.created_at,
               }));
+
               if (itemsWithDetails.length > 0) {
                 setProducts(itemsWithDetails);
               } else {
                 setError('상품 정보를 찾을 수 없습니다.');
               }
+            } else {
+              setError('상품 정보를 찾을 수 없습니다.');
             }
           } catch (error) {
             console.error('마이페이지 상품 로드 오류:', error);
@@ -90,12 +105,9 @@ function DetailPage() {
         else if (source === 'home') {
           try {
             const response = await api.get(`/api/main_picked/${itemId}/`);
-            // 홈에서 온 경우에도 응답 구조에 맞게 데이터 처리 필요
             console.log('홈 상품 응답:', response.data);
 
-            // 홈 API 응답 구조에 따라 적절히 처리 (실제 구조 확인 필요)
             if (response.data) {
-              // 홈 API 응답 구조에 맞게 데이터 변환 로직 추가 필요
               setProducts([response.data]);
             } else {
               setError('상품 정보를 찾을 수 없습니다.');
@@ -105,55 +117,116 @@ function DetailPage() {
             setError('홈 상품을 불러오는데 실패했습니다.');
           }
         }
-        // 패션 페이지에서 온 경우 (recommendationCode가 있음)
-        else if (recommendationCode) {
-          // 로컬 스토리지에서 데이터 확인
-          const storedData = sessionStorage.getItem('recommendationData');
-          if (storedData) {
-            const data = JSON.parse(storedData);
-            // 해당 추천 코드에 맞는 조합 찾기
-            const recommendationData = data.product_combinations.find(
-              (combo) => combo.recommendation_id === parseInt(recommendationCode)
-            );
-            if (recommendationData) {
-              // 조합에서 모든 상품 추출 (null 제외)
-              const allProducts = Object.entries(recommendationData.combination || {})
-                .filter(([_, item]) => item !== null)
-                .map(([category, item]) => ({ ...item, category }));
-              // 현재 상품 찾기
-              const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
-              if (currentItem) {
-                // 현재 상품을 첫 번째로 하는 전체 상품 배열 생성
-                const sortedProducts = [currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))];
-                setProducts(sortedProducts);
+        // 패션 페이지에서 온 경우 (recommendationId가 있음)
+        else if (source === 'fashion' && recommendationId) {
+          try {
+            // 요청한 API를 사용하여 데이터 가져오기
+            const response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            console.log('패션 페이지 API 응답 데이터:', response.data);
+
+            if (response.data) {
+              const productData = response.data;
+              const allItems = [];
+
+              // 관련 상품이 있는 경우 추가
+              if (productData.top) allItems.push({ ...productData.top, category: 'top' });
+              if (productData.bottom) allItems.push({ ...productData.bottom, category: 'bottom' });
+              if (productData.outer) allItems.push({ ...productData.outer, category: 'outer' });
+              if (productData.shoes) allItems.push({ ...productData.shoes, category: 'shoes' });
+
+              // 각 아이템에 필요한 속성 추가
+              const itemsWithDetails = allItems.map((item) => ({
+                ...item,
+                thumbnail_url: item.s3_path,
+                price: item.price || 0,
+                goods_name: item.goods_name || '상품명 없음',
+                total_price: productData.total_price,
+                recommendation_code: productData.recommendation_code,
+                created_at: productData.created_at,
+              }));
+
+              if (itemsWithDetails.length > 0) {
+                setProducts(itemsWithDetails);
               } else {
-                setError('현재 상품을 찾을 수 없습니다.');
+                // 세션스토리지에서 데이터 확인 (뒤로가기 시)
+                const storedData = sessionStorage.getItem('recommendationData');
+                if (storedData) {
+                  const data = JSON.parse(storedData);
+                  // 해당 추천 코드에 맞는 조합 찾기
+                  const recommendationData = data.product_combinations.find(
+                    (combo) => combo.recommendation_id === parseInt(recommendationId)
+                  );
+                  if (recommendationData) {
+                    // 조합에서 모든 상품 추출 (null 제외)
+                    const allProducts = Object.entries(recommendationData.combination || {})
+                      .filter(([_, item]) => item !== null)
+                      .map(([category, item]) => ({ ...item, category }));
+                    // 현재 상품 찾기
+                    const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
+                    if (currentItem) {
+                      // 현재 상품을 첫 번째로 하는 전체 상품 배열 생성
+                      const sortedProducts = [
+                        currentItem,
+                        ...allProducts.filter((item) => item.idx !== parseInt(itemId)),
+                      ];
+                      setProducts(sortedProducts);
+                    } else {
+                      setError('현재 상품을 찾을 수 없습니다.');
+                    }
+                  } else {
+                    setError('해당 추천 코드에 맞는 데이터를 찾을 수 없습니다.');
+                  }
+                } else {
+                  setError('상품 정보를 찾을 수 없습니다.');
+                }
               }
             } else {
-              setError('해당 추천 코드에 맞는 데이터를 찾을 수 없습니다.');
+              setError('상품 정보를 찾을 수 없습니다.');
             }
-          } else {
-            // API에서 데이터 가져오기
-            try {
-              const response = await api.get(`/api/clothes/v1/recommendation/${recommendationCode}`);
-              if (response.data && response.data.combination) {
-                const allProducts = Object.entries(response.data.combination || {})
+          } catch (error) {
+            console.error('패션 페이지 API 데이터 로드 오류:', error);
+
+            // API 호출 실패 시 세션스토리지에서 데이터 확인 (뒤로가기 시)
+            const storedData = sessionStorage.getItem('recommendationData');
+            if (storedData) {
+              const data = JSON.parse(storedData);
+              // 해당 추천 코드에 맞는 조합 찾기
+              const recommendationData = data.product_combinations.find(
+                (combo) => combo.recommendation_id === parseInt(recommendationId)
+              );
+              if (recommendationData) {
+                // 조합에서 모든 상품 추출 (null 제외)
+                const allProducts = Object.entries(recommendationData.combination || {})
                   .filter(([_, item]) => item !== null)
                   .map(([category, item]) => ({ ...item, category }));
-
+                // 현재 상품 찾기
                 const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
                 if (currentItem) {
-                  setProducts([currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))]);
+                  // 현재 상품을 첫 번째로 하는 전체 상품 배열 생성
+                  const sortedProducts = [currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))];
+                  setProducts(sortedProducts);
                 } else {
                   setError('현재 상품을 찾을 수 없습니다.');
                 }
               } else {
-                setError('추천 데이터를 가져오는데 실패했습니다.');
+                setError('해당 추천 코드에 맞는 데이터를 찾을 수 없습니다.');
               }
-            } catch (error) {
-              console.error('추천 데이터 로드 오류:', error);
-              setError('추천 데이터를 불러오는데 실패했습니다.');
+            } else {
+              setError('API에서 데이터를 불러오는데 실패했습니다.');
             }
+          }
+        }
+        // 기본 케이스 (단일 상품)
+        else {
+          try {
+            const response = await api.get(`/api/clothes/v1/product/${itemId}/`);
+            setProducts([response.data]);
+          } catch (error) {
+            console.error('상품 로드 오류:', error);
+            setError('상품을 불러오는데 실패했습니다.');
           }
         }
       } catch (error) {
@@ -300,7 +373,7 @@ function DetailPage() {
   };
 
   // 로딩 중이거나 에러 발생 시 처리
-  if (loading) return <div className="loading">로딩 중...</div>;
+  if (isLoading) return <div className="loading">로딩 중...</div>;
   if (error) return <div className="error">{error}</div>;
   if (!products) return <div className="not-found">상품을 찾을 수 없습니다.</div>;
 
@@ -308,77 +381,75 @@ function DetailPage() {
   const evenCount = products.length % 2 === 0 ? products.length : products.length + 1;
   const productsEven = [...products, ...Array(evenCount - products.length).fill(null)];
 
+  // 로딩 컴포넌트
+  const LoadingSpinner = () => (
+    <div className="loading-overlay">
+      <div className="spinner"></div>
+      <p>로딩 중...</p>
+    </div>
+  );
+
   return (
     <div className="container">
-      <div className="content">
-        {/* 메인 이미지 그리드 */}
-        <div className="main-image-grid">
-          {products.map((product, id) => (
-            <div className="main-image-cell" key={id}>
-              <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" />
-            </div>
-          ))}
-          {/* 빈 셀 추가 (짝수 맞추기) */}
-          {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
-          {recommendationCode && (
-            <button className="heart-button" onClick={toggleLike} aria-label={isLiked ? '찜 해제' : '찜 추가'}>
-              <FontAwesomeIcon
-                icon={isLiked ? solidHeart : regularHeart}
-                className={`heart-icon ${isLiked ? 'liked' : ''}`}
-              />
-            </button>
-          )}
-        </div>
-
-        {/* 상품 카드 슬라이더 */}
-        <div className="slider-wrapper">
-          <div className="product-slider" ref={sliderRef}>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="content">
+          {/* 메인 이미지 그리드 */}
+          <div className="main-image-grid">
             {products.map((product, id) => (
-              <div className={id === 0 ? 'product-card main-product' : 'product-card'} key={id}>
-                <div className="product-card-inner">
-                  <img src={product.thumbnail_url} alt={product.goods_name} className="product-thumb" />
-                  <div>
-                    <p className="brand">{product.brand || '브랜드 정보 없음'}</p>
-                    <p className="product-name">{product.goods_name}</p>
-                    <p className="product-price">{product.price?.toLocaleString()}원</p>
-                    <a
-                      href={product.goods_url || '#'}
-                      className="product-link"
-                      target="_blank"
-                      rel="noopener noreferrer">
-                      상품 페이지로 이동
-                    </a>
-                  </div>
-                </div>
+              <div className="main-image-cell" key={id}>
+                <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" />
               </div>
             ))}
+            {/* 빈 셀 추가 (짝수 맞추기) */}
+            {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
+            {recommendationCode && (
+              <button className="heart-button" onClick={toggleLike} aria-label={isLiked ? '찜 해제' : '찜 추가'}>
+                <FontAwesomeIcon
+                  icon={isLiked ? solidHeart : regularHeart}
+                  className={`heart-icon ${isLiked ? 'liked' : ''}`}
+                />
+              </button>
+            )}
           </div>
-          {/* 설명 박스 */}
-          <div className="info-boxes">
+
+          {/* 상품 카드 슬라이더 */}
+          <div className="slider-wrapper">
+            <div className="product-slider" ref={sliderRef}>
+              {products.map((product, id) => (
+                <div className={id === 0 ? 'product-card main-product' : 'product-card'} key={id}>
+                  <div className="product-card-inner">
+                    <img src={product.thumbnail_url} alt={product.goods_name} className="product-thumb" />
+                    <div>
+                      <p className="brand">{product.brand || '브랜드 정보 없음'}</p>
+                      <p className="product-name">{product.goods_name}</p>
+                      <p className="product-price">{product.price?.toLocaleString()}원</p>
+                      <a
+                        href={product.goods_url || '#'}
+                        className="product-link"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        상품 페이지로 이동
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* 설명 박스 */}
             <div className="info-box">
               <h3>
                 <span className="info-icon">ℹ️</span>
                 제품 설명
               </h3>
-              <p className="product-describe">{products[0]?.description || '상세 설명이 없습니다.'}</p>
-            </div>
-            {/* 추가 정보 박스 */}
-            <div className="info-box">
-              <h3>
-                <span className="info-icon">⭐</span>
-                요약 설명
-              </h3>
-              <ul className="product-brif-describe">
-                {products[0]?.brief_info ? (
-                  products[0].brief_info.map((info, idx) => <li key={idx}>{info}</li>)
-                ) : (
-                  <li>요약 정보가 없습니다.</li>
-                )}
-              </ul>
+              <p className="product-describe">
+                {products[0]?.reasoning_text || '아직 상세 설명이 등록되지 않았습니다.'}
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

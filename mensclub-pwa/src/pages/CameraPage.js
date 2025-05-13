@@ -11,6 +11,8 @@ const videoConstraints = {
 };
 
 function CameraPage() {
+  // 상태 변수 추가 (컴포넌트 최상단)
+  const [cameraReady, setCameraReady] = useState(false);
   const webcamRef = useRef(null);
   const [imgSrc, setImgSrc] = useState(null);
   const [facingMode, setFacingMode] = useState('user');
@@ -19,20 +21,35 @@ function CameraPage() {
   const [step, setStep] = useState('init');
   const navigate = useNavigate();
 
-  const [analyzeResult, setAnalyzeResult] = useState(null); // 분석 결과(옷 종류)
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
+
+  // 카메라가 준비되면 호출하는 콜백 함수
+  const handleUserMedia = useCallback(() => {
+    setCameraReady(true);
+    setStatusText(''); // 카메라가 준비되면 상태 메시지 지우기
+  }, []);
 
   // 사진 촬영
   const capture = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    if (!imageSrc) {
+    if (!webcamRef.current || !cameraReady) {
       setStatusText('카메라가 로딩중입니다. 잠시만 기다려주세요 🙏');
       return;
     }
-    setImgSrc(imageSrc);
-    setStep('preview');
-    setStatusText('');
-  }, []);
+
+    try {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) {
+        setStatusText('카메라가 로딩중입니다. 잠시만 기다려주세요 🙏');
+        return;
+      }
+      setImgSrc(imageSrc);
+      setStep('preview');
+      setStatusText('');
+    } catch (error) {
+      console.error('스크린샷 캡처 오류:', error);
+      setStatusText('카메라 사용 중 오류가 발생했습니다.');
+    }
+  }, [cameraReady]);
 
   // 재촬영
   const retake = () => {
@@ -81,7 +98,7 @@ function CameraPage() {
       sessionStorage.setItem('capturedImageUrl', imageUrl);
 
       // 3. 업로드된 이미지 기반 추천 요청
-      const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/recommned/', {
+      const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,6 +174,7 @@ function CameraPage() {
               className="camera-stream"
               videoConstraints={{ ...videoConstraints, facingMode }}
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
+              onUserMedia={handleUserMedia}
             />
           )}
           {step !== 'capture' && imgSrc && (
@@ -211,6 +229,13 @@ function CameraPage() {
               </div>
             ) : (
               <>
+                {/* 상태 메시지 표시 - 이 부분이 누락되어 있었음 */}
+                {statusText && (
+                  <div className="status-message">
+                    <p>{statusText}</p>
+                  </div>
+                )}
+
                 {/* 초기 분석 결과만 표시 */}
                 {recommendResult && (
                   <div className="initial-recommendResult">
