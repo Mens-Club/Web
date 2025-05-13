@@ -106,7 +106,7 @@ function FashionPage() {
 
     // 클릭 처리 (상세 페이지로 이동)
     if (items && items.length > 0) {
-      navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationId}`, {
+      navigate(`/product-detail/${items[0].idx}?recommendationCode=${recommendationId}&source=fashion`, {
         state: {
           likedItems: likedMap,
           recommendations: recommendations,

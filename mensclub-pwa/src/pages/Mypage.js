@@ -22,9 +22,11 @@ function MyPage() {
     if (tab === 'ai') {
       // AI 탭의 경우
       const recommendationId = item.recommendation?.id;
+      console.log('클릭한 아이템:', item);
+      console.log('추천 ID:', recommendationId);
 
       if (recommendationId) {
-        navigate(`/product-detail/${recommendationId}`);
+        navigate(`/product-detail/${recommendationId}?source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -33,7 +35,7 @@ function MyPage() {
       const mainRecommendationId = item.main_recommendation?.id || item.id;
 
       if (mainRecommendationId) {
-        navigate(`/product-detail/${mainRecommendationId}`);
+        navigate(`/product-detail/${mainRecommendationId}?source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }

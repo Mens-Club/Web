@@ -12,7 +12,7 @@ function DetailPage() {
   const { itemId } = useParams(); // URL에서 itemId 가져오기
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const recommendationCode = queryParams.get('recommendation'); // URL 쿼리에서 recommendation 코드 가져오기
+  const recommendationCode = queryParams.get('recommendationCode'); // URL 쿼리에서 recommendation 코드 가져오기
 
   const navigate = useNavigate();
 
@@ -23,24 +23,14 @@ function DetailPage() {
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
-    if (recommendationCode) {
+    const source = new URLSearchParams(location.search).get('source') || '';
+    if (source === 'fashion' && recommendationCode) {
       try {
-        // 세션스토리지에서 찜 상태와 추천 정보 불러오기
-        const storedLiked = sessionStorage.getItem('likedItems');
-        const storedData = sessionStorage.getItem('recommendationData');
-
-        if (storedLiked && storedData) {
-          const likedArray = JSON.parse(storedLiked);
-          const data = JSON.parse(storedData);
-
-          // 현재 추천 코드에 해당하는 인덱스 찾기
-          const index = data.product_combinations.findIndex(
-            (combo) => combo.recommendation_id === parseInt(recommendationCode)
-          );
-
-          if (index !== -1 && index < likedArray.length) {
-            setIsLiked(likedArray[index]);
-          }
+        // 세션스토리지에서 찜 맵 불러오기
+        const storedLikedMap = sessionStorage.getItem('likedItemsMap');
+        if (storedLikedMap) {
+          const likedMap = JSON.parse(storedLikedMap);
+          setIsLiked(likedMap[recommendationCode] || false);
         }
       } catch (error) {
         console.error('찜 상태 로드 오류:', error);
@@ -52,32 +42,89 @@ function DetailPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const source = new URLSearchParams(location.search).get('source') || '';
 
-        if (recommendationCode) {
+        // 소스 파라미터를 먼저 확인하여 처리
+        if (source === 'mypage') {
+          try {
+            const token = sessionStorage.getItem('accessToken');
+            const response = await api.get(`/api/picked/v1/recommend_picked/${itemId}/`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log('마이페이지 상품 응답:', response.data);
+
+            if (response.data) {
+              // 응답 구조에 따라 적절히 처리
+              const productData = response.data;
+              const allItems = [];
+
+              // 관련 상품이 있는 경우 추가
+              if (productData.top) allItems.push({ ...productData.top, category: 'top' });
+              if (productData.bottom) allItems.push({ ...productData.bottom, category: 'bottom' });
+              if (productData.outer) allItems.push({ ...productData.outer, category: 'outer' });
+              if (productData.shoes) allItems.push({ ...productData.shoes, category: 'shoes' });
+
+              // 각 아이템에 필요한 속성 추가 (thumbnail_url, price, goods_name 등)
+              const itemsWithDetails = allItems.map((item) => ({
+                ...item,
+                thumbnail_url: item.s3_path, // s3_path를 thumbnail_url로 매핑
+                price: item.price || 0,
+                goods_name: item.goods_name || '상품명 없음',
+                // 추가 정보를 포함하여 디테일 페이지에서 필요한 형식으로 변환
+                total_price: productData.total_price,
+                recommendation_code: productData.recommendation_code,
+                created_at: productData.created_at,
+              }));
+              if (itemsWithDetails.length > 0) {
+                setProducts(itemsWithDetails);
+              } else {
+                setError('상품 정보를 찾을 수 없습니다.');
+              }
+            }
+          } catch (error) {
+            console.error('마이페이지 상품 로드 오류:', error);
+            setError('마이페이지 상품을 불러오는데 실패했습니다.');
+          }
+        }
+        // 홈에서 온 경우
+        else if (source === 'home') {
+          try {
+            const response = await api.get(`/api/main_picked/${itemId}/`);
+            // 홈에서 온 경우에도 응답 구조에 맞게 데이터 처리 필요
+            console.log('홈 상품 응답:', response.data);
+
+            // 홈 API 응답 구조에 따라 적절히 처리 (실제 구조 확인 필요)
+            if (response.data) {
+              // 홈 API 응답 구조에 맞게 데이터 변환 로직 추가 필요
+              setProducts([response.data]);
+            } else {
+              setError('상품 정보를 찾을 수 없습니다.');
+            }
+          } catch (error) {
+            console.error('홈 상품 로드 오류:', error);
+            setError('홈 상품을 불러오는데 실패했습니다.');
+          }
+        }
+        // 패션 페이지에서 온 경우 (recommendationCode가 있음)
+        else if (recommendationCode) {
           // 로컬 스토리지에서 데이터 확인
           const storedData = sessionStorage.getItem('recommendationData');
-
           if (storedData) {
             const data = JSON.parse(storedData);
-
             // 해당 추천 코드에 맞는 조합 찾기
             const recommendationData = data.product_combinations.find(
               (combo) => combo.recommendation_id === parseInt(recommendationCode)
             );
-
             if (recommendationData) {
               // 조합에서 모든 상품 추출 (null 제외)
               const allProducts = Object.entries(recommendationData.combination || {})
                 .filter(([_, item]) => item !== null)
                 .map(([category, item]) => ({ ...item, category }));
-
               // 현재 상품 찾기
               const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
-
               if (currentItem) {
                 // 현재 상품을 첫 번째로 하는 전체 상품 배열 생성
                 const sortedProducts = [currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))];
-
                 setProducts(sortedProducts);
               } else {
                 setError('현재 상품을 찾을 수 없습니다.');
@@ -87,28 +134,27 @@ function DetailPage() {
             }
           } else {
             // API에서 데이터 가져오기
-            const response = await api.get(`/api/clothes/v1/recommendation/${recommendationCode}`);
+            try {
+              const response = await api.get(`/api/clothes/v1/recommendation/${recommendationCode}`);
+              if (response.data && response.data.combination) {
+                const allProducts = Object.entries(response.data.combination || {})
+                  .filter(([_, item]) => item !== null)
+                  .map(([category, item]) => ({ ...item, category }));
 
-            if (response.data && response.data.combination) {
-              const allProducts = Object.entries(response.data.combination || {})
-                .filter(([_, item]) => item !== null)
-                .map(([category, item]) => ({ ...item, category }));
-
-              const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
-
-              if (currentItem) {
-                setProducts([currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))]);
+                const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
+                if (currentItem) {
+                  setProducts([currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))]);
+                } else {
+                  setError('현재 상품을 찾을 수 없습니다.');
+                }
               } else {
-                setError('현재 상품을 찾을 수 없습니다.');
+                setError('추천 데이터를 가져오는데 실패했습니다.');
               }
-            } else {
-              setError('추천 데이터를 가져오는데 실패했습니다.');
+            } catch (error) {
+              console.error('추천 데이터 로드 오류:', error);
+              setError('추천 데이터를 불러오는데 실패했습니다.');
             }
           }
-        } else {
-          // 단일 상품만 가져오기
-          const response = await api.get(`/api/clothes/v1/product/${itemId}`);
-          setProducts([response.data]);
         }
       } catch (error) {
         console.error('데이터 로드 오류:', error);
@@ -121,7 +167,7 @@ function DetailPage() {
     if (itemId) {
       fetchData();
     }
-  }, [itemId, recommendationCode]);
+  }, [itemId, recommendationCode, location.search]);
 
   // 슬라이더 드래그 이벤트 등록
   useEffect(() => {
@@ -212,7 +258,7 @@ function DetailPage() {
         }
       });
     };
-  }, [[location.key]]);
+  }, [location.key, products]);
 
   const toggleLike = async (e) => {
     e.stopPropagation();
@@ -229,45 +275,21 @@ function DetailPage() {
       const newIsLiked = !isLiked;
 
       // 서버에 찜 상태 업데이트
-      if (!isLiked) {
-        // 찜 추가
-        await api.post(
-          '/api/picked/v1/like_add/',
-          { recommendation_id: parseInt(recommendationCode) },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        console.log('✅ 찜 추가 성공:', recommendationCode);
-      } else {
-        // 찜 삭제
-        await api.delete('/api/picked/v1/like_delete/', {
-          headers: { Authorization: `Bearer ${token}` },
-          data: { recommendation_id: parseInt(recommendationCode) },
-        });
-        console.log('✅ 찜 삭제 성공:', recommendationCode);
-      }
+      const response = await api.post(
+        '/api/picked/v1/recommend_picked/toggle',
+        { recommendation_id: parseInt(recommendationCode) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       // UI 상태 업데이트
       setIsLiked(newIsLiked);
 
       // 세션스토리지의 찜 상태도 업데이트
       try {
-        const storedLiked = sessionStorage.getItem('likedItems');
-        const storedData = sessionStorage.getItem('recommendationData');
-
-        if (storedLiked && storedData) {
-          const likedArray = JSON.parse(storedLiked);
-          const data = JSON.parse(storedData);
-
-          // 현재 추천 코드에 해당하는 인덱스 찾기
-          const index = data.product_combinations.findIndex(
-            (combo) => combo.recommendation_id === parseInt(recommendationCode)
-          );
-
-          if (index !== -1 && index < likedArray.length) {
-            likedArray[index] = newIsLiked;
-            sessionStorage.setItem('likedItems', JSON.stringify(likedArray));
-          }
-        }
+        const storedLikedMap = sessionStorage.getItem('likedItemsMap');
+        const likedMap = storedLikedMap ? JSON.parse(storedLikedMap) : {};
+        likedMap[recommendationCode] = newIsLiked;
+        sessionStorage.setItem('likedItemsMap', JSON.stringify(likedMap));
       } catch (error) {
         console.error('찜 상태 저장 오류:', error);
       }
