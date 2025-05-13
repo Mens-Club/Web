@@ -1,4 +1,5 @@
 // src/api/auth.js
+// 로그인, 회원가입, 비밀번호, 프로필 등 사용자 인증 및 계정 관련련
 import api from './axios';
 
 
@@ -51,22 +52,6 @@ export const updateProfile = async (formData) => {
     password: formData.password,
     age: formData.age,
     sex: formData.sex,
-  });
-  return res.data;
-};
-
-// 추천 찜 추가
-export const addLike = async (recommendId) => {
-  const res = await api.post('/api/picked/v1/main_like/', {
-    main_recommend_id: recommendId,
-  });
-  return res.data;
-};
-
-// 추천 찜 삭제
-export const cancelLike = async (recommendId) => {
-  const res = await api.delete('/api/picked/v1/main_like_cancel/', {
-    data: { recommend_id: recommendId },
   });
   return res.data;
 };
