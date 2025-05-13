@@ -3,8 +3,8 @@ import json
 def create_rag_context(item):
     """가장 유사한 아이템으로 RAG context 생성 (JSON 형태)"""
     context_data = {
-        "category": item.get('category', ''),
-        "sub_category": item.get('sub_category', ''),
+        # "category": item.get('category', ''),
+        # "sub_category": item.get('sub_category', ''),
         "answer": item.get('answer', ''),
         "season": item.get('season', ''),
         "recommend": item.get('recommend', '')
