@@ -12,6 +12,7 @@ function TopNav() {
     '/fashion': '패션페이지',
     '/my': '마이페이지',
     '/setting': '설정페이지',
+    '/product-detail/:itemId' : '세부설명페이지',
   };
 
   // ✅ 경로에 맞는 타이틀 찾기 (없으면 기본 MensClub)
