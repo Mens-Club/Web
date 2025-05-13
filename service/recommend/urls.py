@@ -6,5 +6,5 @@ urlpatterns = [
         "generator/",
         IntegratedFashionRecommendAPIView.as_view(),
         name="fashion-recommend",
-    ),
+    )
 ]

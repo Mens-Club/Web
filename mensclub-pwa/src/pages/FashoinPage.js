@@ -10,12 +10,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 function FashionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [liked, setLiked] = useState([]);
   const [userInfo, setUserInfo] = useState({ username: '' });
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // 재추천 요청시 로딩 창 표현
   const imageGridRefs = useRef([]); // 아이템 스와이프
   const isDraggingRef = useRef(false);
+  const [likedMap, setLikedMap] = useState({});
 
   // 이미지 그리드 참조 설정
   const setImageGridRef = (index, element) => {
@@ -106,43 +106,75 @@ function FashionPage() {
 
     // 클릭 처리 (상세 페이지로 이동)
     if (items && items.length > 0) {
-      navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationId}`, {
-        state: {
-          likedItems: liked,
+      // 현재 상태를 history state에 저장
+      window.history.replaceState(
+        {
+          likedItems: likedMap,
           recommendations: recommendations,
         },
-      });
+        ''
+      );
+
+      // 상세 페이지로 이동 (API 경로 포함)
+      navigate(
+        `/product-detail/${items[0].idx}?recommendationCode=${recommendationId}&source=fashion&apiPath=/api/picked/v1/recommend_picked/${recommendationId}`
+      );
     }
   };
 
-  // 다른 코디 추천받기 (재요청)
-  const handleRetryRecommendation = async () => {
-    if (!window.confirm('다른 코디 추천을 진행하시겠습니까?')) {
+  // 처음부터 다시하기 (카메라 페이지로 이동)
+  const handleResetAndGoCamera = () => {
+    if (!window.confirm('새로운 상품을 촬영하시겠습니까?')) {
       return; // 사용자가 취소를 누르면 함수 종료
     }
+    navigate('/camera');
+  };
+
+  // 메인으로 돌아가기
+  const handleGoHome = () => {
+    if (!window.confirm('메인 화면으로 돌아가시겠 습니까?')) {
+      return; // 사용자가 취소를 누르면 함수 종료
+    }
+    navigate('/main');
+  };
+
+  // 공통 추천 요청 함수 (초기 로드 및 재요청에 모두 사용)
+  const fetchRecommendation = async (isRetry = false) => {
+    // 재요청인 경우에만 확인 창 표시
+    if (isRetry) {
+      const userConfirmed = window.confirm('다른 코디 추천을 진행하시겠습니까?');
+      if (!userConfirmed) {
+        return false; // 사용자가 취소를 누르면 함수 종료하고 false 반환
+      }
+    }
+
     try {
       setIsLoading(true); // 로딩 시작
       const token = sessionStorage.getItem('accessToken');
       if (!token) {
         alert('로그인이 필요한 서비스입니다.');
         navigate('/login');
-        return;
+        return false;
       }
 
-      // 로딩 상태 표시
-      setIsLoading(true);
+      // 재요청인 경우에만 세션 스토리지 및 상태 초기화
+      if (isRetry) {
+        sessionStorage.removeItem('likedItemsMap');
+        setLikedMap({}); // 상태도 초기화
+      }
 
       // 세션스토리지에서 이미지 URL 가져오기
       const imageUrl = sessionStorage.getItem('capturedImageUrl');
 
       if (!imageUrl) {
         alert('이미지 정보가 없습니다. 처음부터 다시 시작해주세요.');
-        return;
+        navigate('/camera');
+        return false;
       }
 
-      // 새로운 추천 요청 보내기
+      // 추천 요청 보내기
       const recommendRes = await api.post(
-        '/api/recommend/v1/recommned/',
+        '/api/recommend/v1/generator/',
         { image_url: imageUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -163,7 +195,7 @@ function FashionPage() {
 
           try {
             const retryRes = await api.post(
-              '/api/recommend/v1/recommned/',
+              '/api/recommend/v1/generator/',
               { image_url: imageUrl },
               { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -173,6 +205,7 @@ function FashionPage() {
               console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries})`);
               break;
             }
+            // 여기서 return false; 제거 (오타였고, 함수를 종료시키는 문제가 있음)
           } catch (error) {
             console.error(`❌ 재시도 요청 실패 (${retryCount + 1}/${maxRetries}):`, error);
           }
@@ -184,56 +217,38 @@ function FashionPage() {
           // 유효한 결과를 찾았으면 그것을 사용
           sessionStorage.setItem('recommendationData', JSON.stringify(validResult.data));
           setRecommendations(validResult.data.product_combinations);
-          setLiked(new Array(validResult.data.product_combinations.length).fill(false));
+          setLikedMap(new Array(validResult.data.product_combinations.length).fill(false));
+          return true; // 성공 반환
         } else {
           // 모든 재시도 실패 시 알림
           alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
+          navigate('/camera'); // 카메라 페이지로 이동
+          return false; // 실패 반환
         }
       } else {
         // 유효한 결과면 바로 사용
         sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
         setRecommendations(recommendRes.data.product_combinations);
-        setLiked(new Array(recommendRes.data.product_combinations.length).fill(false));
+        setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
+        return true; // 성공 반환
       }
     } catch (error) {
-      console.error('재추천 요청 실패:', error);
-      alert('추천을 다시 받는 중 오류가 발생했습니다.');
+      console.error(`❌ ${isRetry ? '재추천' : '초기 추천'} 요청 실패:`, error);
+      alert(`추천을 ${isRetry ? '다시 ' : ''}받는 중 오류가 발생했습니다.`);
+      if (!isRetry) {
+        navigate('/camera'); // 초기 로드 실패 시에만 카메라 페이지로 이동
+      }
+      return false; // 실패 반환
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 처음부터 다시하기 (카메라 페이지로 이동)
-  const handleResetAndGoCamera = () => {
-    if (!window.confirm('새로운 상품을 촬영하시겠습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/camera');
+  // 다른 코디 추천받기 버튼 클릭 핸들러
+  const handleRetryRecommendation = async () => {
+    await fetchRecommendation(true);
+    // 결과 처리는 fetchRecommendation 내부에서 이루어짐
   };
-
-  // 메인으로 돌아가기
-  const handleGoHome = () => {
-    if (!window.confirm('메인 화면으로 돌아가시겠 습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/main');
-  };
-
-  useEffect(() => {
-    try {
-      const storedData = sessionStorage.getItem('recommendationData');
-      if (storedData) {
-        const data = JSON.parse(storedData);
-        if (data && data.product_combinations) {
-          // 전체 조합 정보(recommendation_id, total_price 포함) 저장
-          setRecommendations(data.product_combinations);
-          setLiked(new Array(data.product_combinations.length).fill(false));
-        }
-      }
-    } catch (error) {
-      console.error('데이터 로드 오류:', error);
-    }
-  }, []);
 
   useEffect(() => {
     async function fetchUserInfo() {
@@ -275,54 +290,43 @@ function FashionPage() {
         return;
       }
 
-      const recommendation = recommendations[index];
-      const recommendationId = recommendation.recommendation_id;
+      const recommendationId = index;
 
       // 현재 찜 상태 확인
-      const isCurrentlyLiked = liked[index];
+      const isCurrentlyLiked = likedMap[recommendationId];
 
       // 찜이 되어 있는 경우에만 확인 창 표시
       if (isCurrentlyLiked) {
         const confirmUnlike = window.confirm('찜을 해제하시겠습니까?');
         if (!confirmUnlike) {
-          return; // 사용자가 취소한 경우 함수 종료
+          return;
         }
       }
 
-      // 상태 먼저 업데이트 (낙관적 UI 업데이트)
-      const newLiked = [...liked];
-      newLiked[index] = !isCurrentlyLiked;
-      setLiked(newLiked);
+      /// 상태 먼저 업데이트 (낙관적 UI 업데이트)
+      const newLikedMap = { ...likedMap };
+      newLikedMap[recommendationId] = !isCurrentlyLiked;
+      setLikedMap(newLikedMap);
 
       // 세션스토리지에 찜 상태 저장
-      sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
+      sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
 
-      // 서버에 찜 상태 업데이트 (토글 API 사용)
+      // 서버에 찜 상태 업데이트
       const response = await api.post(
         '/api/picked/v1/recommend_picked/toggle',
         { recommendation_id: recommendationId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 응답 상태에 따라 로그 출력
+      // 응답 상태 처리
       if (response.data && response.data.status === 'added') {
         console.log('✅ 찜 추가 성공:', recommendationId);
       } else if (response.data && response.data.status === 'removed') {
         console.log('✅ 찜 삭제 성공:', recommendationId);
-      } else {
-        console.log('⚠️ 찜 상태 변경 결과:', response.data);
       }
     } catch (error) {
       console.error('❌ 찜 상태 업데이트 실패:', error);
-
-      // 에러 발생 시 상태 롤백
-      fetchLikedItems();
-
-      if (error.response?.data?.error === 'You have already bookmarked this recommendation.') {
-        alert('이미 찜한 상품입니다.');
-      } else {
-        alert('찜 기능 처리 중 오류가 발생했습니다.');
-      }
+      fetchLikedItems(); // 에러 시 서버에서 최신 상태 다시 가져오기
     }
   };
 
@@ -340,11 +344,11 @@ function FashionPage() {
           setRecommendations(data.product_combinations);
 
           // 세션스토리지에서 찜 상태 불러오기
-          const storedLiked = sessionStorage.getItem('likedItems');
-          if (storedLiked) {
-            setLiked(JSON.parse(storedLiked));
+          const storedLikedMap = sessionStorage.getItem('likedItemsMap');
+          if (storedLikedMap) {
+            setLikedMap(JSON.parse(storedLikedMap));
           } else {
-            setLiked(new Array(data.product_combinations.length).fill(false));
+            setLikedMap({});
           }
         }
       }
@@ -352,30 +356,25 @@ function FashionPage() {
       console.error('데이터 로드 오류:', error);
     }
   }, []);
+
   // 찜 목록 가져오기
   const fetchLikedItems = async () => {
     try {
       const token = sessionStorage.getItem('accessToken');
       if (!token) return;
 
-      const response = await api.get('/api/picked/v1/bookmark/by-time/', {
+      const response = await api.get('/api/picked/v1/by-time/', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 서버에서 받아온 찜 목록
-      const likedIds = response.data.map((item) => item.recommendation_id);
-      console.log('서버에서 받은 찜 목록 ID:', likedIds);
-
-      // 현재 recommendations 배열과 비교하여 liked 상태 업데이트
-      const newLiked = recommendations.map((recommendation) => {
-        return likedIds.includes(Number(recommendation.recommendation_id));
+      // 서버에서 받아온 찜 목록으로 맵 생성
+      const newLikedMap = {};
+      response.data.forEach((item) => {
+        newLikedMap[item.recommendation_id] = true;
       });
 
-      console.log('업데이트된 liked 상태:', newLiked);
-      setLiked(newLiked);
-
-      // 세션스토리지에 찜 상태 저장
-      sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
+      setLikedMap(newLikedMap);
+      sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
     } catch (error) {
       console.error('❌ 찜 목록 로드 실패:', error);
     }
@@ -394,7 +393,7 @@ function FashionPage() {
   };
 
   return (
-    <div className="container">
+    <div className="fashion-container">
       <div className="content">
         <div className="recommendation-container">
           <h2>🧷 {userInfo.username}님의 추천 코디 👔</h2>
@@ -433,11 +432,11 @@ function FashionPage() {
                     </div>
                     <button
                       className="heart-button"
-                      onClick={(e) => toggleLike(e, index)}
-                      aria-label={liked[index] ? '찜 해제' : '찜 추가'}>
+                      onClick={(e) => toggleLike(e, recommendation.recommendation_id)}
+                      aria-label={likedMap[recommendation.recommendation_id] ? '찜 해제' : '찜 추가'}>
                       <FontAwesomeIcon
-                        icon={liked[index] ? solidHeart : regularHeart}
-                        className={`heart-icon ${liked[index] ? 'liked' : ''}`}
+                        icon={likedMap[recommendation.recommendation_id] ? solidHeart : regularHeart}
+                        className={`heart-icon ${likedMap[recommendation.recommendation_id] ? 'liked' : ''}`}
                       />
                     </button>
                   </div>

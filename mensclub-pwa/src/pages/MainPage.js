@@ -1,6 +1,6 @@
 // MainPage.jsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/MainPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
@@ -15,6 +15,9 @@ function MainPage() {
   const [likedMap, setLikedMap] = useState({});
   const [styleFilter, setStyleFilter] = useState('미니멀');
   const [priceFilter, setPriceFilter] = useState('10만원대');
+  const [currentImageIndexMap, setCurrentImageIndexMap] = useState({});
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const el = document.querySelector('.main-content');
@@ -31,6 +34,11 @@ function MainPage() {
     fetchRandom();
     fetchPrice();
     fetchStyle(styleFilter);
+
+    const storedLiked = localStorage.getItem('likedMap');
+    if (storedLiked) {
+      setLikedMap(JSON.parse(storedLiked));
+    }
   }, []);
 
   useEffect(() => {
@@ -41,11 +49,26 @@ function MainPage() {
     fetchPrice();
   }, [priceFilter]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndexMap((prev) => {
+        const updated = { ...prev };
+        [...randomRecommends, ...priceRecommends, ...styleRecommends].forEach((item) => {
+          const images = [item.top?.s3_path, item.outer?.s3_path, item.bottom?.s3_path, item.shoes?.s3_path].filter(Boolean);
+          if (images.length > 0) {
+            const currentIndex = prev[item.id] || 0;
+            updated[item.id] = (currentIndex + 1) % images.length;
+          }
+        });
+        return updated;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [randomRecommends, priceRecommends, styleRecommends]);
+
   const fetchRandom = async () => {
     try {
-      const res = await api.get('/api/picked/v1/main/random/', {
-        params: { count: 4 },
-      });
+      const res = await api.get('/api/picked/v1/main/random/', { params: { count: 4 } });
       setRandomRecommends(res.data);
     } catch (err) {
       console.error('랜덤 추천 오류:', err);
@@ -55,9 +78,7 @@ function MainPage() {
   const fetchPrice = async () => {
     try {
       const brackets = '100000,200000,300000';
-      const res = await api.get('/api/picked/v1/main_picked/by-price/', {
-        params: { brackets, per: 4 },
-      });
+      const res = await api.get('/api/picked/v1/main/by-price/', { params: { brackets, per: 4 } });
       setPriceRecommends(res.data[priceFilter] || []);
     } catch (err) {
       console.error('가격 추천 오류:', err);
@@ -66,7 +87,7 @@ function MainPage() {
 
   const fetchStyle = async (style) => {
     try {
-      const res = await api.get('/api/picked/v1/main_picked/by-style/', {
+      const res = await api.get('/api/picked/v1/main/by-style/', {
         params: { style, count: 4 },
       });
       setStyleRecommends(res.data);
@@ -75,55 +96,87 @@ function MainPage() {
     }
   };
 
+const toggleLike = async (recommendId) => {
+  try {
+    const isCurrentlyLiked = likedMap[recommendId];
 
-  // 찜 추가, 삭제
-  const toggleLike = async (recommendId) => {
-    try {
-      if (likedMap[recommendId]) {
-        // 찜 삭제 DELETE
-        await api.delete('/api/picked/v1/main_like_cancel/', {
-          params: { recommend_id: recommendId }, // ✅ 여기!!
-        });
-        setLikedMap((prev) => {
-          const updated = { ...prev };
-          delete updated[recommendId];
-          return updated;
-        });
-      } else {
-        // 찜 추가 POST
-        await api.post('/api/picked/v1/main_like/', {
-          main_recommend_id: recommendId,
-        });
-        setLikedMap((prev) => ({ ...prev, [recommendId]: true }));
-      }
-    } catch (err) {
-      console.error('찜 토글 오류:', err.response?.data || err.message);
+    // 1. 찜 되어 있는 상태라면 삭제 확인
+    if (isCurrentlyLiked) {
+      const confirm = window.confirm('찜을 해제하시겠습니까?');
+      if (!confirm) return;
     }
-  };
-  
-  
 
-  const renderCard = (item) => (
-    <div className="card" key={item.id}>
-      <div className="image-container">
-        <img src={item.image_url || './images/placeholder.jpg'} alt={item.style} />
-        <button
-          className="heart-button"
-          onClick={() => toggleLike(item.id)}
-          aria-label={likedMap[item.id] ? '찜 해제' : '찜 추가'}>
-          <FontAwesomeIcon
-            icon={likedMap[item.id] ? solidHeart : regularHeart}
-            className={`heart-icon ${likedMap[item.id] ? 'liked' : ''}`}
-          />
-        </button>
+    // 2. 서버에 토글 요청
+    const response = await api.post('/api/picked/v1/main_picked/toggle', {
+      main_recommendation_id: recommendId,
+    });
+
+    const status = response.status;
+
+    // 3. 상태 업데이트 (localStorage 동기화 포함)
+    setLikedMap((prev) => {
+      const updated = { ...prev, [recommendId]: !prev[recommendId] };
+      localStorage.setItem('likedMap', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (status === 201) {
+      console.log(`✅ 찜 추가 성공: ${recommendId}`);
+    } else if (status === 200) {
+      console.log(`✅ 찜 해제 성공: ${recommendId}`);
+    }
+  } catch (err) {
+    console.error('❌ 찜 토글 오류:', err.response?.data || err.message);
+  }
+};
+
+
+  const renderCard = (item) => {
+    const images = [
+      item.top?.s3_path,
+      item.outer?.s3_path,
+      item.bottom?.s3_path,
+      item.shoes?.s3_path,
+    ].filter(Boolean).slice(0, 4);
+
+    return (
+      <div className="card" key={item.id}>
+        <div className="image-grid-2x2">
+          {['top', 'outer', 'bottom', 'shoes'].map((key, idx) => {
+            const src = item[key]?.s3_path;
+            return src ? (
+              <img
+                key={idx}
+                src={src}
+                alt={`${key}`}
+                className="thumbnail-grid-img"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = './images/placeholder.jpg';
+                }}
+              />
+            ) : null;
+          })}
+        </div>
+
+        <div className="card-info-with-heart">
+          <div className="text-info">
+            <h3>{item.style}</h3>
+            <p className="price">₩{item.total_price?.toLocaleString() || '정보 없음'}</p>
+          </div>
+          <button
+            className="heart-inline-btn"
+            onClick={() => toggleLike(item.id)}
+            aria-label={likedMap[item.id] ? '찜 해제' : '찜 추가'}>
+            <FontAwesomeIcon
+              icon={likedMap[item.id] ? solidHeart : regularHeart}
+              className={`heart-icon ${likedMap[item.id] ? 'liked' : ''}`}
+            />
+          </button>
+        </div>
       </div>
-      <div className="card-info">
-        <h3>{item.style}</h3>
-        <p className="price">{item.season}</p>
-        <p className="price">₩{item.total_price?.toLocaleString() || '정보 없음'}</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="container">
@@ -166,7 +219,6 @@ function MainPage() {
           </Link>
         </div>
 
-        {/* 랜덤 추천 섹션 */}
         <div className="coordination-section">
           <div className="section-header">
             <h2>오늘의 랜덤 추천</h2>
@@ -176,7 +228,6 @@ function MainPage() {
           </div>
         </div>
 
-        {/* 가격대별 추천 섹션 */}
         <div className="coordination-section">
           <div className="section-header">
             <h2>가격대별 추천 💶</h2>
@@ -196,7 +247,6 @@ function MainPage() {
           </div>
         </div>
 
-        {/* 스타일별 추천 섹션 */}
         <div className="coordination-section">
           <div className="section-header">
             <h2>스타일별 추천 🧢</h2>

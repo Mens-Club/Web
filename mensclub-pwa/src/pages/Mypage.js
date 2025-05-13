@@ -22,9 +22,11 @@ function MyPage() {
     if (tab === 'ai') {
       // AI 탭의 경우
       const recommendationId = item.recommendation?.id;
+      console.log('클릭한 아이템:', item);
+      console.log('추천 ID:', recommendationId);
 
       if (recommendationId) {
-        navigate(`/product-detail/${recommendationId}`);
+        navigate(`/product-detail/${recommendationId}?source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -33,7 +35,7 @@ function MyPage() {
       const mainRecommendationId = item.main_recommendation?.id || item.id;
 
       if (mainRecommendationId) {
-        navigate(`/product-detail/${mainRecommendationId}`);
+        navigate(`/product-detail/${mainRecommendationId}?source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -51,6 +53,7 @@ function MyPage() {
     const { order, style } = filter;
     const name = userInfo.name;
     const token = sessionStorage.getItem('accessToken');
+    
 
     if (!name) return;
 
@@ -65,7 +68,9 @@ function MyPage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (tab === 'ai') {
+
         // AI 탭의 경우
+
         if (order === 'newest' || order === 'oldest') {
           res = await api.get('/api/picked/v1/recommend_picked/by-time/', {
             headers: { Authorization: `Bearer ${token}` },
@@ -76,7 +81,7 @@ function MyPage() {
             headers: { Authorization: `Bearer ${token}` },
             params: { user_id, sort: order },
           });
-        } else if (style) {
+        } else if (style === '미니멀' || style === '캐주얼') {
           res = await api.get('/api/picked/v1/recommend_picked/by-style/', {
             headers: { Authorization: `Bearer ${token}` },
             params: { user_id, style },
@@ -90,7 +95,9 @@ function MyPage() {
         console.log('AI 찜 목록 응답:', res.data);
         setAiOutfits(res.data);
       } else {
+
         // CLUB 탭의 경우
+
         if (order === 'newest' || order === 'oldest') {
           res = await api.get('/api/picked/v1/main_picked/by-time/', {
             headers,
@@ -101,7 +108,7 @@ function MyPage() {
             headers,
             params: { user_id, sort: order },
           });
-        } else if (style) {
+        } else if (style === '미니멀' || style === '캐주얼') {
           res = await api.get('/api/picked/v1/main_picked/by-style/', {
             headers,
             params: { user_id, style },
@@ -111,6 +118,9 @@ function MyPage() {
             headers,
             params: { user_id, order: 'newest' },
           });
+          
+        console.log('📦 clubOutfits 응답 구조:', res.data);  // 👈 여기 추가
+        setClubOutfits(res.data);
         }
 
         setClubOutfits(res.data);
@@ -176,15 +186,17 @@ function MyPage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
+
         // UI에서 제거
         setAiOutfits((prev) => prev.filter((o) => o.uuid !== item.uuid));
       } else {
         // CLUB 아웃핏인 경우 토글 API 사용
-        await api.post(
-          '/api/picked/v1/main_picked/toggle',
-          { recommendation_id: item.main_recommendation?.id || item.id },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+       await api.post(
+        '/api/picked/v1/main_picked/toggle',
+        { main_recommendation_id: item.main_recommendation?.id || item.id },  // ✅ 수정됨
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
 
         // UI에서 제거
         setClubOutfits((prev) => prev.filter((o) => o.id !== item.id));
@@ -224,6 +236,14 @@ function MyPage() {
     return count;
   };
 
+  // 스타일 필터 클릭 핸들러
+  const handleStyleFilter = (selectedStyle) => {
+    setFilter({
+      style: selectedStyle,
+      order: null, // order 값을 null로 설정
+    });
+  };
+
   return (
     <div className="container">
       {isLoading ? (
@@ -253,8 +273,11 @@ function MyPage() {
                 <select
                   onChange={(e) => {
                     const [type, value] = e.target.value.split(':');
-                    if (type === 'order') setFilter((prev) => ({ ...prev, order: value }));
-                    else if (type === 'style') setFilter((prev) => ({ ...prev, style: value }));
+                    if (type === 'order') {
+                      setFilter({ order: value, style: null });
+                    } else if (type === 'style') {
+                      setFilter({ style: value, order: null });
+                    }
                   }}
                   value={filter.style ? `style:${filter.style}` : `order:${filter.order}`}>
                   <option value="order:newest">최신순</option>
@@ -268,10 +291,20 @@ function MyPage() {
             </div>
 
             <div className="tab-buttons">
-              <button onClick={() => setTab('ai')} className={tab === 'ai' ? 'active' : ''}>
+              <button
+                onClick={() => {
+                  setTab('ai');
+                  setFilter({ order: 'newest', style: null });
+                }}
+                className={tab === 'ai' ? 'active' : ''}>
                 AI 추천 아웃핏
               </button>
-              <button onClick={() => setTab('club')} className={tab === 'club' ? 'active' : ''}>
+              <button
+                onClick={() => {
+                  setTab('club');
+                  setFilter({ order: 'newest', style: null });
+                }}
+                className={tab === 'club' ? 'active' : ''}>
                 MEN'S CLUB 아웃핏
               </button>
             </div>
@@ -280,7 +313,10 @@ function MyPage() {
               <>
                 <div className="outfit-grid">
                   {displayedOutfits.map((item) => {
-                    const data = tab === 'club' ? item.combination || {} : item;
+                  const data =
+                    tab === 'club'
+                      ? item.main_recommendation || item.combination || item
+                      : item;
                     return (
                       <div
                         key={item.uuid || item.id}
@@ -288,75 +324,45 @@ function MyPage() {
                         onClick={() => handleCardClick(item)}
                         style={{ cursor: 'pointer' }}>
                         <div className="image-container">
-                          {tab === 'ai' ? (
-                            <div
-                              className={`outfit-items-grid items-${getItemCount(item.recommendation)}`}
-                              onClick={(e) => e.stopPropagation()}>
-                              {item.recommendation?.top?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.top.s3_path}
-                                    alt="Top"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
+                                                    {tab === 'ai' ? (
+                          <div className="outfit-items-grid items-4">
+                            {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
+                              const s3 = item.recommendation?.[part]?.s3_path;
+                              return (
+                                <div className="grid-item" key={i}>
+                                  {s3 ? (
+                                    <img
+                                      src={s3}
+                                      alt={part}
+                                      className="item-thumbnail"
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = '';
+                                      }}
+                                    />
+                                  ) : null}
                                 </div>
-                              )}
-                              {item.recommendation?.bottom?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.bottom.s3_path}
-                                    alt="Bottom"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              {item.recommendation?.outer?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.outer.s3_path}
-                                    alt="Outer"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              {item.recommendation?.shoes?.s3_path && (
-                                <div className="grid-item">
-                                  <img
-                                    src={item.recommendation.shoes.s3_path}
-                                    alt="Shoes"
-                                    className="item-thumbnail"
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = '';
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </div>
+                              );
+                            })}
+                          </div>
                           ) : (
-                            <img
-                              src={data.image || item.thumbnail_url || item.image_url || ''}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = '';
-                              }}
-                              alt={data.goods_name || 'Outfit'}
-                              className="outfit-img"
-                            />
+                       <div
+                        className="outfit-items-grid"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
+                          const s3 = item.main_recommendation?.[part]?.s3_path;
+                          return (
+                            <div className="grid-item" key={i}>
+                              {s3 ? (
+                                <img src={s3} alt={part} className="item-thumbnail" />
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
                           )}
-                          <button
+                          {/* <button
                             className="heart-button"
                             onClick={(e) => {
                               e.stopPropagation(); // 이벤트 전파 방지
@@ -366,29 +372,42 @@ function MyPage() {
                               icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
                               className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
                             />
-                          </button>
+                          </button> */}
                         </div>
                         <div className="outfit-info">
-                          <div className="brand">
+                         <div className="brand">
                             {tab === 'ai'
-                              ? `${item.recommendation?.top?.category || ''} / ${
-                                  item.recommendation?.bottom?.category || ''
-                                }`
+                              ? `${item.recommendation?.top?.category || ''} / ${item.recommendation?.bottom?.category || ''}`
                               : data.style || '스타일 미정'}
                           </div>
                           <div className="name">
                             {tab === 'ai'
                               ? (item.recommendation?.top?.goods_name || '') +
                                 (item.recommendation?.bottom ? ' 외' : '')
-                              : data.goods_name || '이름 없음'}
+                              : data.goods_name || ''}
                           </div>
-                          <div className="price">
-                            {tab === 'ai'
-                              ? `${calculateTotalPrice(item.recommendation)}원`
-                              : data.total_price
-                              ? `${data.total_price.toLocaleString()}원`
-                              : '가격 미정'}
-                          </div>
+                        <div className="price-with-heart">
+  <span className="price-text">
+    {tab === 'ai'
+      ? `${calculateTotalPrice(item.recommendation)}원`
+      : data.total_price
+      ? `${data.total_price.toLocaleString()}원`
+      : '가격 미정'}
+  </span>
+  <button
+    className="heart-button-inline"
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleLike(item);
+    }}
+  >
+    <FontAwesomeIcon
+      icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
+      className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
+    />
+  </button>
+</div>
+
                         </div>
                       </div>
                     );
