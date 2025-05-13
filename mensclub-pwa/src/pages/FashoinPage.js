@@ -394,7 +394,7 @@ function FashionPage() {
   };
 
   return (
-    <div className="container">
+    <div className="fashion-container">
       <div className="content">
         <div className="recommendation-container">
           <h2>🧷 {userInfo.username}님의 추천 코디 👔</h2>
