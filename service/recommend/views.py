@@ -108,6 +108,7 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("STEP 5: RAG Context 생성")
             rag_context = create_rag_context(most_similar_item)
+            logging.debug("유사 컨텍스트 결과 %s", rag_context)
 
             logger.info("STEP 6: 추천 생성 시작")
             recommendation_result = get_recommendation(base64_image, rag_context)
@@ -243,37 +244,3 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.exception("처리 중 알 수 없는 예외 발생")
             return Response({"status": "error", "message": str(e)}, status=500)
-
-
-class RecommendationDetailAPIView(APIView):
-    @swagger_auto_schema(
-        operation_description="recommendation_id로 Recommendation 객체의 모든 필드 값 조회",
-        manual_parameters=[
-            openapi.Parameter(
-                "recommendation_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                required=True,
-                description="추천 ID",
-            )
-        ],
-        responses={200: "조회 성공", 404: "데이터 없음", 400: "잘못된 요청"},
-    )
-    def get(self, request):
-        id_param = request.query_params.get("recommendation_id")
-        if not id_param:
-            return Response(
-                {"status": "error", "message": "recommendation_id는 필수입니다."},
-                status=400,
-            )
-
-        try:
-            recommendation = Recommendation.objects.get(id=id_param)
-            data = model_to_dict(recommendation)
-            return Response({"status": "success", "data": data}, status=200)
-
-        except Recommendation.DoesNotExist:
-            return Response(
-                {"status": "error", "message": "추천 결과를 찾을 수 없습니다."},
-                status=404,
-            )
