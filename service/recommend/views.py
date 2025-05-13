@@ -108,6 +108,7 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("STEP 5: RAG Context 생성")
             rag_context = create_rag_context(most_similar_item)
+            logging.debug("유사 컨텍스트 결과 %s", rag_context)
 
             logger.info("STEP 6: 추천 생성 시작")
             recommendation_result = get_recommendation(base64_image, rag_context)
