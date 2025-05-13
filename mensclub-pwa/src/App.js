@@ -42,7 +42,7 @@ function AppWithNav() {
   const shouldHideNav = hideNavOnPaths.includes(location.pathname);
 
   // 보여줄 경로 (TopNav, BottomNav 둘 다 보여줄)
-  const showNavOnPaths = ['/main', '/camera', '/fashion', '/my', '/product-detail'];
+  const showNavOnPaths = ['/main', '/camera', '/fashion', '/my', '/product-detail/:itemId'];
   const shouldShowNav = showNavOnPaths.includes(location.pathname);
 
   return (
