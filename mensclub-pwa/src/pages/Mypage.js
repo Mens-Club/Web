@@ -22,9 +22,11 @@ function MyPage() {
     if (tab === 'ai') {
       // AI 탭의 경우
       const recommendationId = item.recommendation?.id;
+      console.log('클릭한 아이템:', item);
+      console.log('추천 ID:', recommendationId);
 
       if (recommendationId) {
-        navigate(`/product-detail/${recommendationId}`);
+        navigate(`/product-detail/${recommendationId}?source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -33,7 +35,7 @@ function MyPage() {
       const mainRecommendationId = item.main_recommendation?.id || item.id;
 
       if (mainRecommendationId) {
-        navigate(`/product-detail/${mainRecommendationId}`);
+        navigate(`/product-detail/${mainRecommendationId}?source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -79,7 +81,7 @@ function MyPage() {
             headers: { Authorization: `Bearer ${token}` },
             params: { user_id, sort: order },
           });
-        } else if (style) {
+        } else if (style === '미니멀' || style === '캐주얼') {
           res = await api.get('/api/picked/v1/recommend_picked/by-style/', {
             headers: { Authorization: `Bearer ${token}` },
             params: { user_id, style },
@@ -106,7 +108,7 @@ function MyPage() {
             headers,
             params: { user_id, sort: order },
           });
-        } else if (style) {
+        } else if (style === '미니멀' || style === '캐주얼') {
           res = await api.get('/api/picked/v1/main_picked/by-style/', {
             headers,
             params: { user_id, style },
@@ -234,6 +236,14 @@ function MyPage() {
     return count;
   };
 
+  // 스타일 필터 클릭 핸들러
+  const handleStyleFilter = (selectedStyle) => {
+    setFilter({
+      style: selectedStyle,
+      order: null, // order 값을 null로 설정
+    });
+  };
+
   return (
     <div className="container">
       {isLoading ? (
@@ -263,8 +273,11 @@ function MyPage() {
                 <select
                   onChange={(e) => {
                     const [type, value] = e.target.value.split(':');
-                    if (type === 'order') setFilter((prev) => ({ ...prev, order: value }));
-                    else if (type === 'style') setFilter((prev) => ({ ...prev, style: value }));
+                    if (type === 'order') {
+                      setFilter({ order: value, style: null });
+                    } else if (type === 'style') {
+                      setFilter({ style: value, order: null });
+                    }
                   }}
                   value={filter.style ? `style:${filter.style}` : `order:${filter.order}`}>
                   <option value="order:newest">최신순</option>
@@ -278,10 +291,20 @@ function MyPage() {
             </div>
 
             <div className="tab-buttons">
-              <button onClick={() => setTab('ai')} className={tab === 'ai' ? 'active' : ''}>
+              <button
+                onClick={() => {
+                  setTab('ai');
+                  setFilter({ order: 'newest', style: null });
+                }}
+                className={tab === 'ai' ? 'active' : ''}>
                 AI 추천 아웃핏
               </button>
-              <button onClick={() => setTab('club')} className={tab === 'club' ? 'active' : ''}>
+              <button
+                onClick={() => {
+                  setTab('club');
+                  setFilter({ order: 'newest', style: null });
+                }}
+                className={tab === 'club' ? 'active' : ''}>
                 MEN'S CLUB 아웃핏
               </button>
             </div>
@@ -302,9 +325,7 @@ function MyPage() {
                         style={{ cursor: 'pointer' }}>
                         <div className="image-container">
                           {tab === 'ai' ? (
-                            <div
-                              className={`outfit-items-grid items-${getItemCount(item.recommendation)}`}
-                              onClick={(e) => e.stopPropagation()}>
+                            <div className={`outfit-items-grid items-${getItemCount(item.recommendation)}`}>
                               {item.recommendation?.top?.s3_path && (
                                 <div className="grid-item">
                                   <img
