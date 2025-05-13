@@ -426,6 +426,8 @@ h1 {
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
   }
+
+  
 }
 
 @media (max-width: 600px) {
@@ -434,10 +436,19 @@ h1 {
   }
 
   .card img {
-    height: 200px;
+    height: 80px;
   }
 
   .card-info h3 {
     font-size: 14px;
+  }
+
+  .filter-btn  {
+    font-size: 12px;
+    padding: 7px 5px;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
   }
 }

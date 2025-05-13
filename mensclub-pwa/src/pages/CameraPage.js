@@ -81,7 +81,7 @@ function CameraPage() {
       sessionStorage.setItem('capturedImageUrl', imageUrl);
 
       // 3. 업로드된 이미지 기반 추천 요청
-      const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/recommned/', {
+      const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ function CameraPage() {
         </div>
         {/* 상태/로딩 메시지 */}
         {step !== 'init' && (
-          <div className="upload-status">
+          <div className="camera-upload-status ">
             {loading ? (
               <div className="loading-spinner">
                 <div className="spinner"></div>

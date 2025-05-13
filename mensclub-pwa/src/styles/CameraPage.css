@@ -102,13 +102,13 @@
 }
 
 /* 업로드 상태 */
-.upload-status {
+.camera-upload-status {
   margin-top: 24px;
   padding: 16px;
   background-color: #e6e8f0;
   border-radius: 12px;
   text-align: center;
-  width: 70%;
+  width: 80%;
   border: 1px solid #eee;
   margin: 0 auto 24px;
 }
@@ -160,9 +160,22 @@
   .camera-button {
     top: 20%; /* 모바일에서만 더 위로 */
   }
+
+  .camera-upload-text-btn {
+    background-color: #666666;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    width: 34%;
+  }
   
   .title-wrapper h1 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     color: #1a1a1a;
   }
@@ -170,5 +183,14 @@
   .title-wrapper {
     text-align: center;
     margin-top: 60px;
+  }
+
+  p {
+    font-size: 15px;
+    text-align: center;
+  }
+
+  .camera-upload-status {
+    margin-top: 10px;
   }
 }
