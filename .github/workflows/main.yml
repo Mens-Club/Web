@@ -1,1 +1,20 @@
-# main
+name: Echo Test
+
+on:
+  push:
+    branches:
+      - main  
+jobs:
+  echo_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Echo message
+        run: |
+          echo "이 메시지는 항상 출력됩니다."
+          false || true  # 오류 무시
+
+      - name: Force success
+        run: exit 0  # 명시적으로 성공 처리
