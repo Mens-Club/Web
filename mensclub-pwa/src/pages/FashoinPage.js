@@ -10,12 +10,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 function FashionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [liked, setLiked] = useState([]);
   const [userInfo, setUserInfo] = useState({ username: '' });
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // 재추천 요청시 로딩 창 표현
   const imageGridRefs = useRef([]); // 아이템 스와이프
   const isDraggingRef = useRef(false);
+  const [likedMap, setLikedMap] = useState({});
 
   // 이미지 그리드 참조 설정
   const setImageGridRef = (index, element) => {
@@ -108,7 +108,7 @@ function FashionPage() {
     if (items && items.length > 0) {
       navigate(`/product-detail/${items[0].idx}?recommendation=${recommendationId}`, {
         state: {
-          likedItems: liked,
+          likedItems: likedMap,
           recommendations: recommendations,
         },
       });
@@ -128,6 +128,10 @@ function FashionPage() {
         navigate('/login');
         return;
       }
+
+      //저장된 세션 삭제
+      sessionStorage.removeItem('likedItemsMap');
+      setLikedMap({}); // 상태도 초기화
 
       // 로딩 상태 표시
       setIsLoading(true);
@@ -184,7 +188,7 @@ function FashionPage() {
           // 유효한 결과를 찾았으면 그것을 사용
           sessionStorage.setItem('recommendationData', JSON.stringify(validResult.data));
           setRecommendations(validResult.data.product_combinations);
-          setLiked(new Array(validResult.data.product_combinations.length).fill(false));
+          setLikedMap(new Array(validResult.data.product_combinations.length).fill(false));
         } else {
           // 모든 재시도 실패 시 알림
           alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
@@ -193,7 +197,7 @@ function FashionPage() {
         // 유효한 결과면 바로 사용
         sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
         setRecommendations(recommendRes.data.product_combinations);
-        setLiked(new Array(recommendRes.data.product_combinations.length).fill(false));
+        setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
       }
     } catch (error) {
       console.error('재추천 요청 실패:', error);
@@ -225,9 +229,13 @@ function FashionPage() {
       if (storedData) {
         const data = JSON.parse(storedData);
         if (data && data.product_combinations) {
-          // 전체 조합 정보(recommendation_id, total_price 포함) 저장
           setRecommendations(data.product_combinations);
-          setLiked(new Array(data.product_combinations.length).fill(false));
+
+          // 세션스토리지에서 찜 맵 불러오기
+          const storedLikedMap = sessionStorage.getItem('likedItemsMap');
+          if (storedLikedMap) {
+            setLikedMap(JSON.parse(storedLikedMap));
+          }
         }
       }
     } catch (error) {
@@ -275,54 +283,43 @@ function FashionPage() {
         return;
       }
 
-      const recommendation = recommendations[index];
-      const recommendationId = recommendation.recommendation_id;
+      const recommendationId = index;
 
       // 현재 찜 상태 확인
-      const isCurrentlyLiked = liked[index];
+      const isCurrentlyLiked = likedMap[recommendationId];
 
       // 찜이 되어 있는 경우에만 확인 창 표시
       if (isCurrentlyLiked) {
         const confirmUnlike = window.confirm('찜을 해제하시겠습니까?');
         if (!confirmUnlike) {
-          return; // 사용자가 취소한 경우 함수 종료
+          return;
         }
       }
 
-      // 상태 먼저 업데이트 (낙관적 UI 업데이트)
-      const newLiked = [...liked];
-      newLiked[index] = !isCurrentlyLiked;
-      setLiked(newLiked);
+      /// 상태 먼저 업데이트 (낙관적 UI 업데이트)
+      const newLikedMap = { ...likedMap };
+      newLikedMap[recommendationId] = !isCurrentlyLiked;
+      setLikedMap(newLikedMap);
 
       // 세션스토리지에 찜 상태 저장
-      sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
+      sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
 
-      // 서버에 찜 상태 업데이트 (토글 API 사용)
+      // 서버에 찜 상태 업데이트
       const response = await api.post(
         '/api/picked/v1/recommend_picked/toggle',
         { recommendation_id: recommendationId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // 응답 상태에 따라 로그 출력
+      // 응답 상태 처리
       if (response.data && response.data.status === 'added') {
         console.log('✅ 찜 추가 성공:', recommendationId);
       } else if (response.data && response.data.status === 'removed') {
         console.log('✅ 찜 삭제 성공:', recommendationId);
-      } else {
-        console.log('⚠️ 찜 상태 변경 결과:', response.data);
       }
     } catch (error) {
       console.error('❌ 찜 상태 업데이트 실패:', error);
-
-      // 에러 발생 시 상태 롤백
-      fetchLikedItems();
-
-      if (error.response?.data?.error === 'You have already bookmarked this recommendation.') {
-        alert('이미 찜한 상품입니다.');
-      } else {
-        alert('찜 기능 처리 중 오류가 발생했습니다.');
-      }
+      fetchLikedItems(); // 에러 시 서버에서 최신 상태 다시 가져오기
     }
   };
 
@@ -340,11 +337,11 @@ function FashionPage() {
           setRecommendations(data.product_combinations);
 
           // 세션스토리지에서 찜 상태 불러오기
-          const storedLiked = sessionStorage.getItem('likedItems');
-          if (storedLiked) {
-            setLiked(JSON.parse(storedLiked));
+          const storedLikedMap = sessionStorage.getItem('likedItemsMap');
+          if (storedLikedMap) {
+            setLikedMap(JSON.parse(storedLikedMap));
           } else {
-            setLiked(new Array(data.product_combinations.length).fill(false));
+            setLikedMap({});
           }
         }
       }
@@ -352,6 +349,7 @@ function FashionPage() {
       console.error('데이터 로드 오류:', error);
     }
   }, []);
+
   // 찜 목록 가져오기
   const fetchLikedItems = async () => {
     try {
@@ -362,20 +360,14 @@ function FashionPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 서버에서 받아온 찜 목록
-      const likedIds = response.data.map((item) => item.recommendation_id);
-      console.log('서버에서 받은 찜 목록 ID:', likedIds);
-
-      // 현재 recommendations 배열과 비교하여 liked 상태 업데이트
-      const newLiked = recommendations.map((recommendation) => {
-        return likedIds.includes(Number(recommendation.recommendation_id));
+      // 서버에서 받아온 찜 목록으로 맵 생성
+      const newLikedMap = {};
+      response.data.forEach((item) => {
+        newLikedMap[item.recommendation_id] = true;
       });
 
-      console.log('업데이트된 liked 상태:', newLiked);
-      setLiked(newLiked);
-
-      // 세션스토리지에 찜 상태 저장
-      sessionStorage.setItem('likedItems', JSON.stringify(newLiked));
+      setLikedMap(newLikedMap);
+      sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
     } catch (error) {
       console.error('❌ 찜 목록 로드 실패:', error);
     }
@@ -433,11 +425,11 @@ function FashionPage() {
                     </div>
                     <button
                       className="heart-button"
-                      onClick={(e) => toggleLike(e, index)}
-                      aria-label={liked[index] ? '찜 해제' : '찜 추가'}>
+                      onClick={(e) => toggleLike(e, recommendation.recommendation_id)}
+                      aria-label={likedMap[recommendation.recommendation_id] ? '찜 해제' : '찜 추가'}>
                       <FontAwesomeIcon
-                        icon={liked[index] ? solidHeart : regularHeart}
-                        className={`heart-icon ${liked[index] ? 'liked' : ''}`}
+                        icon={likedMap[recommendation.recommendation_id] ? solidHeart : regularHeart}
+                        className={`heart-icon ${likedMap[recommendation.recommendation_id] ? 'liked' : ''}`}
                       />
                     </button>
                   </div>

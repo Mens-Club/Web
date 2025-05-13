@@ -289,9 +289,7 @@ function MyPage() {
                         style={{ cursor: 'pointer' }}>
                         <div className="image-container">
                           {tab === 'ai' ? (
-                            <div
-                              className={`outfit-items-grid items-${getItemCount(item.recommendation)}`}
-                              onClick={(e) => e.stopPropagation()}>
+                            <div className={`outfit-items-grid items-${getItemCount(item.recommendation)}`}>
                               {item.recommendation?.top?.s3_path && (
                                 <div className="grid-item">
                                   <img
