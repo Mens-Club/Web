@@ -2,12 +2,12 @@ from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import status
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from recommend.models import Recommendation, RecommendationBookmark, MainRecommendation, MainRecommendationBookmark
-from .serializers import MainRecommendationSerializer, RecommendationBookmarkSerializer, MainRecommendationBookmarkSerializer
-
+from .serializers import RecommendationSerializer, MainRecommendationSerializer, RecommendationBookmarkSerializer, MainRecommendationBookmarkSerializer
 
 class RecommendPicked(APIView):
     permission_classes = [IsAuthenticated]
@@ -61,7 +61,6 @@ class RecommendPicked(APIView):
                 "message": "Bookmark created.",
                 "status": "created"
             }, status=status.HTTP_201_CREATED)
-
 
 class MainPicked(APIView):
     permission_classes = [IsAuthenticated]
@@ -428,3 +427,11 @@ class MainRecommendBookmarkByStyleAPIView(APIView):
         # 직렬화 후 응답
         serializer = MainRecommendationBookmarkSerializer(qs, many=True)
         return Response(serializer.data)
+    
+class RecommendationDetailView(RetrieveAPIView):
+    queryset = Recommendation.objects.select_related('top', 'bottom', 'outer', 'shoes', 'user')
+    serializer_class = RecommendationSerializer
+
+class MainRecommendationDetailView(RetrieveAPIView):
+    queryset = MainRecommendation.objects.select_related('top', 'bottom', 'outer', 'shoes')
+    serializer_class = MainRecommendationSerializer
