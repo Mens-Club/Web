@@ -1,120 +1,182 @@
-.edit-container {
-  max-width: 640px;
-  height: 100vh;
-  margin: 0 auto;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-  padding-bottom: 20px;
-  overflow: hidden;
-}
+  .edit-container {
+    max-width: 640px;
+    height: 100vh;
+    margin: 0 auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding-bottom: 20px;
+    overflow: hidden;
+  }
 
-.edit-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 16px;
-  position: relative;
-}
+  .edit-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    position: relative;
+  }
 
-.edit-close {
-  font-size: 30px;
-  position: absolute;
-  left: 16px;
-  top: 20px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  color: #000;
-}
+  .edit-close {
+    font-size: 30px;
+    position: absolute;
+    left: 16px;
+    top: 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #000;
+  }
 
-.edit-header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: bold;
-}
+  .edit-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
 
-.edit-info-text {
-  text-align: center;
-  font-size: 16px;
-  color: #222;
-  margin: 20px 0;
-  line-height: 1.6;
-}
+  .edit-info-text {
+    text-align: center;
+    font-size: 16px;
+    color: #222;
+    margin: 20px 0;
+    line-height: 1.6;
+  }
 
-.edit-info-highlight {
-  color: #7b61ff;
-  font-weight: 600;
-}
+  .edit-info-highlight {
+    color: #7b61ff;
+    font-weight: 600;
+  }
 
-.edit-tab-menu {
-  display: flex;
-  justify-content: center;
-  border-bottom: 2px solid #eee;
-  margin-bottom: 20px;
-}
+  .edit-tab-menu {
+    display: flex;
+    justify-content: center;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+  }
 
-.edit-tab-menu span {
-  padding: 12px 24px;
-  font-size: 16px;
-  color: #bbb;
-  cursor: pointer;
-  position: relative;
-}
+  .edit-tab-menu span {
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #bbb;
+    cursor: pointer;
+    position: relative;
+  }
 
-.edit-tab-menu .active {
-  color: #222;
-  font-weight: bold;
-}
+  .edit-tab-menu .active {
+    color: #222;
+    font-weight: bold;
+  }
 
-.edit-tab-menu .active:after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #222;
-}
+  .edit-tab-menu .active:after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #222;
+  }
 
-.edit-form {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+  .edit-form {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-.edit-form label {
-  font-size: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+  .edit-form label {
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
-.edit-form input,
-.edit-form select {
-  padding: 13px 14px;
-  font-size: 16px;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  background: #fafbfc;
-}
+  .edit-form input,
+  .edit-form select {
+    padding: 13px 14px;
+    font-size: 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: #fafbfc;
+  }
 
-.edit-save-btn {
-  margin-top: 30px;
-  padding: 14px 0;
-  border-radius: 24px;
-  background: #7b61ff;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-}
+  .edit-save-btn {
+    margin-top: 30px;
+    padding: 14px 0;
+    border-radius: 24px;
+    background: #7b61ff;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+  }
 
-.edit-save-btn:hover {
-  background: #6a50e8;
-}
+  .edit-save-btn:hover {
+    background: #6a50e8;
+  }
+
+  @media screen and (max-width: 480px) {
+    .edit-container {
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 16px;
+      box-shadow: none;
+      transform: translateX(-90px); /* ✅ 살짝 왼쪽으로 전체 이동 */
+    }
+  
+    .edit-header,
+    .edit-info-text,
+    .edit-tab-menu,
+    .edit-form {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+  
+    .edit-header h2 {
+      font-size: 20px;
+      text-align: center;
+    }
+  
+    .edit-close {
+      font-size: 24px;
+      top: 26px;
+      left: 12px;
+    }
+  
+    .edit-info-text {
+      font-size: 14px;
+      margin: 16px auto;
+      text-align: center;
+    }
+  
+    .edit-tab-menu span {
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+  
+    .edit-form label {
+      font-size: 14px;
+    }
+  
+    .edit-form input,
+    .edit-form select {
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 8px;
+    }
+  
+    .edit-save-btn {
+      margin-top: 20px;
+      padding: 12px 0;
+      font-size: 14px;
+      border-radius: 20px;
+      width: 100%;
+    }
+  }
+  

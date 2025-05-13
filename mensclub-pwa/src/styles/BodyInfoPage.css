@@ -138,57 +138,154 @@ html, body {
   color: #bbb;
   cursor: not-allowed;
 }
-  
 
 
 @media screen and (max-width: 480px) {
-  .bodyinfo-info-text {
-    font-size: 14px;
-    line-height: 1.5;
-    word-break: keep-all;
-    padding: 0 12px;
-    text-align: center;
+  html, body {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .bodyinfo-info-highlight {
-    font-size: 13px;
-    display: inline-block;
-    padding: 0 8px;
-    word-break: keep-all;
+  .bodyinfo-container {
+    min-height: 100vh;
+    width: 100%;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: none;
+    transform: translateX(-90px); /* ✅ 왼쪽으로 10px 이동 */
+  }
+
+  .bodyinfo-header {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 0;
+    margin-bottom: 12px;
+  }
+
+  .bodyinfo-close {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
   }
 
   .bodyinfo-header h2 {
     font-size: 18px;
+    margin: 0 auto;
+    text-align: center;
   }
 
-  .bodyinfo-container {
-    padding: 0 12px 16px 12px;
+  .bodyinfo-info-text {
+    width: 100%;
+    max-width: 320px;
+    font-size: 13px;
+    text-align: center;
+    margin: 12px auto;
+  }
+
+  .bodyinfo-info-highlight {
+    font-size: 13px;
+    color: #7b61ff;
+  }
+
+  .bodyinfo-tab-menu {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    justify-content: center;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 16px;
+  }
+
+  .bodyinfo-tab-menu span {
+    font-size: 13px;
+    padding: 8px 12px;
+    color: #bbb;
+    cursor: pointer;
+  }
+
+  .bodyinfo-tab-menu .active {
+    font-weight: bold;
+    color: #222;
+    border-bottom: 2px solid #222;
+  }
+
+  .bodyinfo-form {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 auto;
+  }
+
+  .bodyinfo-form label {
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    color: #222;
+  }
+
+  .bodyinfo-form input[type="number"] {
+    height: 40px;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fafbfc;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 6px;
   }
 
   .button-row {
-    flex-direction: column;
-    gap: 12px;
-    padding: 0 16px;
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
     margin-top: 24px;
   }
 
   .bodyinfo-next-btn,
   .bodyinfo-save-btn {
-    flex: none;
-    width: 100%;
-    font-size: 15px;
-    padding: 12px 0;
-  }
-
-  .bodyinfo-info-text {
-    font-size: 14px;
-    line-height: 1.5;
-    word-break: keep-all;
-    padding: 0 12px;
+    flex: 1;
+    max-width: 140px;
+    padding: 10px 0;
+    font-size: 13px;
+    border-radius: 20px;
+    border: none;
+    font-weight: bold;
     text-align: center;
   }
 
-  .bodyinfo-container {
-    padding: 0 12px 16px 12px;
+  .bodyinfo-next-btn {
+    background: #fff;
+    color: #222;
+    border: 1px solid #ddd;
+  }
+
+  .bodyinfo-save-btn {
+    background: #7b61ff;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+
+  .bodyinfo-save-btn:disabled {
+    background: #eee;
+    color: #bbb;
+    cursor: not-allowed;
   }
 }
