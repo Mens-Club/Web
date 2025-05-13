@@ -253,7 +253,7 @@ h1 {
 
 .card img {
   width: 100%;
-  height: 280px;
+  height: 140px;
   object-fit: cover;
 }
 
@@ -265,29 +265,66 @@ h1 {
 }
 
 .heart-button {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background-color: white;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  margin-top: 8px;
+  background-color: transparent;
+  border: none;
   cursor: pointer;
-  z-index: 10;
+  position: static; /* ✅ position 제거 또는 static */
+  box-shadow: none; /* ✅ 그림자 제거 */
+}
+
+.card-info-with-heart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  text-align: left;
+}
+
+.card-info-with-heart .text-info h3 {
+  font-size: 15px;
+  color: #1a1a1a;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.card-info-with-heart .text-info .price {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.heart-inline-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
 }
 
 .heart-icon {
-  font-size: 16px;
-  color: #bbb;
+  color: #ccc;
+  transition: color 0.2s ease;
 }
 
 .heart-icon.liked {
-  color: #ff5a5f;
+  color: #ff3b30;
+}
+
+.heart-icon {
+  color: #ccc;
+  transition: color 0.2s ease;
+}
+
+.heart-icon.liked {
+  color: #ff3b30;
 }
 
 .card-info {
@@ -362,6 +399,23 @@ h1 {
   color: #1a1a1a;
 }
 
+.image-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4px;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.thumbnail-grid-img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
 /* 반응형 */
 @media (min-width: 769px) {
   .container {
@@ -372,6 +426,8 @@ h1 {
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
   }
+
+  
 }
 
 @media (max-width: 600px) {
@@ -380,10 +436,19 @@ h1 {
   }
 
   .card img {
-    height: 200px;
+    height: 80px;
   }
 
   .card-info h3 {
     font-size: 14px;
+  }
+
+  .filter-btn  {
+    font-size: 12px;
+    padding: 7px 5px;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
   }
 }

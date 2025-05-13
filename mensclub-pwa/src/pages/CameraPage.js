@@ -221,7 +221,7 @@ function CameraPage() {
         </div>
         {/* 상태/로딩 메시지 */}
         {step !== 'init' && (
-          <div className="upload-status">
+          <div className="camera-upload-status ">
             {loading ? (
               <div className="loading-spinner">
                 <div className="spinner"></div>

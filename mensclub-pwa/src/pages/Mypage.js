@@ -53,6 +53,7 @@ function MyPage() {
     const { order, style } = filter;
     const name = userInfo.name;
     const token = sessionStorage.getItem('accessToken');
+    
 
     if (!name) return;
 
@@ -67,7 +68,9 @@ function MyPage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (tab === 'ai') {
+
         // AI 탭의 경우
+
         if (order === 'newest' || order === 'oldest') {
           res = await api.get('/api/picked/v1/recommend_picked/by-time/', {
             headers: { Authorization: `Bearer ${token}` },
@@ -92,7 +95,9 @@ function MyPage() {
         console.log('AI 찜 목록 응답:', res.data);
         setAiOutfits(res.data);
       } else {
+
         // CLUB 탭의 경우
+
         if (order === 'newest' || order === 'oldest') {
           res = await api.get('/api/picked/v1/main_picked/by-time/', {
             headers,
@@ -113,6 +118,9 @@ function MyPage() {
             headers,
             params: { user_id, order: 'newest' },
           });
+          
+        console.log('📦 clubOutfits 응답 구조:', res.data);  // 👈 여기 추가
+        setClubOutfits(res.data);
         }
 
         setClubOutfits(res.data);
@@ -178,15 +186,17 @@ function MyPage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
+
         // UI에서 제거
         setAiOutfits((prev) => prev.filter((o) => o.uuid !== item.uuid));
       } else {
         // CLUB 아웃핏인 경우 토글 API 사용
-        await api.post(
-          '/api/picked/v1/main_picked/toggle',
-          { recommendation_id: item.main_recommendation?.id || item.id },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+       await api.post(
+        '/api/picked/v1/main_picked/toggle',
+        { main_recommendation_id: item.main_recommendation?.id || item.id },  // ✅ 수정됨
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
 
         // UI에서 제거
         setClubOutfits((prev) => prev.filter((o) => o.id !== item.id));
@@ -303,7 +313,10 @@ function MyPage() {
               <>
                 <div className="outfit-grid">
                   {displayedOutfits.map((item) => {
-                    const data = tab === 'club' ? item.combination || {} : item;
+                  const data =
+                    tab === 'club'
+                      ? item.main_recommendation || item.combination || item
+                      : item;
                     return (
                       <div
                         key={item.uuid || item.id}
@@ -367,17 +380,23 @@ function MyPage() {
                               )}
                             </div>
                           ) : (
-                            <img
-                              src={data.image || item.thumbnail_url || item.image_url || ''}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = '';
-                              }}
-                              alt={data.goods_name || 'Outfit'}
-                              className="outfit-img"
-                            />
+                       <div
+                        className="outfit-items-grid"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
+                          const s3 = item.main_recommendation?.[part]?.s3_path;
+                          return (
+                            <div className="grid-item" key={i}>
+                              {s3 ? (
+                                <img src={s3} alt={part} className="item-thumbnail" />
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
                           )}
-                          <button
+                          {/* <button
                             className="heart-button"
                             onClick={(e) => {
                               e.stopPropagation(); // 이벤트 전파 방지
@@ -387,29 +406,42 @@ function MyPage() {
                               icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
                               className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
                             />
-                          </button>
+                          </button> */}
                         </div>
                         <div className="outfit-info">
-                          <div className="brand">
+                         <div className="brand">
                             {tab === 'ai'
-                              ? `${item.recommendation?.top?.category || ''} / ${
-                                  item.recommendation?.bottom?.category || ''
-                                }`
+                              ? `${item.recommendation?.top?.category || ''} / ${item.recommendation?.bottom?.category || ''}`
                               : data.style || '스타일 미정'}
                           </div>
                           <div className="name">
                             {tab === 'ai'
                               ? (item.recommendation?.top?.goods_name || '') +
                                 (item.recommendation?.bottom ? ' 외' : '')
-                              : data.goods_name || '이름 없음'}
+                              : data.goods_name || ''}
                           </div>
-                          <div className="price">
-                            {tab === 'ai'
-                              ? `${calculateTotalPrice(item.recommendation)}원`
-                              : data.total_price
-                              ? `${data.total_price.toLocaleString()}원`
-                              : '가격 미정'}
-                          </div>
+                        <div className="price-with-heart">
+  <span className="price-text">
+    {tab === 'ai'
+      ? `${calculateTotalPrice(item.recommendation)}원`
+      : data.total_price
+      ? `${data.total_price.toLocaleString()}원`
+      : '가격 미정'}
+  </span>
+  <button
+    className="heart-button-inline"
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleLike(item);
+    }}
+  >
+    <FontAwesomeIcon
+      icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
+      className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
+    />
+  </button>
+</div>
+
                         </div>
                       </div>
                     );
