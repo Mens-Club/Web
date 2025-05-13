@@ -6,10 +6,24 @@ class RecommendationSerializer(serializers.ModelSerializer):
     bottom = serializers.SerializerMethodField()
     outer = serializers.SerializerMethodField()
     shoes = serializers.SerializerMethodField()
+    user = serializers.IntegerField(source='user.id', read_only=True)
 
     class Meta:
         model = Recommendation
-        fields = ['id', 'top', 'bottom', 'outer', 'shoes']
+        fields = [
+            "id",
+            "recommendation_code",
+            "user",
+            "answer",
+            "reasoning_text",
+            "style",
+            "created_at",
+            "total_price",
+            "top",
+            "bottom",
+            "outer",
+            "shoes",
+        ]
 
     def get_top(self, obj):
         return self.serialize_clothes(obj.top)
@@ -28,7 +42,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
             return None
         return {
             "id": item.idx,
-            "category": item.sub_category,
+            "category": getattr(item, "sub_category", None),
             "goods_name": item.goods_name,
             "price": item.price,
             "s3_path": item.s3_path,
@@ -42,7 +56,7 @@ class MainRecommendationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MainRecommendation
-        fields = ['id', 'top', 'bottom', 'outer', 'shoes', 'style', 'reasoning_text', 'total_price']
+        fields = ['id', 'reasoning_text', 'style', 'created_at', 'total_price', 'top', 'bottom', 'outer', 'shoes']
 
     def get_top(self, obj):
         return self.serialize_clothes(obj.top)
