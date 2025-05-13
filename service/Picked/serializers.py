@@ -42,9 +42,11 @@ class RecommendationSerializer(serializers.ModelSerializer):
             return None
         return {
             "id": item.idx,
-            "category": getattr(item, "sub_category", None),
+            "category": item.sub_category,
             "goods_name": item.goods_name,
+            "goods_url": item.goods_url,
             "price": item.price,
+            "brand": item.brand,
             "s3_path": item.s3_path,
         }
     
@@ -77,7 +79,9 @@ class MainRecommendationSerializer(serializers.ModelSerializer):
             "id": item.idx,
             "category": item.sub_category,
             "goods_name": item.goods_name,
+            "goods_url": item.goods_url,
             "price": item.price,
+            "brand": item.brand,
             "s3_path": item.s3_path,
         }
 
