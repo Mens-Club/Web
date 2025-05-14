@@ -1,5 +1,5 @@
 // MainPage.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/MainPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -54,7 +54,9 @@ function MainPage() {
       setCurrentImageIndexMap((prev) => {
         const updated = { ...prev };
         [...randomRecommends, ...priceRecommends, ...styleRecommends].forEach((item) => {
-          const images = [item.top?.s3_path, item.outer?.s3_path, item.bottom?.s3_path, item.shoes?.s3_path].filter(Boolean);
+          const images = [item.top?.s3_path, item.outer?.s3_path, item.bottom?.s3_path, item.shoes?.s3_path].filter(
+            Boolean
+          );
           if (images.length > 0) {
             const currentIndex = prev[item.id] || 0;
             updated[item.id] = (currentIndex + 1) % images.length;
@@ -96,51 +98,129 @@ function MainPage() {
     }
   };
 
-const toggleLike = async (recommendId) => {
-  try {
-    const isCurrentlyLiked = likedMap[recommendId];
+  const toggleLike = async (recommendId) => {
+    try {
+      const isCurrentlyLiked = likedMap[recommendId];
 
-    // 1. 찜 되어 있는 상태라면 삭제 확인
-    if (isCurrentlyLiked) {
-      const confirm = window.confirm('찜을 해제하시겠습니까?');
-      if (!confirm) return;
+      // 1. 찜 되어 있는 상태라면 삭제 확인
+      if (isCurrentlyLiked) {
+        const confirm = window.confirm('찜을 해제하시겠습니까?');
+        if (!confirm) return;
+      }
+
+      // 2. 서버에 토글 요청
+      const response = await api.post('/api/picked/v1/main_picked/toggle', {
+        main_recommendation_id: recommendId,
+      });
+
+      const status = response.status;
+
+      // 3. 상태 업데이트 (localStorage 동기화 포함)
+      setLikedMap((prev) => {
+        const updated = { ...prev, [recommendId]: !prev[recommendId] };
+        localStorage.setItem('likedMap', JSON.stringify(updated));
+        return updated;
+      });
+
+      if (status === 201) {
+        console.log(`✅ 찜 추가 성공: ${recommendId}`);
+      } else if (status === 200) {
+        console.log(`✅ 찜 해제 성공: ${recommendId}`);
+      }
+    } catch (err) {
+      console.error('❌ 찜 토글 오류:', err.response?.data || err.message);
     }
+  };
 
-    // 2. 서버에 토글 요청
-    const response = await api.post('/api/picked/v1/main_picked/toggle', {
-      main_recommendation_id: recommendId,
+  // 메인 카드들 드래그 기능
+  const randomCardsRef = useRef(null);
+  const priceCardsRef = useRef(null);
+  const styleCardsRef = useRef(null);
+
+  useEffect(() => {
+    const sliders = [randomCardsRef.current, priceCardsRef.current, styleCardsRef.current];
+
+    // 각 슬라이더에 대한 이벤트 핸들러 함수들을 저장할 객체
+    const handlers = {};
+
+    sliders.forEach((slider, index) => {
+      // index 매개변수 추가
+      if (!slider) return;
+
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+
+      // 각 슬라이더별로 고유한 핸들러 함수 생성
+      handlers[index] = {
+        mouseDown: (e) => {
+          isDown = true;
+          slider.style.cursor = 'grabbing';
+          startX = e.pageX - slider.offsetLeft;
+          scrollLeft = slider.scrollLeft;
+          e.preventDefault();
+        },
+
+        mouseLeave: () => {
+          isDown = false;
+          slider.style.cursor = 'grab';
+        },
+
+        mouseUp: () => {
+          isDown = false;
+          slider.style.cursor = 'grab';
+        },
+
+        mouseMove: (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - slider.offsetLeft;
+          const walk = (x - startX) * 2;
+          slider.scrollLeft = scrollLeft - walk;
+        },
+      };
+
+      // 이벤트 리스너에 handlers 객체의 함수 사용
+      slider.addEventListener('mousedown', handlers[index].mouseDown);
+      slider.addEventListener('mouseleave', handlers[index].mouseLeave);
+      slider.addEventListener('mouseup', handlers[index].mouseUp);
+      slider.addEventListener('mousemove', handlers[index].mouseMove);
     });
 
-    const status = response.status;
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      sliders.forEach((slider, index) => {
+        if (!slider || !handlers[index]) return;
 
-    // 3. 상태 업데이트 (localStorage 동기화 포함)
-    setLikedMap((prev) => {
-      const updated = { ...prev, [recommendId]: !prev[recommendId] };
-      localStorage.setItem('likedMap', JSON.stringify(updated));
-      return updated;
-    });
-
-    if (status === 201) {
-      console.log(`✅ 찜 추가 성공: ${recommendId}`);
-    } else if (status === 200) {
-      console.log(`✅ 찜 해제 성공: ${recommendId}`);
-    }
-  } catch (err) {
-    console.error('❌ 찜 토글 오류:', err.response?.data || err.message);
-  }
-};
-
+        slider.removeEventListener('mousedown', handlers[index].mouseDown);
+        slider.removeEventListener('mouseleave', handlers[index].mouseLeave);
+        slider.removeEventListener('mouseup', handlers[index].mouseUp);
+        slider.removeEventListener('mousemove', handlers[index].mouseMove);
+      });
+    };
+  }, []);
 
   const renderCard = (item) => {
-    const images = [
-      item.top?.s3_path,
-      item.outer?.s3_path,
-      item.bottom?.s3_path,
-      item.shoes?.s3_path,
-    ].filter(Boolean).slice(0, 4);
+    const images = [item.top?.s3_path, item.outer?.s3_path, item.bottom?.s3_path, item.shoes?.s3_path]
+      .filter(Boolean)
+      .slice(0, 4);
+
+    console.log('디테일 페이지로 전달되는 아이템 정보:', item);
+    console.log('아이템 ID:', item.id);
+
+    // 카드 클릭 핸들러 추가
+    const handleCardClick = () => {
+      // 디테일 페이지로 이동
+      navigate(`/product-detail/${item.id}?source=main&recommendationCode=${item.id}`);
+    };
 
     return (
-      <div className="card" key={item.id}>
+      <div
+        className="card"
+        key={item.id}
+        onClick={handleCardClick} // 클릭 이벤트 추가
+        style={{ cursor: 'pointer' }} // 커서 스타일 변경
+      >
         <div className="image-grid-2x2">
           {['top', 'outer', 'bottom', 'shoes'].map((key, idx) => {
             const src = item[key]?.s3_path;
@@ -154,6 +234,7 @@ const toggleLike = async (recommendId) => {
                   e.target.onerror = null;
                   e.target.src = './images/placeholder.jpg';
                 }}
+                draggable="false" // 드래그 방지 속성 추가
               />
             ) : null;
           })}
@@ -166,7 +247,10 @@ const toggleLike = async (recommendId) => {
           </div>
           <button
             className="heart-inline-btn"
-            onClick={() => toggleLike(item.id)}
+            onClick={(e) => {
+              e.stopPropagation(); // 버블링 방지 (카드 클릭 이벤트 방지)
+              toggleLike(item.id);
+            }}
             aria-label={likedMap[item.id] ? '찜 해제' : '찜 추가'}>
             <FontAwesomeIcon
               icon={likedMap[item.id] ? solidHeart : regularHeart}
@@ -188,7 +272,7 @@ const toggleLike = async (recommendId) => {
               '/images/banner1.png',
               '/images/banner5.png',
               '/images/banner3.png',
-              '/images/banner2.png'
+              '/images/banner2.png',
             ]}
           />
           <div className="title-area">
@@ -223,7 +307,7 @@ const toggleLike = async (recommendId) => {
           <div className="section-header">
             <h2>오늘의 랜덤 추천</h2>
           </div>
-          <div className="coordination-cards">
+          <div className="coordination-cards" ref={randomCardsRef}>
             {randomRecommends.map(renderCard)}
           </div>
         </div>
@@ -242,7 +326,7 @@ const toggleLike = async (recommendId) => {
               ))}
             </div>
           </div>
-          <div className="coordination-cards">
+          <div className="coordination-cards" ref={priceCardsRef}>
             {priceRecommends.map(renderCard)}
           </div>
         </div>
@@ -261,7 +345,7 @@ const toggleLike = async (recommendId) => {
               ))}
             </div>
           </div>
-          <div className="coordination-cards">
+          <div className="coordination-cards" ref={styleCardsRef}>
             {styleRecommends.map(renderCard)}
           </div>
         </div>

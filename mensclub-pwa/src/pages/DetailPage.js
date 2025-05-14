@@ -7,20 +7,13 @@ import api from '../api/axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 function DetailPage() {
   const { itemId } = useParams(); // URL에서 itemId 가져오기
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const recommendationCode = queryParams.get('recommendationCode'); // URL 쿼리에서 recommendation 코드 가져오기
-
-  // URL에서 쿼리 파라미터 추출
-  const recommendationId = queryParams.get('recommendationCode');
-  const apiPath = queryParams.get('apiPath');
-
-  // 이전 상태 복원 (뒤로가기 시)
-  const previousState = location.state || window.history.state;
-
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -28,6 +21,11 @@ function DetailPage() {
   const [error, setError] = useState(null);
   const sliderRef = useRef(null);
   const [isLiked, setIsLiked] = useState(false);
+
+  //뒤로가기
+  const goBack = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     const source = new URLSearchParams(location.search).get('source') || '';
@@ -86,6 +84,7 @@ function DetailPage() {
                 total_price: productData.total_price,
                 recommendation_code: productData.recommendation_code,
                 created_at: productData.created_at,
+                reasoning_text: productData.reasoning_text,
               }));
 
               if (itemsWithDetails.length > 0) {
@@ -102,13 +101,39 @@ function DetailPage() {
           }
         }
         // 홈에서 온 경우
-        else if (source === 'home') {
+        else if (source === 'main') {
           try {
-            const response = await api.get(`/api/main_picked/${itemId}/`);
-            console.log('홈 상품 응답:', response.data);
+            const response = await api.get(`/api/picked/v1/main_picked/${itemId}/`);
+            console.log('API 응답 전체 데이터:', response);
 
             if (response.data) {
-              setProducts([response.data]);
+              // 전체 상품 정보를 배열로 변환
+              const productData = response.data;
+              const allItems = [];
+
+              // 각 카테고리별 상품 추가
+              if (productData.top) allItems.push({ ...productData.top, category: 'top' });
+              if (productData.bottom) allItems.push({ ...productData.bottom, category: 'bottom' });
+              if (productData.outer) allItems.push({ ...productData.outer, category: 'outer' });
+              if (productData.shoes && productData.shoes.id) allItems.push({ ...productData.shoes, category: 'shoes' });
+
+              // 각 아이템에 필요한 속성 추가
+              const itemsWithDetails = allItems.map((item) => ({
+                ...item,
+                thumbnail_url: item.s3_path,
+                price: item.price || 0,
+                goods_name: item.goods_name || '상품명 없음',
+                total_price: productData.total_price,
+                recommendation_code: productData.id,
+                created_at: productData.created_at,
+                reasoning_text: productData.reasoning_text,
+              }));
+
+              if (itemsWithDetails.length > 0) {
+                setProducts(itemsWithDetails);
+              } else {
+                setError('상품 정보를 찾을 수 없습니다.');
+              }
             } else {
               setError('상품 정보를 찾을 수 없습니다.');
             }
@@ -146,6 +171,7 @@ function DetailPage() {
                 total_price: productData.total_price,
                 recommendation_code: productData.recommendation_code,
                 created_at: productData.created_at,
+                reasoning_text: productData.reasoning_text,
               }));
 
               if (itemsWithDetails.length > 0) {
@@ -372,11 +398,6 @@ function DetailPage() {
     }
   };
 
-  // 로딩 중이거나 에러 발생 시 처리
-  if (isLoading) return <div className="loading">로딩 중...</div>;
-  if (error) return <div className="error">{error}</div>;
-  if (!products) return <div className="not-found">상품을 찾을 수 없습니다.</div>;
-
   // 관련 상품이 짝수가 되도록 조정
   const evenCount = products.length % 2 === 0 ? products.length : products.length + 1;
   const productsEven = [...products, ...Array(evenCount - products.length).fill(null)];
@@ -389,12 +410,27 @@ function DetailPage() {
     </div>
   );
 
+  // 로딩 중이거나 에러 발생 시 처리
+  if (isLoading)
+    return (
+      <div className="loading">
+        {' '}
+        <LoadingSpinner />
+      </div>
+    );
+  if (error) return <div className="error">{error}</div>;
+  if (!products) return <div className="not-found">상품을 찾을 수 없습니다.</div>;
+
   return (
     <div className="container">
       {isLoading ? (
         <LoadingSpinner />
       ) : (
         <div className="content">
+          <button className="back-button" onClick={goBack}>
+            <FontAwesomeIcon icon={faArrowLeft} className="back-icon" />
+            <span>뒤로가기</span>
+          </button>
           {/* 메인 이미지 그리드 */}
           <div className="main-image-grid">
             {products.map((product, id) => (

@@ -416,27 +416,27 @@ function MyPage() {
                         onClick={() => handleCardClick(item)}
                         style={{ cursor: 'pointer' }}>
                         <div className="image-container">
-                                                    {tab === 'ai' ? (
-                          <div className="outfit-items-grid items-4">
-                            {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
-                              const s3 = item.recommendation?.[part]?.s3_path;
-                              return (
-                                <div className="grid-item" key={i}>
-                                  {s3 ? (
-                                    <img
-                                      src={s3}
-                                      alt={part}
-                                      className="item-thumbnail"
-                                      onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = '';
-                                      }}
-                                    />
-                                  ) : null}
-                                </div>
-                              );
-                            })}
-                          </div>
+                          {tab === 'ai' ? (
+                            <div className="outfit-items-grid items-4">
+                              {['top', 'bottom', 'outer', 'shoes'].map((part, i) => {
+                                const s3 = item.recommendation?.[part]?.s3_path;
+                                return (
+                                  <div className="grid-item" key={i}>
+                                    {s3 ? (
+                                      <img
+                                        src={s3}
+                                        alt={part}
+                                        className="item-thumbnail"
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = '';
+                                        }}
+                                      />
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           ) : (
                             <div className="outfit-items-grid" onClick={(e) => e.stopPropagation()}>
                               {['top', 'bottom', 'outer', 'shoes'].map((part, i) => {
