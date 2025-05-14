@@ -316,5 +316,40 @@ LOGOUT_REDIRECT_URL = "/"
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
+# 로그 수집 
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
 
+    "formatters": {
+        "simple": { 
+            "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+
+    "handlers": {
+        "logstash": {
+            "level": "INFO",
+            "class": "logstash.TCPLogstashHandler",
+            "host": "localhost",
+            "port": 5000,
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",  
+        },
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["logstash", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}

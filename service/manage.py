@@ -2,12 +2,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
-
+import logging  # 추가
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -16,8 +15,12 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+    
+    # 여기에 로깅 코드 추가
+    logger = logging.getLogger(__name__)
+    logger.info("Django 애플리케이션이 시작되었습니다")
+    
     execute_from_command_line(sys.argv)
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
