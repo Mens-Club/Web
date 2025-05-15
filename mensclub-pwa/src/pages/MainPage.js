@@ -205,9 +205,6 @@ function MainPage() {
       .filter(Boolean)
       .slice(0, 4);
 
-    console.log('디테일 페이지로 전달되는 아이템 정보:', item);
-    console.log('아이템 ID:', item.id);
-
     // 카드 클릭 핸들러 추가
     const handleCardClick = () => {
       // 디테일 페이지로 이동

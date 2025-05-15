@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     "clothes",
     "Picked",
     "storages",
-    "recommend"
+    "recommend",
 ]
 
 # Redis 캐시
@@ -113,9 +113,14 @@ STORAGES = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버 주소
+    "http://127.0.0.1:3000",  # localhost의 IP 주소 버전
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    "authorization",  # 이 헤더가 중요합니다
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -191,7 +196,6 @@ DATABASES = {
 ELASTICSEARCH_DSL = {
     "default": {"hosts": "http://localhost:9200"},
 }
-
 
 
 # 인덱스 이름 매핑
@@ -316,19 +320,17 @@ LOGOUT_REDIRECT_URL = "/"
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
-# 로그 수집 
+# 로그 수집
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
-        "simple": { 
+        "simple": {
             "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-
     "handlers": {
         "logstash": {
             "level": "INFO",
@@ -341,10 +343,9 @@ LOGGING = {
         },
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "simple",  
+            "formatter": "simple",
         },
     },
-
     "loggers": {
         "django": {
             "handlers": ["logstash", "console"],

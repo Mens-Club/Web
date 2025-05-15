@@ -146,19 +146,36 @@ function MyPage() {
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
+
     async function fetchUserInfo() {
       try {
+        if (!token) {
+          console.error('❌ 토큰이 없습니다.');
+          setIsLoading(false);
+          navigate('/');
+          return;
+        }
+
         const res = await api.get('/api/account/v1/user_info/', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const { username, height, weight } = res.data;
-        setUserInfo({ name: username, height, weight });
+
+        const { username, height, weight, user_id } = res.data;
+        setUserInfo({ name: username, height, weight, user_id });
+        setIsLoading(false);
       } catch (e) {
-        console.error('❌ 사용자 정보 실패', e);
+        console.error('❌ 사용자 정보 불러오기 실패', e);
+        setIsLoading(false); // 중요: 에러 발생 시 로딩 상태 해제
+
+        if (e.response && e.response.status === 401) {
+          alert('로그인이 필요합니다.');
+          navigate('/');
+        }
       }
     }
+
     fetchUserInfo();
-  }, []);
+  }, [navigate]);
 
   // 로딩 컴포넌트
   const LoadingSpinner = () => (
