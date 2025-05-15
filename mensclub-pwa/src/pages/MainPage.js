@@ -272,17 +272,6 @@ function MainPage() {
               '/images/banner2.png',
             ]}
           />
-          <div className="title-area">
-            <h1>오늘의 날씨</h1>
-            <div className="weather-info">
-              <span>서울특별시 • 2025.05.13</span>
-              <div className="stats">
-                <span>습도 85%</span>
-                <span>바람 3m/s</span>
-                <span>강수확률 15%</span>
-              </div>
-            </div>
-          </div>
           <div className="service-box desktop-only">
             <h2>남성 맞춤 패션 스타일링 서비스</h2>
             <p>스타일, 서비스 고객 맞춤 특별 구매하세요!</p>

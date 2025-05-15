@@ -125,30 +125,14 @@ function FashionPage() {
 
   // 처음부터 다시하기 (카메라 페이지로 이동)
   const handleResetAndGoCamera = () => {
-    if (!window.confirm('새로운 상품을 촬영하시겠습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/camera');
-  };
-
-  // 메인으로 돌아가기
-  const handleGoHome = () => {
-    if (!window.confirm('메인 화면으로 돌아가시겠 습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/main');
+    setModalType('reset');
+    setModalMessage('새로운 상품을 촬영하시겠습니까?');
+    setShowModal(true);
   };
 
   // 공통 추천 요청 함수 (초기 로드 및 재요청에 모두 사용)
   const fetchRecommendation = async (isRetry = false) => {
     // 재요청인 경우에만 확인 창 표시
-    if (isRetry) {
-      const userConfirmed = window.confirm('다른 코디 추천을 진행하시겠습니까?');
-      if (!userConfirmed) {
-        return false;
-      }
-    }
-
     try {
       setIsLoading(true);
       const token = sessionStorage.getItem('accessToken');
@@ -245,9 +229,10 @@ function FashionPage() {
   };
 
   // 다른 코디 추천받기 버튼 클릭 핸들러
-  const handleRetryRecommendation = async () => {
-    await fetchRecommendation(true);
-    // 결과 처리는 fetchRecommendation 내부에서 이루어짐
+  const handleRetryRecommendation = () => {
+    setModalType('retry');
+    setModalMessage('다른 코디 추천을 진행하시겠습니까?');
+    setShowModal(true);
   };
 
   useEffect(() => {
@@ -297,10 +282,13 @@ function FashionPage() {
 
       // 찜이 되어 있는 경우에만 확인 창 표시
       if (isCurrentlyLiked) {
-        const confirmUnlike = window.confirm('찜을 해제하시겠습니까?');
-        if (!confirmUnlike) {
-          return;
-        }
+        // 현재 처리 중인 추천 ID 저장
+        sessionStorage.setItem('currentUnlikeId', recommendationId);
+        // 모달로 대체
+        setModalType('unlike');
+        setModalMessage('찜을 해제하시겠습니까?');
+        setShowModal(true);
+        return; // 모달 응답을 기다리기 위해 여기서 함수 종료
       }
 
       /// 상태 먼저 업데이트 (낙관적 UI 업데이트)
@@ -392,6 +380,90 @@ function FashionPage() {
     });
   };
 
+  // 모달 관련 상태
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(''); // 'retry', 'reset', 'unlike' 등
+  const [modalMessage, setModalMessage] = useState('');
+
+  const ConfirmModal = () => {
+    const handleConfirm = () => {
+      setShowModal(false);
+
+      // 모달 타입에 따라 다른 동작 수행
+      if (modalType === 'retry') {
+        // 다른 코디 추천받기 로직
+        fetchRecommendation(true);
+      } else if (modalType === 'reset') {
+        // 처음부터 다시하기 로직
+        navigate('/camera');
+      } else if (modalType === 'home') {
+        // 메인으로 돌아가기 로직
+        navigate('/main');
+      } else if (modalType === 'unlike') {
+        // 찜 해제 로직
+        const recommendationId = sessionStorage.getItem('currentUnlikeId');
+        if (recommendationId) {
+          // 찜 해제 로직 실행
+          const newLikedMap = { ...likedMap };
+          newLikedMap[recommendationId] = false;
+          setLikedMap(newLikedMap);
+          sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
+
+          // 서버에 찜 상태 업데이트
+          const token = sessionStorage.getItem('accessToken');
+          api
+            .post(
+              '/api/picked/v1/recommend_picked/toggle',
+              { recommendation_id: recommendationId },
+              { headers: { Authorization: `Bearer ${token}` } }
+            )
+            .catch((error) => {
+              console.error('❌ 찜 상태 업데이트 실패:', error);
+              fetchLikedItems();
+            });
+        }
+      }
+    };
+
+    // 모달이 표시될 때 body에 클래스 추가
+    useEffect(() => {
+      if (showModal) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+
+      return () => {
+        document.body.classList.remove('modal-open');
+      };
+    }, [showModal]);
+
+    return showModal ? (
+      <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>확인</h3>
+            <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+              X
+            </button>
+          </div>
+          <div className="modal-body">
+            <p>{modalMessage}</p>
+          </div>
+          <div className="modal-footer">
+            <button className="modal-cancel-btn" onClick={() => setShowModal(false)}>
+              취소
+            </button>
+            <button className="modal-confirm-btn" onClick={handleConfirm}>
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null;
+  };
+
+  //메인 랜더링 시작
   return (
     <div className="fashion-container">
       <div className="content">
@@ -454,9 +526,6 @@ function FashionPage() {
             <button className="action-button" onClick={handleResetAndGoCamera} disabled={isLoading}>
               처음부터 다시하기
             </button>
-            <button className="action-button" onClick={handleGoHome} disabled={isLoading}>
-              메인으로 돌아가기
-            </button>
             {isLoading && (
               <div className="loading-overlay">
                 <div className="spinner"></div>
@@ -466,6 +535,7 @@ function FashionPage() {
               </div>
             )}
           </div>
+          <ConfirmModal />
         </div>
       </div>
     </div>
