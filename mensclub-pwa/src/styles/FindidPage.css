@@ -107,10 +107,24 @@ input:focus {
   color: #333;
 }
 
-.result_container {
+/* .result_container {
   text-align: center;
   padding-top: 20px;
-  color: green;
+  color: rgb(255, 0, 0);
+} */
+
+.result {
+  color: red;
+  margin: 30px;
+  text-align: center;
+  margin-bottom: -10px;
+}
+
+.error {
+  color: red;
+  margin: 30px;
+  text-align: center;
+  margin-bottom: -10px;
 }
 
 /* 모바일 대응 */
