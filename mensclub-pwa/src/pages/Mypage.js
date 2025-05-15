@@ -457,7 +457,7 @@ function MyPage() {
                               })}
                             </div>
                           ) : (
-                            <div className="outfit-items-grid" onClick={(e) => e.stopPropagation()}>
+                            <div className="outfit-items-grid">
                               {['top', 'bottom', 'outer', 'shoes'].map((part, i) => {
                                 const s3 = item.main_recommendation?.[part]?.s3_path;
                                 return (

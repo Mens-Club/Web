@@ -4,8 +4,6 @@ import '../styles/CameraPage.css';
 import '../styles/Layout.css';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 
-
-
 const videoConstraints = {
   width: 400,
   height: 400,
@@ -24,18 +22,18 @@ function CameraPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-useEffect(() => {
-  const saved = sessionStorage.getItem('recommendResult');
-  if (saved) {
-    setRecommendResult(JSON.parse(saved));
-    setStep('analyzed');
-    sessionStorage.removeItem('recommendResult');
-  }
+  useEffect(() => {
+    const saved = sessionStorage.getItem('recommendResult');
+    if (saved) {
+      setRecommendResult(JSON.parse(saved));
+      setStep('analyzed');
+      sessionStorage.removeItem('recommendResult');
+    }
 
-  if (location.state?.error) {
-    setStatusText(location.state.error);
-  }
-}, [location.state]);
+    if (location.state?.error) {
+      setStatusText(location.state.error);
+    }
+  }, [location.state]);
 
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
 
@@ -77,169 +75,18 @@ useEffect(() => {
 
   // 사진을 서버에 전송 및 분석 결과 받기
   // 이미지 업로드 → 추천 요청 흐름
-  // const sendToServer = async () => {
-  //   if (!imgSrc) {
-  //     setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   setStatusText('');
-  //   const token = sessionStorage.getItem('accessToken');
-
-
-    // 재시도 관련 변수
-    let retryCount = 0;
-    const maxRetries = 3;
-    let success = false;
-    console.log('재시도 로직 시작: 최대 시도 횟수 =', maxRetries);
-
-    while (retryCount <= maxRetries && !success) {
-      try {
-        // 재시도 중인 경우 메시지 표시
-        if (retryCount > 0) {
-          console.log(`재시도 ${retryCount} 진행 중... (백오프 지연: ${1000 * Math.pow(2, retryCount - 1)}ms)`);
-          setStatusText(`재시도 중... (${retryCount}/${maxRetries})`);
-          // 지수 백오프 적용 (1초, 2초, 4초...)
-          const delay = 1000 * Math.pow(2, retryCount - 1);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-        // 1. 이미지 blob으로 변환
-        const res = await fetch(imgSrc);
-        const blob = await res.blob();
-
-        // 2. 이미지 업로드 요청
-        const formData = new FormData();
-        formData.append('image', blob, 'photo.jpg');
-
-        const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
-          method: 'POST',
-          headers: {
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: formData,
-        });
-
-        const uploadData = await uploadRes.json();
-
-        if (!uploadRes.ok) {
-          throw new Error(uploadData?.detail || '이미지 업로드 실패');
-        }
-
-        const imageUrl = uploadData.image_url;
-        // 이미지 URL을 세션스토리지에 저장
-        sessionStorage.setItem('capturedImageUrl', imageUrl);
-
-        // 3. 업로드된 이미지 기반 추천 요청
-        const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({
-            image_url: imageUrl,
-          }),
-        });
-
-        // 응답 상태 코드 확인
-        if (recommendRes.status >= 500) {
-          throw new Error(`서버 오류 (${recommendRes.status})`);
-        }
-
-        const recommendData = await recommendRes.json();
-
-        if (!recommendRes.ok) {
-          throw new Error(recommendData?.detail || '추천 요청 실패');
-        }
-
-        // 4. 추천 결과 출력
-        console.log('추천 결과:', recommendData);
-        setRecommendResult(recommendData);
-        setStep('analyzed');
-        success = true; // 성공 플래그 설정
-      } catch (error) {
-        console.error(`시도 ${retryCount + 1}/${maxRetries + 1} 실패:`, error);
-
-        // 마지막 시도였다면 오류 메시지 표시
-        if (retryCount === maxRetries) {
-          setStatusText('상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.');
-          break;
-        }
-
-        retryCount++;
-      }
+  const sendToServer = () => {
+    if (!imgSrc) {
+      setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
+      return;
     }
 
-    setLoading(false);
+    // 이미지 임시 저장
+    sessionStorage.setItem('imgSrc', imgSrc);
+
+    // 로딩 페이지로 이동
+    navigate('/loading');
   };
-  //   try {
-  //     // 1. 이미지 blob으로 변환
-  //     const res = await fetch(imgSrc);
-  //     const blob = await res.blob();
-
-  //     // 2. 이미지 업로드 요청
-  //     const formData = new FormData();
-  //     formData.append('image', blob, 'photo.jpg');
-
-  //     const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
-  //       method: 'POST',
-  //       headers: {
-  //         ...(token && { Authorization: `Bearer ${token}` }),
-  //       },
-  //       body: formData,
-  //     });
-
-  //     const uploadData = await uploadRes.json();
-
-  //     if (!uploadRes.ok) {
-  //       throw new Error(uploadData?.detail || '이미지 업로드 실패');
-  //     }
-
-  //     const imageUrl = uploadData.image_url;
-  //     // 이미지 URL을 세션스토리지에 저장
-  //     sessionStorage.setItem('capturedImageUrl', imageUrl);
-
-  //     // 3. 업로드된 이미지 기반 추천 요청
-  //     const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         ...(token && { Authorization: `Bearer ${token}` }),
-  //       },
-  //       body: JSON.stringify({
-  //         image_url: imageUrl,
-  //       }),
-  //     });
-
-  //     const recommendData = await recommendRes.json();
-
-  //     if (!recommendRes.ok) {
-  //       throw new Error(recommendData?.detail || '추천 요청 실패');
-  //     }
-
-  //     // 4. 추천 결과 출력
-  //     console.log('추천 결과:', recommendData);
-  //     setRecommendResult(recommendData);
-  //     setStep('analyzed');
-  //   } catch (error) {
-  //     console.error(error);
-  //     setStatusText(error.message || '오류가 발생했습니다.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const sendToServer = () => {
-  if (!imgSrc) {
-    setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
-    return;
-  }
-
-  // ✅ 이미지 임시 저장
-  sessionStorage.setItem('imgSrc', imgSrc);
-  navigate('/loading');
-};
-
 
   // 패션 추천 페이지로 이동 (전체 데이터 전달)
   const goToFashionPage = () => {
