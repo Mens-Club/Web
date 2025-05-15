@@ -14,6 +14,7 @@ import LoginPage from './pages/LoginPage.js';
 import FindIDPage from './pages/FindidPage.js'; // ✅ 정확한 경로와 대소문자
 import SignupPage from './pages/SignupPage.js';
 import FindPWPage from './pages/FindpwPage.js';
+import LoadingPage from './pages/LoadingPage.js';
 
 import SettingPage from './pages/SettingPage.js';
 import ResetSetPage from './pages/ResetPwPage.js';
@@ -156,7 +157,14 @@ function AppWithNav() {
               </PageWrapper>
             }
           />
-
+        <Route
+            path="/loading"
+            element={
+              <PageWrapper>
+                <LoadingPage />
+              </PageWrapper>
+            }
+          />
           <Route
             path="/product-detail/:itemId"
             element={
@@ -166,6 +174,7 @@ function AppWithNav() {
             }
           />
           <Route path="/social-callback" element={<SocialLoginCallback />} />
+
         </Routes>
       </AnimatePresence>
 
