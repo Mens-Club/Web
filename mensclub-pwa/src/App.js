@@ -165,7 +165,7 @@ function AppWithNav() {
               </PageWrapper>
             }
           />
-          <Route path="/oauth/:provider/callback" element={<SocialLoginCallback />} />
+          <Route path="/social-callback" element={<SocialLoginCallback />} />
         </Routes>
       </AnimatePresence>
 

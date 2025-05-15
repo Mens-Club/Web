@@ -16,6 +16,7 @@ function FashionPage() {
   const imageGridRefs = useRef([]); // 아이템 스와이프
   const isDraggingRef = useRef(false);
   const [likedMap, setLikedMap] = useState({});
+  const [statusText, setStatusText] = useState('');
 
   // 이미지 그리드 참조 설정
   const setImageGridRef = (index, element) => {
@@ -144,12 +145,12 @@ function FashionPage() {
     if (isRetry) {
       const userConfirmed = window.confirm('다른 코디 추천을 진행하시겠습니까?');
       if (!userConfirmed) {
-        return false; // 사용자가 취소를 누르면 함수 종료하고 false 반환
+        return false;
       }
     }
 
     try {
-      setIsLoading(true); // 로딩 시작
+      setIsLoading(true);
       const token = sessionStorage.getItem('accessToken');
       if (!token) {
         alert('로그인이 필요한 서비스입니다.');
@@ -160,87 +161,86 @@ function FashionPage() {
       // 재요청인 경우에만 세션 스토리지 및 상태 초기화
       if (isRetry) {
         sessionStorage.removeItem('likedItemsMap');
-        setLikedMap({}); // 상태도 초기화
+        setLikedMap({});
       }
 
       // 세션스토리지에서 이미지 URL 가져오기
       const imageUrl = sessionStorage.getItem('capturedImageUrl');
-
       if (!imageUrl) {
         alert('이미지 정보가 없습니다. 처음부터 다시 시작해주세요.');
         navigate('/camera');
         return false;
       }
 
-      // 추천 요청 보내기
-      const recommendRes = await api.post(
-        '/api/recommend/v1/generator/',
-        { image_url: imageUrl },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // 재시도 관련 변수
+      let retryCount = 0;
+      const maxRetries = 3;
+      let success = false;
+      console.log('재시도 로직 시작: 최대 시도 횟수 =', maxRetries);
 
-      // 결과 유효성 검사
-      if (!isValidRecommendationResult(recommendRes.data)) {
-        // 유효하지 않은 결과면 자동 재시도 (최대 3번)
-        let retryCount = 0;
-        const maxRetries = 3;
-        let validResult = null;
-
-        while (retryCount < maxRetries) {
-          console.log(`❌ 유효하지 않은 추천 결과, 자동 재시도 중... (${retryCount + 1}/${maxRetries})`);
-
-          // 지수 백오프 적용 (1초, 2초, 4초...)
-          const delay = 1000 * Math.pow(2, retryCount);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-
-          try {
-            const retryRes = await api.post(
-              '/api/recommend/v1/generator/',
-              { image_url: imageUrl },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (isValidRecommendationResult(retryRes.data)) {
-              validResult = retryRes;
-              console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries})`);
-              break;
-            }
-            // 여기서 return false; 제거 (오타였고, 함수를 종료시키는 문제가 있음)
-          } catch (error) {
-            console.error(`❌ 재시도 요청 실패 (${retryCount + 1}/${maxRetries}):`, error);
+      while (retryCount <= maxRetries && !success) {
+        try {
+          // 재시도 중인 경우 메시지 표시
+          if (retryCount > 0) {
+            console.log(`재시도 ${retryCount} 진행 중... (백오프 지연: ${1000 * Math.pow(2, retryCount - 1)}ms)`);
+            setStatusText(`상품 인식 재시도 중... (${retryCount}/${maxRetries})`);
+            // 지수 백오프 적용
+            const delay = 1000 * Math.pow(2, retryCount - 1);
+            await new Promise((resolve) => setTimeout(resolve, delay));
           }
 
-          retryCount++;
-        }
+          // 추천 요청 보내기
+          const recommendRes = await api.post(
+            '/api/recommend/v1/generator/',
+            { image_url: imageUrl },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-        if (validResult) {
-          // 유효한 결과를 찾았으면 그것을 사용
-          sessionStorage.setItem('recommendationData', JSON.stringify(validResult.data));
-          setRecommendations(validResult.data.product_combinations);
-          setLikedMap(new Array(validResult.data.product_combinations.length).fill(false));
-          return true; // 성공 반환
-        } else {
-          // 모든 재시도 실패 시 알림
-          alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
-          navigate('/camera'); // 카메라 페이지로 이동
-          return false; // 실패 반환
+          // 결과 유효성 검사
+          if (isValidRecommendationResult(recommendRes.data)) {
+            // 유효한 결과면 바로 사용
+            sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
+            setRecommendations(recommendRes.data.product_combinations);
+            setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
+            console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries + 1})`);
+            // setStatusText('상품 인식 성공!');
+            success = true;
+            return true;
+          } else {
+            console.log(`❌ 유효하지 않은 추천 결과, 재시도 필요... (${retryCount + 1}/${maxRetries + 1})`);
+            retryCount++;
+          }
+        } catch (error) {
+          console.error(`❌ 시도 ${retryCount + 1}/${maxRetries + 1} 실패:`, error);
+          console.log('오류 상태 코드:', error.response?.status);
+          console.log('오류 메시지:', error.message);
+
+          // 마지막 시도가 아니면 재시도
+          if (retryCount < maxRetries) {
+            retryCount++;
+          } else {
+            break;
+          }
         }
-      } else {
-        // 유효한 결과면 바로 사용
-        sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
-        setRecommendations(recommendRes.data.product_combinations);
-        setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
-        return true; // 성공 반환
       }
+
+      // 모든 재시도 실패 시
+      if (!success) {
+        setStatusText('상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.');
+        alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
+        navigate('/fashion');
+        return false;
+      }
+
+      return true;
     } catch (error) {
       console.error(`❌ ${isRetry ? '재추천' : '초기 추천'} 요청 실패:`, error);
-      alert(`추천을 ${isRetry ? '다시 ' : ''}받는 중 오류가 발생했습니다.`);
-      if (!isRetry) {
-        navigate('/camera'); // 초기 로드 실패 시에만 카메라 페이지로 이동
-      }
-      return false; // 실패 반환
+      alert('상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.');
+      navigate('/fashion');
+      return false;
     } finally {
       setIsLoading(false);
+      console.log(`재시도 로직 종료`);
     }
   };
 
@@ -461,6 +461,8 @@ function FashionPage() {
               <div className="loading-overlay">
                 <div className="spinner"></div>
                 <p>새로운 코디를 찾고 있어요...</p>
+                <br />
+                {statusText && <p className="status-message">{statusText}</p>}
               </div>
             )}
           </div>

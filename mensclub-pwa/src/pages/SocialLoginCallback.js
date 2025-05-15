@@ -10,8 +10,7 @@ function SocialLoginCallback() {
       const token = params.get('token');
       const refresh = params.get('refresh');
 
-      console.log('토큰:', token);
-      console.log('리프레시:', refresh);
+      console.log('토큰 확인:', token ? '있음' : '없음');
 
       if (token && refresh) {
         // 토큰 저장
@@ -23,7 +22,9 @@ function SocialLoginCallback() {
         console.log('저장된 토큰 확인:', savedToken);
 
         if (savedToken) {
-          navigate('/main');
+          setTimeout(() => {
+            navigate('/main');
+          });
         } else {
           alert('로그인 정보 저장에 실패했습니다.');
           navigate('/');
@@ -32,6 +33,12 @@ function SocialLoginCallback() {
         // 토큰이 없으면 로그인 페이지로
         navigate('/');
       }
+      // 직접 URL 변경으로 시도 (navigate 대신)
+      //   window.location.href = '/main';
+      // } else {
+      //   console.log('토큰 없음, 로그인 페이지로 이동');
+      //   window.location.href = '/';
+      // }
     };
 
     handleSocialLogin();

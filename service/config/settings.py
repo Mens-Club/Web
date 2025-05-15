@@ -113,13 +113,13 @@ STORAGES = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React 개발 서버 주소
-    "http://127.0.0.1:3000",  # localhost의 IP 주소 버전
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
-    "authorization",  # 이 헤더가 중요합니다
+    "authorization",
+    "content-type",
 ]
 
 MIDDLEWARE = [
@@ -310,10 +310,17 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
+# SOCIALACCOUNT_STORE_TOKEN = True
+# LOGIN_REDIRECT_URL = "/api/account/v1/oauth/callback/"
+# SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
+# SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/api/account/v1/social-login/"
+# SOCIALACCOUNT_LOGIN_ON_GET = True
+# LOGOUT_REDIRECT_URL = "/"
+
+
 SOCIALACCOUNT_STORE_TOKEN = True
-LOGIN_REDIRECT_URL = '/api/account/v1/oauth/callback/'
+LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
 SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
-SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/api/account/v1/oauth/callback/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
@@ -323,35 +330,35 @@ ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
 # 로그 수집
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "simple": {
-            "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-    },
-    "handlers": {
-        "logstash": {
-            "level": "INFO",
-            "class": "logstash.TCPLogstashHandler",
-            "host": "localhost",
-            "port": 5000,
-            "version": 1,
-            "message_type": "django",
-            "fqdn": False,
-        },
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["logstash", "console"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "simple": {
+#             "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
+#             "datefmt": "%Y-%m-%d %H:%M:%S",
+#         },
+#     },
+#     "handlers": {
+#         "logstash": {
+#             "level": "INFO",
+#             "class": "logstash.TCPLogstashHandler",
+#             "host": "localhost",
+#             "port": 5000,
+#             "version": 1,
+#             "message_type": "django",
+#             "fqdn": False,
+#         },
+#         "console": {
+#             "class": "logging.StreamHandler",
+#             "formatter": "simple",
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["logstash", "console"],
+#             "level": "INFO",
+#             "propagate": True,
+#         },
+#     },
+# }

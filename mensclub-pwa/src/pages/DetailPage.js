@@ -58,10 +58,22 @@ function DetailPage() {
         // 소스 파라미터를 먼저 확인하여 처리
         if (source === 'mypage') {
           try {
-            const response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            console.log('마이페이지 상품 응답:', response.data);
+            const tab = queryParams.get('tab');
+            let response;
+            if (tab === 'ai') {
+              response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            } else if (tab === 'club') {
+              response = await api.get(`/api/picked/v1/main_picked/${recommendationId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            } else {
+              // 기본값 (이전 코드와의 호환성 유지)
+              response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            }
 
             if (response.data) {
               // 응답 구조에 따라 적절히 처리
@@ -99,7 +111,7 @@ function DetailPage() {
             setError('마이페이지 상품을 불러오는데 실패했습니다.');
           }
         }
-        // 홈에서 온 경우
+        // 메인에서 온 경우
         else if (source === 'main') {
           try {
             const response = await api.get(`/api/picked/v1/main_picked/${itemId}/`);
