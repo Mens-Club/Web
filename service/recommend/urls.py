@@ -6,10 +6,5 @@ urlpatterns = [
         "generator/",
         IntegratedFashionRecommendAPIView.as_view(),
         name="fashion-recommend",
-    ),
-    # path(
-    #     "get_recommendations/",
-    #     RecommendationDetailAPIView().as_view(),
-    #     name="get_recommend"
-    # )
+    )
 ]

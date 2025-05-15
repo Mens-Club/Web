@@ -72,8 +72,7 @@ CACHES = {
     }
 }
 
-
-# settings.py
+# s3 storage
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -137,7 +136,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
     "ALGORITHM": "HS256",
-    "SIGNING_KEY": "django-insecure-4#jb3(xl4yoa58ti+lhpmdgt2e6$6j68cho%*w@ge3z9qhfv#v",
+    "SIGNING_KEY": os.getenv("JWT_SECRET"),
     "VERIFYING_KEY": None,
     "AUDIENCE": None,
     "ISSUER": None,
@@ -306,8 +305,8 @@ SOCIALACCOUNT_PROVIDERS = {
         },
     },
 }
+
 SOCIALACCOUNT_STORE_TOKEN = True
-# LOGIN_REDIRECT_URL = "http://localhost:3000/main"
 LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
 SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
 SOCIALACCOUNT_LOGIN_ON_GET = True
@@ -317,5 +316,40 @@ LOGOUT_REDIRECT_URL = "/"
 ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
+# 로그 수집 
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
 
+    "formatters": {
+        "simple": { 
+            "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+
+    "handlers": {
+        "logstash": {
+            "level": "INFO",
+            "class": "logstash.TCPLogstashHandler",
+            "host": "localhost",
+            "port": 5000,
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",  
+        },
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["logstash", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}

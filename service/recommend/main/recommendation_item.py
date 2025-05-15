@@ -15,9 +15,6 @@ def get_recommendation(base64_image, rag_context):
     prompt = f"""
     당신은 패션 추천 전문가입니다. 아래 이미지를 보고 판단하여 적절한 코디를 JSON 형식으로 추천해주세요.
 
-    다음 참고 가이드라인을 고려하여 코디를 제안해주세요:
-    {rag_context}
-
     이미지를 참고하여 다음 형식에 맞춰 출력해주세요:
     {{ 
     "answer": "...", 
@@ -28,6 +25,9 @@ def get_recommendation(base64_image, rag_context):
         "신발": [...] 
     }} 
     }}
+    
+    마지막으로 참고 가이드라인을 고려하여 answer와 recommend에 있는 내용들을 그대로 출력하세요:
+    {rag_context}
 
     주의사항:
     1) "answer" 문장에 반드시 '해당 상품은 데님 팬츠로 보이며 봄에 잘 어울리는 스타일입니다'처럼 **계절**과 **아이템 카테고리**를 명시하세요.
