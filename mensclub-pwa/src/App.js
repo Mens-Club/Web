@@ -22,7 +22,7 @@ import DetailPage from './pages/DetailPage.js';
 import EditProfilePage from './pages/EditProfilePage.js';
 import SetPasswordPage from './pages/SetPasswordPage.js';
 import BodyInfoPage from './pages/BodyInfoPage.js';
-import SocialLoginCallback from './pages/SocailLoginCallback.js';
+import SocialLoginCallback from './pages/SocialLoginCallback.js';
 
 import ScrollToTop from './components/ScrollToTop.js';
 
@@ -173,8 +173,8 @@ function AppWithNav() {
               </PageWrapper>
             }
           />
-          
-          <Route path="/oauth/:provider/callback" element={<SocialLoginCallback />} />
+          <Route path="/social-callback" element={<SocialLoginCallback />} />
+
         </Routes>
       </AnimatePresence>
 

@@ -10,16 +10,13 @@ from .views import (
     UserImageUploadView,
     SocialLoginView,
     SocialLoginCallbackView,
-    oauth_callback
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path("signup/", SignupView.as_view(), name="signup"),
     path("login/", LoginView.as_view(), name="login"),
-    path(
-        "api/account/v1/social-login/", SocialLoginView.as_view(), name="social-login"
-    ),
+    path("social-login/", SocialLoginView.as_view(), name="social-login"),
     path("accounts/", include("allauth.urls")),
     path("update/", UpdateView.as_view(), name="update"),
     path("change_password/", ChangePasswordView.as_view(), name="change_password"),
@@ -32,5 +29,4 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("upload-image/", UserImageUploadView.as_view(), name="s3-upload-test"),
     path("social-callback/", SocialLoginCallbackView.as_view(), name="social-callback"),
-    path('oauth/callback/', oauth_callback, name='oauth_callback'),
 ]

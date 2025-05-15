@@ -23,19 +23,12 @@ function DetailPage() {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isLiked, setIsLiked] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const sliderRef = useRef(null);
   const [showPurchaseOptions, setShowPurchaseOptions] = useState(false);
 
-
-   //뒤로가기
-  const goBack = () => {
-    navigate(-1);
-  };
-
-   useEffect(() => {
+  useEffect(() => {
     const source = new URLSearchParams(location.search).get('source') || '';
     if (source === 'fashion' && recommendationId) {
       try {
@@ -51,24 +44,123 @@ function DetailPage() {
     }
   }, [recommendationId]);
 
- useEffect(() => {
+  // 슬라이더 드래그 이벤트 등록
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    let isDown = false;
+    let isDragging = false;
+    let startX;
+    let scrollLeft;
+
+    const handleMouseDown = (e) => {
+      isDown = true;
+      slider.style.cursor = 'grabbing';
+      startX = e.pageX - slider.offsetLeft;
+      scrollLeft = slider.scrollLeft;
+    };
+
+    const handleMouseLeave = () => {
+      if (isDown) {
+        slider.classList.remove('dragging');
+        slider.style.cursor = 'grab';
+      }
+      isDown = false;
+      isDragging = false;
+    };
+
+    const handleMouseUp = (e) => {
+      if (isDragging) {
+        // 드래그 중이었다면 클릭 이벤트 방지
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 약간의 지연 후 dragging 클래스 제거
+        setTimeout(() => {
+          slider.classList.remove('dragging');
+          isDragging = false;
+        }, 50);
+      }
+
+      isDown = false;
+      slider.style.cursor = 'grab';
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isDown) return;
+
+      // 마우스가 조금이라도 움직였다면 드래그 중으로 표시
+      isDragging = true;
+      slider.classList.add('dragging');
+
+      e.preventDefault();
+      const x = e.pageX - slider.offsetLeft;
+      const walk = (x - startX) * 2;
+      slider.scrollLeft = scrollLeft - walk;
+    };
+
+    slider.addEventListener('mousedown', handleMouseDown);
+    slider.addEventListener('mouseleave', handleMouseLeave);
+    slider.addEventListener('mouseup', handleMouseUp);
+    slider.addEventListener('mousemove', handleMouseMove);
+
+    // a 태그 클릭 이벤트 처리
+    const clickHandlers = new Map();
+    const links = slider.querySelectorAll('a');
+    links.forEach((link) => {
+      const clickHandler = (e) => {
+        if (isDragging) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      clickHandlers.set(link, clickHandler);
+      link.addEventListener('click', clickHandler);
+    });
+
+    // cleanup
+    return () => {
+      slider.removeEventListener('mousedown', handleMouseDown);
+      slider.removeEventListener('mouseleave', handleMouseLeave);
+      slider.removeEventListener('mouseup', handleMouseUp);
+      slider.removeEventListener('mousemove', handleMouseMove);
+
+      links.forEach((link) => {
+        const handler = clickHandlers.get(link);
+        if (handler) {
+          link.removeEventListener('click', handler);
+        }
+      });
+    };
+  }, [location.key, products]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const source = new URLSearchParams(location.search).get('source') || '';
         const token = sessionStorage.getItem('accessToken');
 
-        console.log('소스:', source);
-        console.log('아이템 ID:', itemId);
-        console.log('추천 ID:', recommendationId);
-
         // 소스 파라미터를 먼저 확인하여 처리
         if (source === 'mypage') {
           try {
-            const response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            console.log('마이페이지 상품 응답:', response.data);
+            const tab = queryParams.get('tab');
+            let response;
+            if (tab === 'ai') {
+              response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            } else if (tab === 'club') {
+              response = await api.get(`/api/picked/v1/main_picked/${recommendationId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            } else {
+              // 기본값 (이전 코드와의 호환성 유지)
+              response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            }
 
             if (response.data) {
               // 응답 구조에 따라 적절히 처리
@@ -106,7 +198,7 @@ function DetailPage() {
             setError('마이페이지 상품을 불러오는데 실패했습니다.');
           }
         }
-        // 홈에서 온 경우
+        // 메인에서 온 경우
         else if (source === 'main') {
           try {
             const response = await api.get(`/api/picked/v1/main_picked/${itemId}/`);
@@ -301,11 +393,6 @@ function DetailPage() {
     }
   };
 
-  const calculateDiscount = (originalPrice, currentPrice) => {
-    if (!originalPrice || originalPrice <= currentPrice) return null;
-    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
-  };
-
   const toggleImageZoom = (index) => {
     setIsZoomed(isZoomed && activeImageIndex === index ? false : true);
     setActiveImageIndex(index);
@@ -320,11 +407,13 @@ function DetailPage() {
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: products[0]?.goods_name || '상품 상세',
-        text: products[0]?.reasoning_text || '추천 상품을 확인해보세요!',
-        url: window.location.href,
-      }).catch((error) => console.log('공유 실패:', error));
+      navigator
+        .share({
+          title: products[0]?.goods_name || '상품 상세',
+          text: products[0]?.reasoning_text || '추천 상품을 확인해보세요!',
+          url: window.location.href,
+        })
+        .catch((error) => console.log('공유 실패:', error));
     } else {
       const tempInput = document.createElement('input');
       document.body.appendChild(tempInput);
@@ -380,10 +469,20 @@ function DetailPage() {
                 alt={products[activeImageIndex].goods_name}
                 className="zoomed-image"
               />
-              <div className="zoom-nav prev" onClick={(e) => { e.stopPropagation(); navigateImage(-1); }}>
+              <div
+                className="zoom-nav prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateImage(-1);
+                }}>
                 <FontAwesomeIcon icon={faChevronLeft} />
               </div>
-              <div className="zoom-nav next" onClick={(e) => { e.stopPropagation(); navigateImage(1); }}>
+              <div
+                className="zoom-nav next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateImage(1);
+                }}>
                 <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
@@ -393,7 +492,7 @@ function DetailPage() {
         <div className="main-image-grid">
           {products.map((product, id) => (
             <div className="main-image-cell" key={id} onClick={() => toggleImageZoom(id)}>
-              <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" />
+              <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" draggable="false" />
             </div>
           ))}
           {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
@@ -404,31 +503,41 @@ function DetailPage() {
         <div className="product-info">
           <div className="brand-row">
             <span className="brand">
-              {products.map(p => p.brand).filter(Boolean).join(' / ') || '브랜드 없음'}
+              {products
+                .map((p) => p.brand)
+                .filter(Boolean)
+                .join(' / ') || '브랜드 없음'}
             </span>
           </div>
-          <h1 className="product-name">{products[0]?.goods_name}</h1>
+          {/* <h1 className="product-name">{products[0]?.goods_name}</h1> */}
           <div className="price-row">
-            <span className="product-price">
-              {products[0]?.total_price?.toLocaleString() || 0}원
-            </span>
+            <span className="product-price">{products[0]?.total_price?.toLocaleString() || 0}원</span>
           </div>
         </div>
 
         <div className="detail-divider"></div>
 
         <div className="section-title">함께 코디한 상품</div>
-        <div className="slider-wrapper">  
+        <div className="slider-wrapper">
           <div className="product-slider" ref={sliderRef}>
             {products.map((product, id) => (
               <div className={id === 0 ? 'product-card main-product' : 'product-card'} key={id}>
                 <div className="product-card-inner">
-                  <img src={product.thumbnail_url} alt={product.goods_name} className="product-thumb" />
+                  <img
+                    src={product.thumbnail_url}
+                    alt={product.goods_name}
+                    className="product-thumb"
+                    draggable="false"
+                  />
                   <div>
                     <p className="brand">{product.brand || '브랜드'}</p>
                     <p className="product-name">{product.goods_name}</p>
                     <p className="product-price">{product.price?.toLocaleString()}원</p>
-                    <a href={product.goods_url || '#'} className="product-link" target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={product.goods_url || '#'}
+                      className="product-link"
+                      target="_blank"
+                      rel="noopener noreferrer">
                       상품 구매하기
                     </a>
                   </div>
@@ -449,7 +558,11 @@ function DetailPage() {
 
         <div className="bottom-actions">
           <button className="bottom-btn btn-outline" onClick={toggleLike}>
-            <FontAwesomeIcon icon={isLiked ? solidHeart : regularHeart} className={`btn-icon ${isLiked ? 'liked' : ''}`} /> 찜하기
+            <FontAwesomeIcon
+              icon={isLiked ? solidHeart : regularHeart}
+              className={`btn-icon ${isLiked ? 'liked' : ''}`}
+            />{' '}
+            찜하기
           </button>
           <button className="bottom-btn btn-outline" onClick={handleShare}>
             <FontAwesomeIcon icon={faShare} className="btn-icon" /> 공유
@@ -463,11 +576,7 @@ function DetailPage() {
                 const product = getProductByCategory(cat.key);
                 if (!product) return null;
                 return (
-                  <button
-                    key={cat.key}
-                    className="purchase-option-btn"
-                    onClick={() => handleCategoryPurchase(cat.key)}
-                  >
+                  <button key={cat.key} className="purchase-option-btn" onClick={() => handleCategoryPurchase(cat.key)}>
                     {cat.label}
                   </button>
                 );
