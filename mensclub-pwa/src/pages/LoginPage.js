@@ -62,7 +62,7 @@ function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+            {error && <p style={{ color: 'red', margin: '10px', textAlign: 'center' }}>{error}</p>}
             <div className="input-group">
               <button type="submit" className="login-btn2">
                 Login
