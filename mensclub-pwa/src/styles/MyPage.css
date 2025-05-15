@@ -109,7 +109,7 @@
   width: 36px;
   height: 36px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(209, 6, 6, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -495,7 +495,6 @@
   height: 100%;
   object-fit: cover;
 }
-
 
 /* 개별 아이템 이미지 */
 .grid-item img.item-thumbnail {

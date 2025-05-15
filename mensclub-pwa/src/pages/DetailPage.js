@@ -343,16 +343,6 @@ function DetailPage() {
             }
           }
         }
-        // 기본 케이스 (단일 상품)
-        else {
-          try {
-            const response = await api.get(`/api/clothes/v1/product/${itemId}/`);
-            setProducts([response.data]);
-          } catch (error) {
-            console.error('상품 로드 오류:', error);
-            setError('상품을 불러오는데 실패했습니다.');
-          }
-        }
       } catch (error) {
         console.error('데이터 로드 오류:', error);
         setError('데이터를 불러오는데 실패했습니다.');
@@ -474,7 +464,8 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(-1);
-                }}>
+                }}
+              >
                 <FontAwesomeIcon icon={faChevronLeft} />
               </div>
               <div
@@ -482,7 +473,8 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(1);
-                }}>
+                }}
+              >
                 <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
@@ -537,7 +529,8 @@ function DetailPage() {
                       href={product.goods_url || '#'}
                       className="product-link"
                       target="_blank"
-                      rel="noopener noreferrer">
+                      rel="noopener noreferrer"
+                    >
                       상품 구매하기
                     </a>
                   </div>

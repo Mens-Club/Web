@@ -2,7 +2,7 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam'; //웹캠 구현을 위한 라이브러리 설치
 import '../styles/CameraPage.css';
 import '../styles/Layout.css';
-import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const videoConstraints = {
   width: 400,
@@ -85,7 +85,9 @@ function CameraPage() {
     sessionStorage.setItem('imgSrc', imgSrc);
 
     // 로딩 페이지로 이동
-    navigate('/loading');
+    navigate('/loading', {
+      state: { fromCamera: true },
+    });
   };
 
   // 패션 추천 페이지로 이동 (전체 데이터 전달)
