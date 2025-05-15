@@ -1,0 +1,17 @@
+services:
+  frontend:
+    container_name: frontend
+    build: 
+      context: .
+      dockerfile: Dockerfile.React
+    
+    ports:
+      - "3000:3000"
+    
+    networks:
+      - elk-networks 
+
+networks:
+  elk-networks:
+    external: True
+  

@@ -1,35 +1,40 @@
 services:
-  # django:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.django
-  #   container_name: backends
-  #   command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
-  #   volumes:
-  #     - ./:/usr/src/app/
-  #   ports:
-  #     - "8000:8000"
-  #   env_file: 
-  #     - ./.env
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    container_name: backends
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./:/usr/src/app/
+    ports:
+      - "8000:8000"
+    env_file: 
+      - ./.env
+    
+    networks:
+      - elk-networks
 
-  # celery:
-  #   container_name: Django_Celery
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.django
-  #   command: celery -A config worker --loglevel=info
-  #   volumes:
-  #     - ./:/usr/src/app/
-  #   env_file:
-  #     - ./.env
-  #   depends_on:
-  #     - redis
+  celery:
+    container_name: Django_Celery
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - ./:/usr/src/app/
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    networks:
+      - elk-networks
 
-  # redis:
-  #   image: redis:latest
-  #   container_name: redis
-  #   ports:
-  #     - "6379:6379"
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0

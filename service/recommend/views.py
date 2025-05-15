@@ -30,7 +30,6 @@ from .utils.metrics import push_fashion_recommendation_metrics
 
 logger = logging.getLogger(__name__)
 
-clip_model_instance = Encoding()
 
 class IntegratedFashionRecommendAPIView(APIView):
     permission_classes = [AllowAny]
@@ -77,6 +76,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                 )
 
             logger.info("STEP 2: 이미지 임베딩 시작")
+            clip_model_instance = Encoding()
             embedding = clip_model_instance.encode_image(image_url=image_url)
             if embedding is None:
                 logger.error("임베딩 실패")
