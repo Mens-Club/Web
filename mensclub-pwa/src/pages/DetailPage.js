@@ -1,34 +1,41 @@
+// ✅ 전체 DetailPage.js 코드 (mypage, main, fashion 연동 포함)
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import '../styles/Layout.css'; // ✅ 공통 레이아웃 스타일 불러오기
+import '../styles/Layout.css';
 import '../styles/DetailPage.css';
 import api from '../api/axios';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faShare, faShoppingBag } from '@fortawesome/free-solid-svg-icons';
 
 function DetailPage() {
-  const { itemId } = useParams(); // URL에서 itemId 가져오기
+  const { itemId } = useParams();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const recommendationId = queryParams.get('recommendationId'); // URL 쿼리에서 recommendationId 코드 가져오기
-
+  const recommendationId = queryParams.get('recommendationId');
+  const source = queryParams.get('source') || '';
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const sliderRef = useRef(null);
   const [isLiked, setIsLiked] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const sliderRef = useRef(null);
+  const [showPurchaseOptions, setShowPurchaseOptions] = useState(false);
 
-  //뒤로가기
+
+   //뒤로가기
   const goBack = () => {
     navigate(-1);
   };
 
-  useEffect(() => {
+   useEffect(() => {
     const source = new URLSearchParams(location.search).get('source') || '';
     if (source === 'fashion' && recommendationId) {
       try {
@@ -44,7 +51,7 @@ function DetailPage() {
     }
   }, [recommendationId]);
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -267,100 +274,8 @@ function DetailPage() {
     }
   }, [itemId, recommendationId, location.search]);
 
-  // 슬라이더 드래그 이벤트 등록
-  useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-
-    let isDown = false;
-    let isDragging = false;
-    let startX;
-    let scrollLeft;
-
-    const handleMouseDown = (e) => {
-      isDown = true;
-      slider.style.cursor = 'grabbing';
-      startX = e.pageX - slider.offsetLeft;
-      scrollLeft = slider.scrollLeft;
-    };
-
-    const handleMouseLeave = () => {
-      if (isDown) {
-        slider.classList.remove('dragging');
-        slider.style.cursor = 'grab';
-      }
-      isDown = false;
-      isDragging = false;
-    };
-
-    const handleMouseUp = (e) => {
-      if (isDragging) {
-        // 드래그 중이었다면 클릭 이벤트 방지
-        e.preventDefault();
-        e.stopPropagation();
-
-        // 약간의 지연 후 dragging 클래스 제거
-        setTimeout(() => {
-          slider.classList.remove('dragging');
-          isDragging = false;
-        }, 50);
-      }
-
-      isDown = false;
-      slider.style.cursor = 'grab';
-    };
-
-    const handleMouseMove = (e) => {
-      if (!isDown) return;
-
-      // 마우스가 조금이라도 움직였다면 드래그 중으로 표시
-      isDragging = true;
-      slider.classList.add('dragging');
-
-      e.preventDefault();
-      const x = e.pageX - slider.offsetLeft;
-      const walk = (x - startX) * 2;
-      slider.scrollLeft = scrollLeft - walk;
-    };
-
-    slider.addEventListener('mousedown', handleMouseDown);
-    slider.addEventListener('mouseleave', handleMouseLeave);
-    slider.addEventListener('mouseup', handleMouseUp);
-    slider.addEventListener('mousemove', handleMouseMove);
-
-    // a 태그 클릭 이벤트 처리
-    const clickHandlers = new Map();
-    const links = slider.querySelectorAll('a');
-    links.forEach((link) => {
-      const clickHandler = (e) => {
-        if (isDragging) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-      clickHandlers.set(link, clickHandler);
-      link.addEventListener('click', clickHandler);
-    });
-
-    // cleanup
-    return () => {
-      slider.removeEventListener('mousedown', handleMouseDown);
-      slider.removeEventListener('mouseleave', handleMouseLeave);
-      slider.removeEventListener('mouseup', handleMouseUp);
-      slider.removeEventListener('mousemove', handleMouseMove);
-
-      links.forEach((link) => {
-        const handler = clickHandlers.get(link);
-        if (handler) {
-          link.removeEventListener('click', handler);
-        }
-      });
-    };
-  }, [location.key, products]);
-
   const toggleLike = async (e) => {
-    e.stopPropagation();
-
+    e && e.stopPropagation();
     try {
       const token = sessionStorage.getItem('accessToken');
       if (!token) {
@@ -369,122 +284,201 @@ function DetailPage() {
         return;
       }
 
-      // 현재 찜 상태 확인
-      const newIsLiked = !isLiked;
-
-      // 서버에 찜 상태 업데이트
-      const response = await api.post(
+      await api.post(
         '/api/picked/v1/recommend_picked/toggle',
         { recommendation_id: parseInt(recommendationId) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // UI 상태 업데이트
+      const newIsLiked = !isLiked;
       setIsLiked(newIsLiked);
-
-      // 세션스토리지의 찜 상태도 업데이트
-      try {
-        const storedLikedMap = sessionStorage.getItem('likedItemsMap');
-        const likedMap = storedLikedMap ? JSON.parse(storedLikedMap) : {};
-        likedMap[recommendationId] = newIsLiked;
-        sessionStorage.setItem('likedItemsMap', JSON.stringify(likedMap));
-      } catch (error) {
-        console.error('찜 상태 저장 오류:', error);
-      }
+      const likedMap = JSON.parse(sessionStorage.getItem('likedItemsMap') || '{}');
+      likedMap[recommendationId] = newIsLiked;
+      sessionStorage.setItem('likedItemsMap', JSON.stringify(likedMap));
     } catch (error) {
       console.error('❌ 찜 상태 업데이트 실패:', error);
       alert('찜 기능 처리 중 오류가 발생했습니다.');
     }
   };
 
-  // 관련 상품이 짝수가 되도록 조정
-  const evenCount = products.length % 2 === 0 ? products.length : products.length + 1;
-  const productsEven = [...products, ...Array(evenCount - products.length).fill(null)];
+  const calculateDiscount = (originalPrice, currentPrice) => {
+    if (!originalPrice || originalPrice <= currentPrice) return null;
+    return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  };
 
-  // 로딩 컴포넌트
+  const toggleImageZoom = (index) => {
+    setIsZoomed(isZoomed && activeImageIndex === index ? false : true);
+    setActiveImageIndex(index);
+  };
+
+  const navigateImage = (direction) => {
+    if (!isZoomed) return;
+    let newIndex = activeImageIndex + direction;
+    newIndex = (newIndex + products.length) % products.length;
+    setActiveImageIndex(newIndex);
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: products[0]?.goods_name || '상품 상세',
+        text: products[0]?.reasoning_text || '추천 상품을 확인해보세요!',
+        url: window.location.href,
+      }).catch((error) => console.log('공유 실패:', error));
+    } else {
+      const tempInput = document.createElement('input');
+      document.body.appendChild(tempInput);
+      tempInput.value = window.location.href;
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert('링크가 복사되었습니다!');
+    }
+  };
+
+  const getProductByCategory = (category) => products.find((p) => p.category === category);
+
+  const categories = [
+    { key: 'top', label: '상의' },
+    { key: 'outer', label: '아우터' },
+    { key: 'bottom', label: '하의' },
+    { key: 'shoes', label: '신발' },
+  ];
+
+  const handleCategoryPurchase = (category) => {
+    const product = getProductByCategory(category);
+    if (product && product.goods_url) {
+      window.open(product.goods_url, '_blank');
+      setShowPurchaseOptions(false);
+    } else {
+      alert('해당 상품의 구매 링크가 없습니다.');
+    }
+  };
+
   const LoadingSpinner = () => (
     <div className="loading-overlay">
       <div className="spinner"></div>
-      <p>로딩 중...</p>
+      <p>불러오는 중...</p>
     </div>
   );
 
-  // 로딩 중이거나 에러 발생 시 처리
-  if (isLoading)
-    return (
-      <div className="loading">
-        {' '}
-        <LoadingSpinner />
-      </div>
-    );
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div className="error">{error}</div>;
-  if (!products) return <div className="not-found">상품을 찾을 수 없습니다.</div>;
 
   return (
-    <div className="container">
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="content">
-          <button className="back-button" onClick={goBack}>
-            <FontAwesomeIcon icon={faArrowLeft} className="back-icon" />
-            <span>뒤로가기</span>
-          </button>
-          {/* 메인 이미지 그리드 */}
-          <div className="main-image-grid">
-            {products.map((product, id) => (
-              <div className="main-image-cell" key={id}>
-                <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" />
-              </div>
-            ))}
-            {/* 빈 셀 추가 (짝수 맞추기) */}
-            {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
-            {recommendationId && (
-              <button className="heart-button" onClick={toggleLike} aria-label={isLiked ? '찜 해제' : '찜 추가'}>
-                <FontAwesomeIcon
-                  icon={isLiked ? solidHeart : regularHeart}
-                  className={`heart-icon ${isLiked ? 'liked' : ''}`}
-                />
-              </button>
-            )}
-          </div>
+    <div className="detail-container">
+      <div className="content">
+        <div className="back-button" onClick={() => navigate(-1)}>
+          <FontAwesomeIcon icon={faChevronLeft} />
+        </div>
 
-          {/* 상품 카드 슬라이더 */}
-          <div className="slider-wrapper">
-            <div className="product-slider" ref={sliderRef}>
-              {products.map((product, id) => (
-                <div className={id === 0 ? 'product-card main-product' : 'product-card'} key={id}>
-                  <div className="product-card-inner">
-                    <img src={product.thumbnail_url} alt={product.goods_name} className="product-thumb" />
-                    <div>
-                      <p className="brand">{product.brand || '브랜드 정보 없음'}</p>
-                      <p className="product-name">{product.goods_name}</p>
-                      <p className="product-price">{product.price?.toLocaleString()}원</p>
-                      <a
-                        href={product.goods_url || '#'}
-                        className="product-link"
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        상품 페이지로 이동
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
+        {isZoomed && (
+          <div className="image-zoom-modal" onClick={() => setIsZoomed(false)}>
+            <div className="zoom-image-container">
+              <img
+                src={products[activeImageIndex].thumbnail_url}
+                alt={products[activeImageIndex].goods_name}
+                className="zoomed-image"
+              />
+              <div className="zoom-nav prev" onClick={(e) => { e.stopPropagation(); navigateImage(-1); }}>
+                <FontAwesomeIcon icon={faChevronLeft} />
+              </div>
+              <div className="zoom-nav next" onClick={(e) => { e.stopPropagation(); navigateImage(1); }}>
+                <FontAwesomeIcon icon={faChevronRight} />
+              </div>
             </div>
-            {/* 설명 박스 */}
-            <div className="info-box">
-              <h3>
-                <span className="info-icon">ℹ️</span>
-                제품 설명
-              </h3>
-              <p className="product-describe">
-                {products[0]?.reasoning_text || '아직 상세 설명이 등록되지 않았습니다.'}
-              </p>
+          </div>
+        )}
+
+        <div className="main-image-grid">
+          {products.map((product, id) => (
+            <div className="main-image-cell" key={id} onClick={() => toggleImageZoom(id)}>
+              <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" />
             </div>
+          ))}
+          {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
+        </div>
+
+        <div className="detail-divider"></div>
+
+        <div className="product-info">
+          <div className="brand-row">
+            <span className="brand">
+              {products.map(p => p.brand).filter(Boolean).join(' / ') || '브랜드 없음'}
+            </span>
+          </div>
+          <h1 className="product-name">{products[0]?.goods_name}</h1>
+          <div className="price-row">
+            <span className="product-price">
+              {products[0]?.total_price?.toLocaleString() || 0}원
+            </span>
           </div>
         </div>
-      )}
+
+        <div className="detail-divider"></div>
+
+        <div className="section-title">함께 코디한 상품</div>
+        <div className="slider-wrapper">  
+          <div className="product-slider" ref={sliderRef}>
+            {products.map((product, id) => (
+              <div className={id === 0 ? 'product-card main-product' : 'product-card'} key={id}>
+                <div className="product-card-inner">
+                  <img src={product.thumbnail_url} alt={product.goods_name} className="product-thumb" />
+                  <div>
+                    <p className="brand">{product.brand || '브랜드'}</p>
+                    <p className="product-name">{product.goods_name}</p>
+                    <p className="product-price">{product.price?.toLocaleString()}원</p>
+                    <a href={product.goods_url || '#'} className="product-link" target="_blank" rel="noopener noreferrer">
+                      상품 구매하기
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="detail-divider"></div>
+
+        <div className="detail-section">
+          <h3 className="detail-section-title">상품 설명</h3>
+          <div className="info-box">
+            <p className="product-describe">{products[0]?.reasoning_text || '아직 상세 설명이 등록되지 않았습니다.'}</p>
+          </div>
+        </div>
+
+        <div className="bottom-actions">
+          <button className="bottom-btn btn-outline" onClick={toggleLike}>
+            <FontAwesomeIcon icon={isLiked ? solidHeart : regularHeart} className={`btn-icon ${isLiked ? 'liked' : ''}`} /> 찜하기
+          </button>
+          <button className="bottom-btn btn-outline" onClick={handleShare}>
+            <FontAwesomeIcon icon={faShare} className="btn-icon" /> 공유
+          </button>
+          <button className="bottom-btn btn-primary" onClick={() => setShowPurchaseOptions((v) => !v)}>
+            <FontAwesomeIcon icon={faShoppingBag} className="btn-icon" /> 구매하기
+          </button>
+          {showPurchaseOptions && (
+            <div className="purchase-options-modal">
+              {categories.map((cat) => {
+                const product = getProductByCategory(cat.key);
+                if (!product) return null;
+                return (
+                  <button
+                    key={cat.key}
+                    className="purchase-option-btn"
+                    onClick={() => handleCategoryPurchase(cat.key)}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+              <button className="purchase-option-cancel" onClick={() => setShowPurchaseOptions(false)}>
+                취소
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
