@@ -2,7 +2,7 @@
     position: fixed;
     top: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-51.2%);
     width: 100%;
     max-width: 600px; /* ✅ 800px 제한 */
     height: 80px; /* ✅ PC 기본 높이 */
