@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/MyPage.css';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,16 @@ function MyPage() {
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const moveThresholdRef = useRef(5); // 드래그로 인식할 최소 이동 거리
+  const outfitGridRef = useRef(null); // outfitGridRef 추가
+
   const handleCardClick = (item) => {
+    if (isDraggingRef.current) {
+      return; // 드래깅 중이면 클릭 무시
+    }
     if (tab === 'ai') {
       // AI 탭의 경우
       const recommendationId = item.recommendation?.id;
@@ -53,7 +62,6 @@ function MyPage() {
     const { order, style } = filter;
     const name = userInfo.name;
     const token = sessionStorage.getItem('accessToken');
-    
 
     if (!name) return;
 
@@ -68,7 +76,6 @@ function MyPage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (tab === 'ai') {
-
         // AI 탭의 경우
 
         if (order === 'newest' || order === 'oldest') {
@@ -95,7 +102,6 @@ function MyPage() {
         console.log('AI 찜 목록 응답:', res.data);
         setAiOutfits(res.data);
       } else {
-
         // CLUB 탭의 경우
 
         if (order === 'newest' || order === 'oldest') {
@@ -118,9 +124,9 @@ function MyPage() {
             headers,
             params: { user_id, order: 'newest' },
           });
-          
-        console.log('📦 clubOutfits 응답 구조:', res.data);  // 👈 여기 추가
-        setClubOutfits(res.data);
+
+          console.log('📦 clubOutfits 응답 구조:', res.data); // 👈 여기 추가
+          setClubOutfits(res.data);
         }
 
         setClubOutfits(res.data);
@@ -186,17 +192,15 @@ function MyPage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-
         // UI에서 제거
         setAiOutfits((prev) => prev.filter((o) => o.uuid !== item.uuid));
       } else {
         // CLUB 아웃핏인 경우 토글 API 사용
-       await api.post(
-        '/api/picked/v1/main_picked/toggle',
-        { main_recommendation_id: item.main_recommendation?.id || item.id },  // ✅ 수정됨
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+        await api.post(
+          '/api/picked/v1/main_picked/toggle',
+          { main_recommendation_id: item.main_recommendation?.id || item.id }, // ✅ 수정됨
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
         // UI에서 제거
         setClubOutfits((prev) => prev.filter((o) => o.id !== item.id));
@@ -236,12 +240,87 @@ function MyPage() {
     return count;
   };
 
-  // 스타일 필터 클릭 핸들러
-  const handleStyleFilter = (selectedStyle) => {
-    setFilter({
-      style: selectedStyle,
-      order: null, // order 값을 null로 설정
-    });
+  /// 2. 이벤트 핸들러 통합 및 개선
+  const handleDragStart = (clientX) => {
+    if (!outfitGridRef.current) return;
+
+    isDraggingRef.current = true;
+    startXRef.current = clientX - outfitGridRef.current.offsetLeft;
+    scrollLeftRef.current = outfitGridRef.current.scrollLeft;
+    outfitGridRef.current.style.cursor = 'grabbing';
+  };
+
+  const handleDragMove = (clientX) => {
+    if (!isDraggingRef.current || !outfitGridRef.current) return false;
+
+    const x = clientX - outfitGridRef.current.offsetLeft;
+    const moved = Math.abs(x - startXRef.current);
+
+    // 일정 거리 이상 움직였을 때만 스크롤 처리
+    if (moved > moveThresholdRef.current) {
+      const walk = (x - startXRef.current) * 2;
+      outfitGridRef.current.scrollLeft = scrollLeftRef.current - walk;
+      return true;
+    }
+    return false;
+  };
+
+  const handleDragEnd = () => {
+    if (!isDraggingRef.current || !outfitGridRef.current) return;
+
+    isDraggingRef.current = false;
+    outfitGridRef.current.style.cursor = 'grab';
+
+    // 스크롤 위치에 따라 페이지 변경
+    const containerWidth = outfitGridRef.current.clientWidth;
+    const scrollPosition = outfitGridRef.current.scrollLeft;
+    const startPosition = scrollLeftRef.current;
+    const scrollDifference = scrollPosition - startPosition;
+    const scrollThreshold = containerWidth * 0.15; // 임계값 (15%)
+
+    console.log('스크롤 차이:', scrollDifference, '임계값:', scrollThreshold);
+
+    // 스크롤 방향과 페이지 전환 로직
+    if (Math.abs(scrollDifference) > scrollThreshold) {
+      if (scrollDifference > 0 && page > 0) {
+        // 오른쪽으로 드래그 (이전 페이지)
+        console.log('이전 페이지로 이동');
+        setPage((prev) => Math.max(0, prev - 1));
+      } else if (scrollDifference < 0 && page < pageCount - 1) {
+        // 왼쪽으로 드래그 (다음 페이지)
+        console.log('다음 페이지로 이동');
+        setPage((prev) => Math.min(pageCount - 1, prev + 1));
+      }
+    }
+
+    // 스크롤 위치 초기화
+    setTimeout(() => {
+      if (outfitGridRef.current) {
+        outfitGridRef.current.scrollLeft = 0;
+      }
+    }, 50);
+  };
+
+  // 3. 마우스 이벤트 핸들러 수정
+  const handleMouseDown = (e) => {
+    handleDragStart(e.pageX);
+  };
+
+  const handleMouseMove = (e) => {
+    if (handleDragMove(e.pageX)) {
+      e.preventDefault(); // 스크롤이 발생한 경우만 기본 동작 방지
+    }
+  };
+
+  // 4. 터치 이벤트 핸들러 수정
+  const handleTouchStart = (e) => {
+    handleDragStart(e.touches[0].pageX);
+  };
+
+  // 터치 이벤트 핸들러 수정
+  const handleTouchMove = (e) => {
+    // preventDefault 호출 없이 드래그 처리만 수행
+    handleDragMove(e.touches[0].pageX);
   };
 
   return (
@@ -311,12 +390,25 @@ function MyPage() {
 
             {displayedOutfits.length > 0 ? (
               <>
-                <div className="outfit-grid">
+                <div
+                  className="outfit-grid"
+                  ref={outfitGridRef}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleDragEnd}
+                  onMouseLeave={handleDragEnd}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove} // 이 부분 추가
+                  onTouchEnd={handleDragEnd}
+                  style={{
+                    cursor: 'grab',
+                    overflowX: 'hidden',
+                    whiteSpace: 'nowrap',
+                    userSelect: 'none',
+                    touchAction: 'pan-y', // 수직 스크롤은 허용하고 수평만 제어
+                  }}>
                   {displayedOutfits.map((item) => {
-                  const data =
-                    tab === 'club'
-                      ? item.main_recommendation || item.combination || item
-                      : item;
+                    const data = tab === 'club' ? item.main_recommendation || item.combination || item : item;
                     return (
                       <div
                         key={item.uuid || item.id}
@@ -324,43 +416,38 @@ function MyPage() {
                         onClick={() => handleCardClick(item)}
                         style={{ cursor: 'pointer' }}>
                         <div className="image-container">
-                                                    {tab === 'ai' ? (
-                          <div className="outfit-items-grid items-4">
-                            {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
-                              const s3 = item.recommendation?.[part]?.s3_path;
-                              return (
-                                <div className="grid-item" key={i}>
-                                  {s3 ? (
-                                    <img
-                                      src={s3}
-                                      alt={part}
-                                      className="item-thumbnail"
-                                      onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = '';
-                                      }}
-                                    />
-                                  ) : null}
-                                </div>
-                              );
-                            })}
-                          </div>
-                          ) : (
-                       <div
-                        className="outfit-items-grid"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {[ 'top', 'bottom', 'outer', 'shoes' ].map((part, i) => {
-                          const s3 = item.main_recommendation?.[part]?.s3_path;
-                          return (
-                            <div className="grid-item" key={i}>
-                              {s3 ? (
-                                <img src={s3} alt={part} className="item-thumbnail" />
-                              ) : null}
+                          {tab === 'ai' ? (
+                            <div className="outfit-items-grid items-4">
+                              {['top', 'bottom', 'outer', 'shoes'].map((part, i) => {
+                                const s3 = item.recommendation?.[part]?.s3_path;
+                                return (
+                                  <div className="grid-item" key={i}>
+                                    {s3 ? (
+                                      <img
+                                        src={s3}
+                                        alt={part}
+                                        className="item-thumbnail"
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = '';
+                                        }}
+                                      />
+                                    ) : null}
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </div>
+                          ) : (
+                            <div className="outfit-items-grid" onClick={(e) => e.stopPropagation()}>
+                              {['top', 'bottom', 'outer', 'shoes'].map((part, i) => {
+                                const s3 = item.main_recommendation?.[part]?.s3_path;
+                                return (
+                                  <div className="grid-item" key={i}>
+                                    {s3 ? <img src={s3} alt={part} className="item-thumbnail" /> : null}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           )}
                           {/* <button
                             className="heart-button"
@@ -375,9 +462,11 @@ function MyPage() {
                           </button> */}
                         </div>
                         <div className="outfit-info">
-                         <div className="brand">
+                          <div className="brand">
                             {tab === 'ai'
-                              ? `${item.recommendation?.top?.category || ''} / ${item.recommendation?.bottom?.category || ''}`
+                              ? `${item.recommendation?.top?.category || ''} / ${
+                                  item.recommendation?.bottom?.category || ''
+                                }`
                               : data.style || '스타일 미정'}
                           </div>
                           <div className="name">
@@ -386,28 +475,26 @@ function MyPage() {
                                 (item.recommendation?.bottom ? ' 외' : '')
                               : data.goods_name || ''}
                           </div>
-                        <div className="price-with-heart">
-  <span className="price-text">
-    {tab === 'ai'
-      ? `${calculateTotalPrice(item.recommendation)}원`
-      : data.total_price
-      ? `${data.total_price.toLocaleString()}원`
-      : '가격 미정'}
-  </span>
-  <button
-    className="heart-button-inline"
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleLike(item);
-    }}
-  >
-    <FontAwesomeIcon
-      icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
-      className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
-    />
-  </button>
-</div>
-
+                          <div className="price-with-heart">
+                            <span className="price-text">
+                              {tab === 'ai'
+                                ? `${calculateTotalPrice(item.recommendation)}원`
+                                : data.total_price
+                                ? `${data.total_price.toLocaleString()}원`
+                                : '가격 미정'}
+                            </span>
+                            <button
+                              className="heart-button-inline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleLike(item);
+                              }}>
+                              <FontAwesomeIcon
+                                icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
+                                className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
+                              />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
