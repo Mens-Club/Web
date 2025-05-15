@@ -35,7 +35,7 @@ function MyPage() {
       console.log('추천 ID:', recommendationId);
 
       if (recommendationId) {
-        navigate(`/product-detail/${recommendationId}?source=mypage`);
+        navigate(`/product-detail/${recommendationId}?recommendationId=${recommendationId}&source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -44,7 +44,7 @@ function MyPage() {
       const mainRecommendationId = item.main_recommendation?.id || item.id;
 
       if (mainRecommendationId) {
-        navigate(`/product-detail/${mainRecommendationId}?source=mypage`);
+        navigate(`/product-detail/${mainRecommendationId}?recommendationId=${mainRecommendationId}&source=mypage`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }

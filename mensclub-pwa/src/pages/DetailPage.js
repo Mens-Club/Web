@@ -13,7 +13,8 @@ function DetailPage() {
   const { itemId } = useParams(); // URL에서 itemId 가져오기
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const recommendationCode = queryParams.get('recommendationCode'); // URL 쿼리에서 recommendation 코드 가져오기
+  const recommendationId = queryParams.get('recommendationId'); // URL 쿼리에서 recommendationId 코드 가져오기
+
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -29,19 +30,19 @@ function DetailPage() {
 
   useEffect(() => {
     const source = new URLSearchParams(location.search).get('source') || '';
-    if (source === 'fashion' && recommendationCode) {
+    if (source === 'fashion' && recommendationId) {
       try {
         // 세션스토리지에서 찜 맵 불러오기
         const storedLikedMap = sessionStorage.getItem('likedItemsMap');
         if (storedLikedMap) {
           const likedMap = JSON.parse(storedLikedMap);
-          setIsLiked(likedMap[recommendationCode] || false);
+          setIsLiked(likedMap[recommendationId] || false);
         }
       } catch (error) {
         console.error('찜 상태 로드 오류:', error);
       }
     }
-  }, [recommendationCode]);
+  }, [recommendationId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,8 +50,6 @@ function DetailPage() {
         setLoading(true);
         const source = new URLSearchParams(location.search).get('source') || '';
         const token = sessionStorage.getItem('accessToken');
-        // recommendationId 파라미터 추가 - URL에서 가져옴
-        const recommendationId = new URLSearchParams(location.search).get('recommendationId') || recommendationCode;
 
         console.log('소스:', source);
         console.log('아이템 ID:', itemId);
@@ -59,7 +58,7 @@ function DetailPage() {
         // 소스 파라미터를 먼저 확인하여 처리
         if (source === 'mypage') {
           try {
-            const response = await api.get(`/api/picked/v1/recommend_picked/${itemId}/`, {
+            const response = await api.get(`/api/picked/v1/recommend_picked/${recommendationId}/`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             console.log('마이페이지 상품 응답:', response.data);
@@ -183,7 +182,7 @@ function DetailPage() {
                   const data = JSON.parse(storedData);
                   // 해당 추천 코드에 맞는 조합 찾기
                   const recommendationData = data.product_combinations.find(
-                    (combo) => combo.recommendation_id === parseInt(recommendationId)
+                    (combo) => String(combo.recommendation_id) === parseInt(recommendationId)
                   );
                   if (recommendationData) {
                     // 조합에서 모든 상품 추출 (null 제외)
@@ -266,7 +265,7 @@ function DetailPage() {
     if (itemId) {
       fetchData();
     }
-  }, [itemId, recommendationCode, location.search]);
+  }, [itemId, recommendationId, location.search]);
 
   // 슬라이더 드래그 이벤트 등록
   useEffect(() => {
@@ -376,7 +375,7 @@ function DetailPage() {
       // 서버에 찜 상태 업데이트
       const response = await api.post(
         '/api/picked/v1/recommend_picked/toggle',
-        { recommendation_id: parseInt(recommendationCode) },
+        { recommendation_id: parseInt(recommendationId) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -387,7 +386,7 @@ function DetailPage() {
       try {
         const storedLikedMap = sessionStorage.getItem('likedItemsMap');
         const likedMap = storedLikedMap ? JSON.parse(storedLikedMap) : {};
-        likedMap[recommendationCode] = newIsLiked;
+        likedMap[recommendationId] = newIsLiked;
         sessionStorage.setItem('likedItemsMap', JSON.stringify(likedMap));
       } catch (error) {
         console.error('찜 상태 저장 오류:', error);
@@ -440,7 +439,7 @@ function DetailPage() {
             ))}
             {/* 빈 셀 추가 (짝수 맞추기) */}
             {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
-            {recommendationCode && (
+            {recommendationId && (
               <button className="heart-button" onClick={toggleLike} aria-label={isLiked ? '찜 해제' : '찜 추가'}>
                 <FontAwesomeIcon
                   icon={isLiked ? solidHeart : regularHeart}
