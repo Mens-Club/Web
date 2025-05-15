@@ -117,7 +117,7 @@ function FashionPage() {
 
       // 상세 페이지로 이동 (API 경로 포함)
       navigate(
-        `/product-detail/${items[0].idx}?recommendationCode=${recommendationId}&source=fashion&apiPath=/api/picked/v1/recommend_picked/${recommendationId}`
+        `/product-detail/${items[0].idx}?recommendationId=${recommendationId}&source=fashion&apiPath=/api/picked/v1/recommend_picked/${recommendationId}`
       );
     }
   };

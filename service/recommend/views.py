@@ -23,12 +23,14 @@ from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
 from .main.season_extractor import extract_season_from_text
 from .main.validate_answer_categories import validate_answer_categories
+
 # from .openai.utils import generate_reasoning_task
 from .models import Recommendation
 
 logger = logging.getLogger(__name__)
 
 clip_model_instance = Encoding()
+
 
 class IntegratedFashionRecommendAPIView(APIView):
     permission_classes = [AllowAny]
@@ -109,8 +111,7 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 5: RAG Context 생성")
             rag_context = create_rag_context(most_similar_item)
             logging.debug("유사 컨텍스트 결과 %s", rag_context)
-            
-            
+
             logger.info("Ex. 카테고리 검증")
             try:
                 rag_context_dict = json.loads(rag_context)
@@ -118,7 +119,6 @@ class IntegratedFashionRecommendAPIView(APIView):
             except Exception as e:
                 logger.error("RAG Context JSON 파싱 실패: %s", str(e))
                 expected_recommend = {}
-            
 
             logger.info("STEP 6: 추천 생성 시작")
             recommendation_result = get_recommendation(base64_image, rag_context)
@@ -151,8 +151,10 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 8: 계절 추출")
             answer_text = recommendation_json.get("answer", "")
             season = extract_season_from_text(answer_text)
-            matched_categories = validate_answer_categories(answer_text, VALIDATION_CATEGORY)
-            
+            matched_categories = validate_answer_categories(
+                answer_text, VALIDATION_CATEGORY
+            )
+
             logger.info("STEP 8-1: 카테고리 검증")
             if not matched_categories:
                 logger.warning("유효한 카테고리가 answer_text에 포함되지 않음")
@@ -160,7 +162,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                     {
                         "status": "error",
                         "message": "추천 결과에 유효한 카테고리가 포함되어 있지 않습니다. 재시도해주세요.",
-                        "raw_answer": answer_text
+                        "raw_answer": answer_text,
                     },
                     status=500,
                 )
@@ -172,12 +174,13 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("STEP 10: 상품 검색 시작")
             recommend_json = filtered_recommendation.get("recommend", {})
-            
+
             missing_required = [
-                category for category, expected_items in expected_recommend.items()
+                category
+                for category, expected_items in expected_recommend.items()
                 if expected_items and not recommend_json.get(category)
             ]
-            
+
             if missing_required:
                 logger.warning("RAG 기준 필수 카테고리 누락됨: %s", missing_required)
                 return Response(
@@ -189,7 +192,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                     },
                     status=500,
                 )
-                
+
             styles = ["미니멀", "캐주얼"]
             color_palette = COLOR_PALETTE_BY_SEASON.get(season, [])
 
@@ -229,20 +232,20 @@ class IntegratedFashionRecommendAPIView(APIView):
                     ]
                 )
 
-                # recommendation = Recommendation.objects.create(
-                #     user=request.user if request.user.is_authenticated else None,
-                #     top_id=top_id,
-                #     bottom_id=bottom_id,
-                #     outer_id=outer_id,
-                #     shoes_id=shoes_id,
-                #     answer=answer_text,
-                #     reasoning_text="",
-                #     total_price=total_price,
-                # )
+                recommendation = Recommendation.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    top_id=top_id,
+                    bottom_id=bottom_id,
+                    outer_id=outer_id,
+                    shoes_id=shoes_id,
+                    answer=answer_text,
+                    reasoning_text="",
+                    total_price=total_price,
+                )
 
                 recommendation_outputs.append(
                     {
-                        # "recommendation_id": recommendation.id,
+                        "recommendation_id": recommendation.id,
                         "combination": combo,
                         "total_price": total_price,
                     }

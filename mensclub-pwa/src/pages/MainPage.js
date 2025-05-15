@@ -211,7 +211,7 @@ function MainPage() {
     // 카드 클릭 핸들러 추가
     const handleCardClick = () => {
       // 디테일 페이지로 이동
-      navigate(`/product-detail/${item.id}?source=main&recommendationCode=${item.id}`);
+      navigate(`/product-detail/${item.id}?source=main&recommendationId=${item.id}`);
     };
 
     return (
