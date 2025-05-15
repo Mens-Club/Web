@@ -10,6 +10,7 @@ import logging
 import requests
 import base64
 import json
+import time 
 
 from .RAG.rag_context_generator import create_rag_context
 from .RAG.encoding_elements import Encoding
@@ -25,6 +26,7 @@ from .main.season_extractor import extract_season_from_text
 from .main.validate_answer_categories import validate_answer_categories
 # from .openai.utils import generate_reasoning_task
 from .models import Recommendation
+from .utils.metrics import push_fashion_recommendation_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,7 @@ class IntegratedFashionRecommendAPIView(APIView):
         responses={200: "추천 성공", 400: "이미지 처리 오류", 500: "서버 오류"},
     )
     def post(self, request):
+        start_time = time.time() # 시간 측정용 
         try:
             logger.info("추천 요청 수신")
             image_url = request.data.get("image_url")
@@ -156,6 +159,10 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 8-1: 카테고리 검증")
             if not matched_categories:
                 logger.warning("유효한 카테고리가 answer_text에 포함되지 않음")
+                push_fashion_recommendation_metrics(
+                success=False,
+                duration=time.time() - start_time
+                )
                 return Response(
                     {
                         "status": "error",
@@ -180,6 +187,10 @@ class IntegratedFashionRecommendAPIView(APIView):
             
             if missing_required:
                 logger.warning("RAG 기준 필수 카테고리 누락됨: %s", missing_required)
+                push_fashion_recommendation_metrics(
+                success=False,
+                duration=time.time() - start_time
+                )
                 return Response(
                     {
                         "status": "error",
@@ -258,6 +269,13 @@ class IntegratedFashionRecommendAPIView(APIView):
             # )
 
             logger.info("추천 처리 완료")
+            
+            # 성공 매트릭 push
+            push_fashion_recommendation_metrics(
+                success=True,
+                duration=time.time() - start_time
+            )
+            
             return Response(
                 {
                     "status": "success",
@@ -271,4 +289,8 @@ class IntegratedFashionRecommendAPIView(APIView):
         except Exception as e:
 
             logger.exception("처리 중 알 수 없는 예외 발생")
+            push_fashion_recommendation_metrics(
+                success=False,
+                duration=time.time() - start_time
+            )
             return Response({"status": "error", "message": str(e)}, status=500)
