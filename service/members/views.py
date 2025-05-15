@@ -335,6 +335,24 @@ class UserImageUploadView(GenericAPIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from allauth.socialaccount.models import SocialAccount
+def oauth_callback(request):
+    user = request.user
+    print(request.user, request.user.is_authenticated, '*' * 100)
+
+    if user.is_authenticated:
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+        provider = SocialAccount.objects.filter(user=user).first().provider
+        
+
+        # 프론트엔드 URL에 토큰과 provider 붙이기
+        redirect_url = f"http://localhost:3000/oauth/{provider}/callback?token={access_token}&refresh={refresh_token}"
+        return redirect(redirect_url)
+    else:
+        # 로그인 실패 시
+        return redirect("http://localhost:3000/login?error=login_failed")
 
 # class UserImageUploadView(GenericAPIView):
 #     serializer_class = UserImageUploadSerializer

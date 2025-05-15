@@ -307,8 +307,9 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_STORE_TOKEN = True
-LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
+LOGIN_REDIRECT_URL = '/api/account/v1/oauth/callback/'
 SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/api/account/v1/oauth/callback/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
