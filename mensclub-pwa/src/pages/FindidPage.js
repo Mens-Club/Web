@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/FindidPage.css'
 
 function FindidPage() {
   const [username, setName] = useState('');
@@ -24,7 +25,7 @@ function FindidPage() {
       const data = await response.json();
       if (response.ok) {
         if (data.email && data.email.length > 0) {
-          setResult(`당신의 아이디 ➜ ${data.email}`);
+          setResult(`ID : ${data.email}`);
         } else {
           setError('일치하는 정보가 없습니다.');
         }
@@ -53,6 +54,10 @@ function FindidPage() {
           <button className="find-btn" onClick={handleFindID}>
             아이디 찾기
           </button>
+          <div className="result_container">
+          {result && <div className="result"> {result}</div>}
+          {error && <div className="error"> {error}</div>}
+          </div>
           </div>
           <div className="bottom-links">
             <Link to="/login">로그인</Link>
@@ -60,10 +65,6 @@ function FindidPage() {
             <Link to="/find-pw">비밀번호 찾기</Link>
             <Link to="/">홈으로</Link>
           </div>
-        </div>
-        <div className="result_container">
-          {result && <div className="result"> {result}</div>}
-          {error && <div className="error"> {error}</div>}
         </div>
       </div>
     </div>

@@ -56,7 +56,7 @@ function FindpwPage() {
               비밀번호 변경
             </button>
           </div>
-
+          <div className="result_container">{error && <div className="error"> {error}</div>}</div>
           <div className="bottom-links">
             <Link to="/login">로그인</Link>
             <Link to="/signup">회원가입</Link>
@@ -64,7 +64,6 @@ function FindpwPage() {
             <Link to="/">홈으로</Link>
           </div>
         </div>
-        <div className="result_container">{error && <div className="error"> {error}</div>}</div>
       </div>
     </div>
   );
