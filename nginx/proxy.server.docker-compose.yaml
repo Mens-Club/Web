@@ -1,15 +1,17 @@
 services:
   nginx:
     container_name: proxy
-    build: 
-      context: .
-      dockerfile: Dockerfile.proxy
+    env_file:
+      - ./.env
+    environment:
+      - PROXY_GCR_CONTAINER=${PROXY_GCR_CONTAINER}
+    image: ${PROXY_GCR_CONTAINER}
     ports:
       - "80:80"
     networks:
-      - elk-networks
+      - mensclub-networks  
 
 networks:
-  elk-networks:
+  mensclub-networks:
     external: True
   

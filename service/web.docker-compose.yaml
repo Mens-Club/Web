@@ -1,8 +1,6 @@
 services:
   django:
-    build:
-      context: .
-      dockerfile: Dockerfile.django
+    image: ${BACK_GCR_CONTAINER}
     container_name: backends
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     volumes:
@@ -11,14 +9,20 @@ services:
       - "8000:8000"
     env_file: 
       - ./.env
+    networks:
+      - mensclub-networks  
 
   celery:
     container_name: Django_Celery
-    build:
-      context: .
-      dockerfile: Dockerfile.django
+    image: ${BACK_GCR_CONTAINER}
     command: celery -A config worker --loglevel=info
     volumes:
       - ./:/usr/src/django/
     env_file:
       - ./.env
+    networks:
+      - mensclub-networks  
+
+networks:
+  mensclub-networks:
+    external: True
