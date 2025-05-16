@@ -98,7 +98,7 @@
 @media (max-width: 480px) {
   .loading-content {
     /* margin-top: 80px; */
-    transform: translateX(-100px) translateY(0);
+    transform: translateX(-100px) translateY(100px);
   }
   .loading-title {
     font-size: 1.2rem;
