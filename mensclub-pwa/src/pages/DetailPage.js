@@ -464,8 +464,7 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(-1);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faChevronLeft} />
               </div>
               <div
@@ -473,8 +472,7 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(1);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
@@ -529,8 +527,7 @@ function DetailPage() {
                       href={product.goods_url || '#'}
                       className="product-link"
                       target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                      rel="noopener noreferrer">
                       상품 구매하기
                     </a>
                   </div>

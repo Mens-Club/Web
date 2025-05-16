@@ -59,10 +59,7 @@ function CameraPage() {
       setImgSrc(imageSrc);
       setStep('preview');
       setStatusText('');
-    } catch (error) {
-      console.error('스크린샷 캡처 오류:', error);
-      setStatusText('카메라 사용 중 오류가 발생했습니다.');
-    }
+    } catch (error) {}
   }, [cameraReady]);
 
   // 재촬영

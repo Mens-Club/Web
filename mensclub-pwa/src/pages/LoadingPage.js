@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/LoadingPage.css';
 import api from '../api/axios'; // axios 인스턴스 import만 유지
+import Modal from '../components/Modal';
+import ConfirmModal from '../components/ConfirmModal';
 
 const iconPaths = ['icons/1.png', 'icons/2.png', 'icons/3.png', 'icons/4.png', 'icons/5.png', 'icons/6.png'];
 
@@ -28,6 +30,16 @@ const LoadingPage = () => {
   const returnPath = location.state?.returnPath || '/'; // 돌아갈 경로
   const loadingMessage = location.state?.message || null; // 커스텀 로딩 메시지
   const loadingTime = location.state?.loadingTime || 1200; // 기본 로딩 시간 (ms)
+
+  // 모달 상태 관리
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    navigate('/camera');
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -156,9 +168,9 @@ const LoadingPage = () => {
         if (currentRetryCount === maxRetries) {
           setRetryCount(0);
           setRetryMessage('');
-          navigate('/camera', {
-            state: { error: '상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.' },
-          });
+
+          setModalMessage('상품 인식에 실패했습니다. 다시한번 시도해주세요.🙏');
+          setModalOpen(true);
           return;
         }
         currentRetryCount++;
@@ -190,6 +202,17 @@ const LoadingPage = () => {
         </div>
         {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
       </div>
+      {/* 모달 컴포넌트 */}
+      <ConfirmModal
+        isOpen={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onConfirm={() => {
+          setModalOpen(false);
+          navigate('/camera');
+        }}
+        title="추천 실패"
+        message={modalMessage}
+      />
     </div>
   );
 };
