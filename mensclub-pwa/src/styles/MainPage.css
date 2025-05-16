@@ -27,7 +27,7 @@ body {
   align-items: center;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 200px;
+  padding-bottom: 170px;
   -ms-overflow-style: none; /* IE/Edge */
 }
 
@@ -319,7 +319,7 @@ h1 {
 }
 
 .heart-icon.liked {
-  color: #ff3b30;
+  color: red !important; /* ❤️ 빨간색 지정 */
 }
 
 .heart-icon {

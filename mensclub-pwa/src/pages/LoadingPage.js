@@ -31,9 +31,9 @@ const LoadingPage = ({ isEmbedded = false }) => {
 
   // state가 있으면 state 사용, 없으면 URL 파라미터 사용, 둘 다 없으면 기본값 '/'
   const isFromCamera = location.state?.fromCamera || false;
-  const returnPath = location.state?.returnPath || queryReturnPath || '/';
+  const returnPath = location.state?.returnPath || queryReturnPath || null; // '/' 대신 null로 수정
+
   const loadingMessage = location.state?.message || null;
-  const loadingTime = location.state?.loadingTime || 1200;
 
   // 모달 상태 관리
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,6 +52,38 @@ const LoadingPage = ({ isEmbedded = false }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+//   useEffect(() => {
+//   if (isEmbedded) return;
+
+//   if (isFromCamera) {
+//     analyzeImage();
+//   } else {
+//     // 🔥 문제 원인: returnPath가 무조건 '/' 또는 '/camera'가 될 수 있음
+//     if (location.state?.dataToPass) {
+//       sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
+//     }
+
+//     // ✅ 해결: returnPath가 명확히 지정되어 있는 경우에만 타이머 작동
+//     if (returnPath && returnPath !== '/camera') {
+//       const timer = setTimeout(() => {
+//         const dataToPass = sessionStorage.getItem('tempDataToPass')
+//           ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
+//           : {};
+
+//         sessionStorage.removeItem('tempDataToPass');
+
+//         navigate(returnPath, {
+//           state: dataToPass,
+//           replace: true,
+//         });
+//       }, 1200); // 또는 loadingTime
+
+//       return () => clearTimeout(timer);
+//     }
+//   }
+// }, [navigate, isFromCamera, returnPath, location.state, location.search, isEmbedded]);
+
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
@@ -74,38 +106,68 @@ const LoadingPage = ({ isEmbedded = false }) => {
     fetchUserInfo();
   }, []);
 
+  // useEffect(() => {
+  //   if (isEmbedded) return;
+  //   // 카메라 페이지에서 넘어온 경우 이미지 분석 실행
+  //   if (isFromCamera) {
+  //     analyzeImage();
+  //   } else {
+  //     // 다른 페이지에서 넘어온 경우: 지정된 시간 후 returnPath로 이동
+
+  //     // 수정: 데이터를 세션 스토리지에 임시 저장
+  //     if (location.state?.dataToPass) {
+  //       sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
+  //     }
+
+  //     const timer = setTimeout(() => {
+  //       // 수정: 세션 스토리지에서 데이터를 가져와 state로 전달
+  //       const dataToPass = sessionStorage.getItem('tempDataToPass')
+  //         ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
+  //         : {};
+
+  //       // 데이터 전달 후 세션 스토리지에서 제거
+  //       sessionStorage.removeItem('tempDataToPass');
+
+  //       // 수정: replace 옵션 추가하여 불필요한 히스토리 스택 방지
+  //       navigate(returnPath, {
+  //         state: dataToPass,
+  //         replace: true,
+  //       });
+  //     }, );
+
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [navigate, isFromCamera, returnPath, , location.state, location.search, isEmbedded]);
+
   useEffect(() => {
-    if (isEmbedded) return;
-    // 카메라 페이지에서 넘어온 경우 이미지 분석 실행
-    if (isFromCamera) {
-      analyzeImage();
-    } else {
-      // 다른 페이지에서 넘어온 경우: 지정된 시간 후 returnPath로 이동
+  if (isEmbedded) return;
 
-      // 수정: 데이터를 세션 스토리지에 임시 저장
-      if (location.state?.dataToPass) {
-        sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
-      }
+  if (isFromCamera) {
+    analyzeImage(); // ❗여기만 남기고 아래쪽 useEffect 제거
+  } else {
+    if (location.state?.dataToPass) {
+      sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
+    }
 
+    if (returnPath && returnPath !== '/camera') {
       const timer = setTimeout(() => {
-        // 수정: 세션 스토리지에서 데이터를 가져와 state로 전달
         const dataToPass = sessionStorage.getItem('tempDataToPass')
           ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
           : {};
 
-        // 데이터 전달 후 세션 스토리지에서 제거
         sessionStorage.removeItem('tempDataToPass');
 
-        // 수정: replace 옵션 추가하여 불필요한 히스토리 스택 방지
         navigate(returnPath, {
           state: dataToPass,
           replace: true,
         });
-      }, loadingTime);
+      }, 1200); // ⏳ 설정된 타이머 시간
 
       return () => clearTimeout(timer);
     }
-  }, [navigate, isFromCamera, returnPath, loadingTime, location.state, location.search, isEmbedded]);
+  }
+}, [navigate, isFromCamera, returnPath, location.state, location.search, isEmbedded]);
+
 
   // 이미지 분석 함수 수정
   const analyzeImage = async () => {
@@ -198,11 +260,15 @@ const LoadingPage = ({ isEmbedded = false }) => {
           sessionStorage.setItem('recommendResult', JSON.stringify(recommendData));
           success = true; // 성공 플래그 설정
 
-          // 5. 다시 카메라 페이지로 이동
-          // 성공 시 재시도 메시지 초기화
+          // 5. 이동 경로 조건부 처리
           setRetryCount(0);
           setRetryMessage('');
-          navigate('/camera', { replace: true });
+          if (returnPath === '/camera' || !returnPath) {
+            navigate('/camera', { replace: true });
+          } else {
+            navigate(returnPath, { replace: true });
+          }
+
         } catch (err) {
           console.error(`시도 ${currentRetryCount + 1}/${maxRetries + 1} 실패:`, err);
 
@@ -232,43 +298,50 @@ const LoadingPage = ({ isEmbedded = false }) => {
     }
   };
 
-  return (
-    <div className="loading-container">
-      <div className="loading-content">
-        <div className="loading-title">
-          {loadingMessage ? (
-            loadingMessage
-          ) : isFromCamera ? (
-            <>
-              <span dangerouslySetInnerHTML={{ __html: userName }}></span>의<br />
-              코디는…
-            </>
-          ) : (
-            '로딩중...'
-          )}
-        </div>
-        <div className="icon-grid" id="iconGrid">
-          {icons.map((src, idx) => (
-            <div className="icon-cell" key={idx}>
-              <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
-            </div>
-          ))}
-        </div>
-        {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
+ return (
+  <div className="loading-container">
+    <div className="loading-content">
+      <div
+        className={`loading-title ${
+          !loadingMessage && !isFromCamera ? 'only-loading' : ''
+        }`}
+      >
+        {loadingMessage ? (
+          loadingMessage
+        ) : isFromCamera ? (
+          <>
+            <span dangerouslySetInnerHTML={{ __html: userName }}></span>님의 <br />
+            코디는…
+          </>
+        ) : (
+          '로딩중...'
+        )}
       </div>
-      {/* 모달 컴포넌트 */}
-      <ConfirmModal
-        isOpen={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onConfirm={() => {
-          setModalOpen(false);
-          navigate('/camera');
-        }}
-        title="추천 실패"
-        message={modalMessage}
-      />
+
+      <div className="icon-grid" id="iconGrid">
+        {icons.map((src, idx) => (
+          <div className="icon-cell" key={idx}>
+            <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+          </div>
+        ))}
+      </div>
+
+      {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
     </div>
-  );
+
+    {/* 모달 컴포넌트 */}
+    <ConfirmModal
+      isOpen={modalOpen}
+      onCancel={() => setModalOpen(false)}
+      onConfirm={() => {
+        setModalOpen(false);
+        navigate('/camera');
+      }}
+      title="추천 실패"
+      message={modalMessage}
+    />
+  </div>
+);
 };
 
 export default LoadingPage;

@@ -28,21 +28,36 @@ function DetailPage() {
   const sliderRef = useRef(null);
   const [showPurchaseOptions, setShowPurchaseOptions] = useState(false);
 
-  useEffect(() => {
-    const source = new URLSearchParams(location.search).get('source') || '';
-    if (source === 'fashion' && recommendationId) {
-      try {
-        // 세션스토리지에서 찜 맵 불러오기
-        const storedLikedMap = sessionStorage.getItem('likedItemsMap');
-        if (storedLikedMap) {
-          const likedMap = JSON.parse(storedLikedMap);
-          setIsLiked(likedMap[recommendationId] || false);
-        }
-      } catch (error) {
-        console.error('찜 상태 로드 오류:', error);
+useEffect(() => {
+  const source = new URLSearchParams(location.search).get('source') || '';
+
+  if (source === 'mypage') {
+    setIsLiked(true); // ✅ 마이페이지: 항상 true
+  } else if (source === 'fashion' && recommendationId) {
+    try {
+      const storedLikedMap = sessionStorage.getItem('likedItemsMap');
+      if (storedLikedMap) {
+        const likedMap = JSON.parse(storedLikedMap);
+        setIsLiked(likedMap[recommendationId] || false);
       }
+    } catch (error) {
+      console.error('찜 상태 로드 오류 (fashion):', error);
     }
-  }, [recommendationId]);
+  } else if (source === 'main' && recommendationId) {
+    try {
+      const storedLikedMap = localStorage.getItem('likedMap');
+      if (storedLikedMap) {
+        const likedMap = JSON.parse(storedLikedMap);
+        setIsLiked(likedMap[recommendationId] || false);
+      }
+    } catch (error) {
+      console.error('찜 상태 로드 오류 (main):', error);
+    }
+  }
+}, [recommendationId, location.search]);
+
+
+
 
   // 슬라이더 드래그 이벤트 등록
   useEffect(() => {

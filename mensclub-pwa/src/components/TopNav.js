@@ -8,7 +8,7 @@ function TopNav() {
   // ✅ 경로 ➔ 타이틀 매핑
   const titles = {
     '/main': 'MENSCLUB',
-    '/camera': '촬영페이지',
+    '/camera': 'AI 스타일링',
     '/fashion': '패션페이지',
     '/my': '마이페이지',
     '/setting': '설정페이지',

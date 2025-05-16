@@ -130,11 +130,11 @@
 
 .product-link {
   display: inline-block;
-  padding: 8px 18px;
+  padding: 6px 18px;
   margin-top: 5px;
-  background: #a18aff; /* 연보라(라일락) */
+  background: #000000; /* 연보라(라일락) */
   color: #fff;
-  border-radius: 10px;
+  border-radius: 30px;
   text-decoration: none;
   font-weight: 350;
   transition: background 0.2s;
@@ -267,6 +267,8 @@
 .product-card-inner {
   display: flex;
   align-items: center;
+  justify-content: space-between; /* 위 아래로 공간 배분 */
+  height: 100%;
 }
 
 .product-thumb {
