@@ -28,7 +28,7 @@ from .main.season_extractor import extract_season_from_text
 from .main.validate_answer_categories import validate_answer_categories
 # from .openai.utils import generate_reasoning_task
 from .models import Recommendation
-from .utils.metrics import push_fashion_recommendation_metrics
+from .utils.metrics import push_fashion_recommendation_metrics, machine_log_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -275,6 +275,14 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("추천 처리 완료")
             
+            # mlflow 로깅 트레이싱
+            machine_log_metrics(
+                image=pil_image,
+                rag_context=rag_context,
+                model_output=recommendation_json,
+                tag="inference_result"
+            )
+                
             # 성공 매트릭 push
             push_fashion_recommendation_metrics(
                 success=True,
