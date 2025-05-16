@@ -32,6 +32,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+cheorish-lab-897ce33e2b4f.json
 
 cheorish-lab-897ce33e2b4f.json
 # Installer logs

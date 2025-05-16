@@ -1,0 +1,15 @@
+services:
+  nginx:
+    container_name: proxy
+    build: 
+      context: .
+      dockerfile: Dockerfile.proxy
+    ports:
+      - "80:80"
+    networks:
+      - elk-networks
+
+networks:
+  elk-networks:
+    external: True
+  
