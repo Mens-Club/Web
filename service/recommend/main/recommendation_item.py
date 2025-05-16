@@ -7,6 +7,9 @@ def get_recommendation(base64_image, rag_context):
     api_key = os.getenv('RUNPOD_API_KEY')
     api_id = os.getenv('RUNPOD_ENDPOINT_ID')
     
+    if not api_key or not api_id:
+        raise ValueError("API 키 또는 엔드포인트 ID가 설정되지 않았습니다.")
+    
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {api_key}'
@@ -25,9 +28,6 @@ def get_recommendation(base64_image, rag_context):
         "신발": [...] 
     }} 
     }}
-    
-    마지막으로 참고 가이드라인을 고려하여 answer와 recommend에 있는 내용들을 그대로 출력하세요:
-    {rag_context}
 
     주의사항:
     1) "answer" 문장에 반드시 '해당 상품은 데님 팬츠로 보이며 봄에 잘 어울리는 스타일입니다'처럼 **계절**과 **아이템 카테고리**를 명시하세요.
@@ -73,4 +73,4 @@ def get_recommendation(base64_image, rag_context):
                 
                 time.sleep(2)
     else:
-        raise Exception(f"API 요청 실패: {response.status_code}")
+        raise Exception(f"API 요청 실패: {response.status_code}, 상세내용: {response.text}")

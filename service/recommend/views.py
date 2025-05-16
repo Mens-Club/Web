@@ -1,6 +1,5 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.forms.models import model_to_dict
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -11,9 +10,12 @@ import requests
 import base64
 import json
 import time 
+import io 
+from PIL import Image
+
 
 from .RAG.rag_context_generator import create_rag_context
-from .RAG.encoding_elements import Encoding
+from .RAG.encoding_clip import get_clip_embedding
 
 from .connect.connect_to_database import PGVecProcess
 
@@ -57,14 +59,17 @@ class IntegratedFashionRecommendAPIView(APIView):
                 logger.warning("image_url 누락")
                 return Response(
                     {"status": "error", "message": "image_url은 필수 항목입니다"},
-                    status=400,
+                    status=400,     
                 )
 
             logger.info("STEP 1: 이미지 다운로드 시작")
             try:
+                # 이미지 다운로드 
                 response = requests.get(image_url, timeout=10)
-                response.raise_for_status()
-                base64_image = base64.b64encode(response.content).decode("utf-8")
+                response.raise_for_status() # 결과 보고 
+                
+                base64_image = base64.b64encode(response.content).decode("utf-8") # RUNPOD Inference용
+                pil_image = Image.open(io.BytesIO(response.content)).convert("RGB") # RAG용 
             except requests.RequestException as e:
                 logger.error("이미지 다운로드 실패: %s", str(e))
                 return Response(
@@ -76,8 +81,8 @@ class IntegratedFashionRecommendAPIView(APIView):
                 )
 
             logger.info("STEP 2: 이미지 임베딩 시작")
-            clip_model_instance = Encoding()
-            embedding = clip_model_instance.encode_image(image_url=image_url)
+            embedding = get_clip_embedding(pil_image=pil_image)
+            logger.info(embedding)
             if embedding is None:
                 logger.error("임베딩 실패")
                 return Response(
