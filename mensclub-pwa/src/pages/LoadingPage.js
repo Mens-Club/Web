@@ -358,31 +358,39 @@ const LoadingPage = ({ isEmbedded = false }) => {
   return (
     <div className="loading-container">
       <div className="loading-content">
-        <div className={`loading-title ${!loadingMessage && !isFromCamera ? 'only-loading' : ''}`}>
-          {loadingMessage ? (
-            loadingMessage
-          ) : isFromCamera ? (
-            <>
+        {/* 🔻 여기서부터 문구 + 아이콘을 감싸는 컨테이너 분기 */}
+        {isFromCamera ? (
+          <div className="camera-loading-box">
+            <div className="camera-title">
               <span dangerouslySetInnerHTML={{ __html: userName }}></span>님의 <br />
               코디는…
-            </>
-          ) : (
-            '로딩중...'
-          )}
-        </div>
-
-        <div className="icon-grid" id="iconGrid">
-          {icons.map((src, idx) => (
-            <div className="icon-cell" key={idx}>
-              <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
             </div>
-          ))}
-        </div>
+            <div className="icon-grid icon-grid-camera">
+              {icons.map((src, idx) => (
+                <div className="icon-cell" key={idx}>
+                  <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mypage-loading-box">
+            <div className="basic-loading-title">로딩중...</div>
+            <div className="icon-grid icon-grid-basic">
+              {icons.map((src, idx) => (
+                <div className="icon-cell" key={idx}>
+                  <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
+        {/* 재시도 메시지 */}
         {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
       </div>
 
-      {/* 모달 컴포넌트 */}
+      {/* 모달 */}
       <ConfirmModal
         isOpen={modalOpen}
         onCancel={() => setModalOpen(false)}
