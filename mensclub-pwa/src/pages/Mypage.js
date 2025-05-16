@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import LoadingPage from './LoadingPage';
+import ConfirmModal from '../components/ConfirmModal';
 
 function MyPage() {
   const navigate = useNavigate();
@@ -26,6 +27,9 @@ function MyPage() {
   const scrollLeftRef = useRef(0);
   const moveThresholdRef = useRef(5); // 드래그로 인식할 최소 이동 거리
   const outfitGridRef = useRef(null); // outfitGridRef 추가
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalItem, setModalItem] = useState(null);
 
   const handleCardClick = (item) => {
     if (isDraggingRef.current) {
@@ -211,16 +215,18 @@ function MyPage() {
   }, [userInfo.name, tab, filter]);
 
   const toggleLike = async (item) => {
+    // 모달창을 열고 해당 아이템 정보 저장
+    setModalItem(item);
+    setModalOpen(true);
+  };
+
+  // 모달에서 확인 버튼 클릭 시 실행될 함수
+  const handleConfirmUnlike = async () => {
     const token = sessionStorage.getItem('accessToken');
+    const item = modalItem;
     const id = item.uuid || item.id;
 
     try {
-      // 찜 해제 전 사용자 확인
-      const confirmUnlike = window.confirm('찜을 해제하시겠습니까?');
-      if (!confirmUnlike) {
-        return; // 사용자가 취소한 경우 함수 종료
-      }
-
       if (tab === 'ai') {
         // AI 추천 아웃핏인 경우 토글 API 사용
         await api.post(
@@ -228,31 +234,38 @@ function MyPage() {
           { recommendation_id: item.recommendation?.id || item.id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
         // UI에서 제거
         setAiOutfits((prev) => prev.filter((o) => o.uuid !== item.uuid));
       } else {
         // CLUB 아웃핏인 경우 토글 API 사용
         await api.post(
           '/api/picked/v1/main_picked/toggle',
-          { main_recommendation_id: item.main_recommendation?.id || item.id }, // ✅ 수정됨
+          { main_recommendation_id: item.main_recommendation?.id || item.id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
         // UI에서 제거
         setClubOutfits((prev) => prev.filter((o) => o.id !== item.id));
       }
 
       // 찜 상태 업데이트
       setLikedMap((prev) => ({ ...prev, [id]: false }));
-
-      // 중요: 목록 새로고침
+      // 목록 새로고침
       setIsLoading(true);
       getOutfits();
     } catch (err) {
       console.error('❌ 찜 삭제 실패:', err);
       alert('찜 해제 중 오류가 발생했습니다.');
+    } finally {
+      // 모달 닫기
+      setModalOpen(false);
+      setModalItem(null);
     }
+  };
+
+  // 모달에서 취소 버튼 클릭 시 실행될 함수
+  const handleCancelUnlike = () => {
+    setModalOpen(false);
+    setModalItem(null);
   };
 
   // 제품 총 가격 구하는 부분
@@ -555,6 +568,14 @@ function MyPage() {
           </div>
         </div>
       )}
+      {/* 찜 해제 확인 모달 */}
+      <ConfirmModal
+        isOpen={modalOpen}
+        onCancel={handleCancelUnlike}
+        onConfirm={handleConfirmUnlike}
+        title="찜 해제 확인"
+        message="정말로 이 아이템을 찜 목록에서 삭제하시겠습니까?"
+      />
     </div>
   );
 }

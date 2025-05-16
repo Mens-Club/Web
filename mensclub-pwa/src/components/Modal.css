@@ -9,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal-container {
@@ -58,6 +58,22 @@
   gap: 12px;
 }
 
+.modal-actions button {
+  font-size: 16px;
+  border-radius: 5px;
+  border-width: 0;
+  padding: 5px 16px;
+}
+
+.modal-actions button:hover {
+  font-size: 16px;
+  border-radius: 5px;
+  border-width: 0;
+  color: whitesmoke;
+  background-color: #333;
+  padding: 5px 16px;
+}
+
 /* 모바일 환경에서 버튼 크기 조정 */
 @media screen and (max-width: 768px) {
   .modal-container {
@@ -65,7 +81,7 @@
   }
 
   .modal-actions button {
-    padding: 12px 16px;
+    padding: 6px 16px;
     font-size: 15px;
   }
 }

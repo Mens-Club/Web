@@ -22,19 +22,6 @@ function CameraPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const saved = sessionStorage.getItem('recommendResult');
-    if (saved) {
-      setRecommendResult(JSON.parse(saved));
-      setStep('analyzed');
-      sessionStorage.removeItem('recommendResult');
-    }
-
-    if (location.state?.error) {
-      setStatusText(location.state.error);
-    }
-  }, [location.state]);
-
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
 
   // 카메라가 준비되면 호출하는 콜백 함수
@@ -56,11 +43,35 @@ function CameraPage() {
         setStatusText('카메라가 로딩중입니다. 잠시만 기다려주세요 🙏');
         return;
       }
+
       setImgSrc(imageSrc);
       setStep('preview');
       setStatusText('');
-    } catch (error) {}
+
+      // 캡처 성공 플래그 추가
+      sessionStorage.setItem('captureSuccess', 'true'); // 추가: 캡처 성공 플래그
+    } catch (error) {
+      console.error('카메라 캡처 오류:', error);
+      setStatusText('카메라 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   }, [cameraReady]);
+
+  // 초기화 함수 수정
+  const goInit = () => {
+    // 상태 초기화
+    setImgSrc(null);
+    setStep('init');
+    setStatusText('');
+    setLoading(false);
+
+    // 세션 스토리지 정리 - 더 철저하게
+    sessionStorage.removeItem('imgSrc');
+    sessionStorage.removeItem('cameraStep');
+    sessionStorage.removeItem('recommendResult');
+    sessionStorage.removeItem('capturedImageUrl');
+    sessionStorage.removeItem('captureSuccess'); // 추가: 캡처 성공 플래그 제거
+    sessionStorage.removeItem('analysisCompleted'); // 추가: 분석 완료 플래그 제거
+  };
 
   // 재촬영
   const retake = () => {
@@ -71,21 +82,50 @@ function CameraPage() {
   };
 
   // 사진을 서버에 전송 및 분석 결과 받기
-  // 이미지 업로드 → 추천 요청 흐름
+  // 서버 전송 함수 수정
   const sendToServer = () => {
-    if (!imgSrc) {
+    // 캡처 성공 여부 확인
+    const captureSuccess = sessionStorage.getItem('captureSuccess') === 'true';
+
+    if (!imgSrc || !captureSuccess) {
+      // 추가: 캡처 성공 플래그 확인
       setStatusText('이미지가 저장되지 않았어요. 재 촬영 부탁드려요');
       return;
     }
 
     // 이미지 임시 저장
     sessionStorage.setItem('imgSrc', imgSrc);
+    sessionStorage.setItem('cameraStep', 'analyzing');
+
+    // 분석 완료 플래그 초기화 (새로운 분석 시작)
+    sessionStorage.removeItem('analysisCompleted'); // 추가: 이전 분석 완료 상태 제거
 
     // 로딩 페이지로 이동
     navigate('/loading', {
       state: { fromCamera: true },
+      replace: true,
     });
   };
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem('recommendResult');
+    if (saved) {
+      setRecommendResult(JSON.parse(saved));
+      setStep('analyzed');
+      sessionStorage.removeItem('recommendResult');
+    }
+
+    // 이미지 확인 - 이 부분 추가
+    const savedImgSrc = sessionStorage.getItem('imgSrc');
+    if (savedImgSrc) {
+      setImgSrc(savedImgSrc);
+      setStep('analyzed'); // 또는 'analyzed' 상태에 따라 설정
+    }
+
+    if (location.state?.error) {
+      setStatusText(location.state.error);
+    }
+  }, [location.state]);
 
   // 패션 추천 페이지로 이동 (전체 데이터 전달)
   const goToFashionPage = () => {
@@ -97,14 +137,6 @@ function CameraPage() {
   // 카메라 전환
   const switchCamera = () => {
     setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
-  };
-
-  // 초기화 버튼
-  const goInit = () => {
-    setImgSrc(null);
-    setStep('init');
-    setStatusText('');
-    setLoading(false);
   };
 
   return (
@@ -124,7 +156,6 @@ function CameraPage() {
               </svg>
             </button>
           )}
-
           {/* 촬영/미리보기/분석 결과 화면 */}
           {step === 'capture' && (
             <Webcam
