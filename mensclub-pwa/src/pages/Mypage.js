@@ -35,7 +35,7 @@ function MyPage() {
       console.log('추천 ID:', recommendationId);
 
       if (recommendationId) {
-        navigate(`/product-detail/${recommendationId}?recommendationId=${recommendationId}&source=mypage`);
+        navigate(`/product-detail/${recommendationId}?recommendationId=${recommendationId}&source=mypage&tab=ai`);
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -44,7 +44,9 @@ function MyPage() {
       const mainRecommendationId = item.main_recommendation?.id || item.id;
 
       if (mainRecommendationId) {
-        navigate(`/product-detail/${mainRecommendationId}?recommendationId=${mainRecommendationId}&source=mypage`);
+        navigate(
+          `/product-detail/${mainRecommendationId}?recommendationId=${mainRecommendationId}&source=mypage&tab=club`
+        );
       } else {
         alert('상품 정보를 찾을 수 없습니다.');
       }
@@ -146,19 +148,36 @@ function MyPage() {
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
+
     async function fetchUserInfo() {
       try {
+        if (!token) {
+          console.error('❌ 토큰이 없습니다.');
+          setIsLoading(false);
+          navigate('/');
+          return;
+        }
+
         const res = await api.get('/api/account/v1/user_info/', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const { username, height, weight } = res.data;
-        setUserInfo({ name: username, height, weight });
+
+        const { username, height, weight, user_id } = res.data;
+        setUserInfo({ name: username, height, weight, user_id });
+        setIsLoading(false);
       } catch (e) {
-        console.error('❌ 사용자 정보 실패', e);
+        console.error('❌ 사용자 정보 불러오기 실패', e);
+        setIsLoading(false); // 중요: 에러 발생 시 로딩 상태 해제
+
+        if (e.response && e.response.status === 401) {
+          alert('로그인이 필요합니다.');
+          navigate('/');
+        }
       }
     }
+
     fetchUserInfo();
-  }, []);
+  }, [navigate]);
 
   // 로딩 컴포넌트
   const LoadingSpinner = () => (

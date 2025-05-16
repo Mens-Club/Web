@@ -183,14 +183,13 @@ class SocialLoginCallbackView(View):
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
 
-            """ ======  디버깅 로그 ======
-            # print(f"인증된 사용자: {request.user.username}")
-            # print(f"토큰: {access_token}")
-            # print(f"리프레시: {refresh_token}")
-            """
+            # ======  디버깅 로그 ======
+            print(f"인증된 사용자: {request.user.username}")
+            print(f"토큰: {access_token}")
+            print(f"리프레시: {refresh_token}")
 
             # 프론트엔드 리다이렉트 URL
-            frontend_url = "http://localhost:3000/main"
+            frontend_url = "http://localhost:3000/social-callback"
 
             # 토큰을 쿼리 파라미터로 추가하여 리다이렉트
             redirect_url = (
@@ -201,7 +200,7 @@ class SocialLoginCallbackView(View):
             return HttpResponseRedirect(redirect_url)
 
         # 인증되지 않은 경우 로그인 페이지로 리다이렉트
-        return redirect("/accounts/login/")
+        return redirect("/")
 
 
 class UpdateView(RetrieveUpdateAPIView):
@@ -334,6 +333,27 @@ class UserImageUploadView(GenericAPIView):
                 status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# from allauth.socialaccount.models import SocialAccount
+
+
+# def oauth_callback(request):
+#     user = request.user
+#     print(request.user, request.user.is_authenticated, "*" * 100)
+
+#     if user.is_authenticated:
+#         refresh = RefreshToken.for_user(user)
+#         access_token = str(refresh.access_token)
+#         refresh_token = str(refresh)
+#         provider = SocialAccount.objects.filter(user=user).first().provider
+
+#         # 프론트엔드 URL에 토큰과 provider 붙이기
+#         redirect_url = f"http://localhost:3000/oauth/{provider}/callback?token={access_token}&refresh={refresh_token}"
+#         return redirect(redirect_url)
+#     else:
+#         # 로그인 실패 시
+#         return redirect("http://localhost:3000/login?error=login_failed")
 
 
 # class UserImageUploadView(GenericAPIView):

@@ -86,6 +86,92 @@ useEffect(() => {
   //   setStatusText('');
   //   const token = sessionStorage.getItem('accessToken');
 
+
+    // 재시도 관련 변수
+    let retryCount = 0;
+    const maxRetries = 3;
+    let success = false;
+    console.log('재시도 로직 시작: 최대 시도 횟수 =', maxRetries);
+
+    while (retryCount <= maxRetries && !success) {
+      try {
+        // 재시도 중인 경우 메시지 표시
+        if (retryCount > 0) {
+          console.log(`재시도 ${retryCount} 진행 중... (백오프 지연: ${1000 * Math.pow(2, retryCount - 1)}ms)`);
+          setStatusText(`재시도 중... (${retryCount}/${maxRetries})`);
+          // 지수 백오프 적용 (1초, 2초, 4초...)
+          const delay = 1000 * Math.pow(2, retryCount - 1);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        // 1. 이미지 blob으로 변환
+        const res = await fetch(imgSrc);
+        const blob = await res.blob();
+
+        // 2. 이미지 업로드 요청
+        const formData = new FormData();
+        formData.append('image', blob, 'photo.jpg');
+
+        const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
+          method: 'POST',
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: formData,
+        });
+
+        const uploadData = await uploadRes.json();
+
+        if (!uploadRes.ok) {
+          throw new Error(uploadData?.detail || '이미지 업로드 실패');
+        }
+
+        const imageUrl = uploadData.image_url;
+        // 이미지 URL을 세션스토리지에 저장
+        sessionStorage.setItem('capturedImageUrl', imageUrl);
+
+        // 3. 업로드된 이미지 기반 추천 요청
+        const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            image_url: imageUrl,
+          }),
+        });
+
+        // 응답 상태 코드 확인
+        if (recommendRes.status >= 500) {
+          throw new Error(`서버 오류 (${recommendRes.status})`);
+        }
+
+        const recommendData = await recommendRes.json();
+
+        if (!recommendRes.ok) {
+          throw new Error(recommendData?.detail || '추천 요청 실패');
+        }
+
+        // 4. 추천 결과 출력
+        console.log('추천 결과:', recommendData);
+        setRecommendResult(recommendData);
+        setStep('analyzed');
+        success = true; // 성공 플래그 설정
+      } catch (error) {
+        console.error(`시도 ${retryCount + 1}/${maxRetries + 1} 실패:`, error);
+
+        // 마지막 시도였다면 오류 메시지 표시
+        if (retryCount === maxRetries) {
+          setStatusText('상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.');
+          break;
+        }
+
+        retryCount++;
+      }
+    }
+
+    setLoading(false);
+  };
   //   try {
   //     // 1. 이미지 blob으로 변환
   //     const res = await fetch(imgSrc);
@@ -254,6 +340,8 @@ useEffect(() => {
               <div className="loading-spinner">
                 <div className="spinner"></div>
                 <p>이미지 분석 중...</p>
+                <br />
+                {statusText && <p className="status-message">{statusText}</p>}
               </div>
             ) : (
               <>
@@ -316,56 +404,42 @@ useEffect(() => {
                           '아노락 재킷',
                           '숏팬츠',
                         ];
+
                         const answer = recommendResult.initial_recommendation.answer;
-                        // "상품은" 다음부터 "로 보이며" 또는 "입니다" 앞까지의 텍스트 추출
-                        // 먼저 기존 정규식으로 시도
-                        const match = answer.match(/상품은\s*(.*?)(?:로 보이며|입니다)/);
-                        let detectedItem = match && match[1] ? match[1].trim() : '';
 
-                        // 정규식으로 추출한 텍스트가 없거나 짧을 경우, 전체 텍스트에서 상품 리스트와 가장 일치하는 항목 찾기
-                        if (!detectedItem || detectedItem.length < 2) {
-                          // 전체 텍스트에서 상품 리스트의 각 항목이 포함되어 있는지 확인
-                          const foundItems = productList.filter((product) =>
-                            answer.toLowerCase().includes(product.toLowerCase())
-                          );
+                        // 상품 리스트에서 답변에 포함된 상품 찾기
+                        const foundProduct = productList.find((product) =>
+                          answer.toLowerCase().includes(product.toLowerCase())
+                        );
 
-                          if (foundItems.length > 0) {
-                            // 가장 긴 일치 항목 선택 (더 구체적인 항목일 가능성이 높음)
-                            detectedItem = foundItems.reduce(
-                              (longest, current) => (current.length > longest.length ? current : longest),
-                              ''
-                            );
-                          }
-                        } else {
-                          // 정규식으로 추출한 텍스트가 있을 경우, 가장 유사한 상품 찾기
-                          const similarItems = productList.filter((product) => {
-                            // 추출된 텍스트와 상품명 사이의 유사도 검사
-                            // 간단한 포함 관계 체크
-                            return (
-                              detectedItem.toLowerCase().includes(product.toLowerCase()) ||
-                              product.toLowerCase().includes(detectedItem.toLowerCase())
-                            );
-                          });
-
-                          if (similarItems.length > 0) {
-                            // 가장 유사한 항목 선택
-                            detectedItem = similarItems.reduce((closest, current) => {
-                              // 더 짧은 길이 차이를 가진 항목 선택
-                              const currentDiff = Math.abs(current.length - detectedItem.length);
-                              const closestDiff = Math.abs(closest.length - detectedItem.length);
-                              return currentDiff < closestDiff ? current : closest;
-                            }, similarItems[0]);
-                          }
-                        }
-                        if (match && match[1]) {
+                        // 상품을 찾았으면 간결한 형식으로 표시
+                        if (foundProduct) {
                           return (
                             <>
                               촬영하신 제품은{' '}
-                              <strong style={{ fontWeight: 'bold', fontSize: '1.1em' }}>{match[1]}</strong> 입니다.
+                              <strong style={{ fontWeight: 'bold', fontSize: '1.1em' }}>{foundProduct}</strong> 입니다.
                             </>
                           );
                         }
-                        // 매칭이 안되면 원본 텍스트 반환
+
+                        // 상품을 찾지 못했으면 원본 텍스트에서 불필요한 부분 제거
+                        // "이 상품은" 또는 "상품은" 다음부터 첫 번째 문장 끝까지만 추출
+                        const simplifiedMatch = answer.match(
+                          /(?:이 상품은|상품은|촬영하신 제품은)\s*(.*?)(?:입니다|보입니다|보며)/
+                        );
+                        if (simplifiedMatch && simplifiedMatch[1]) {
+                          return (
+                            <>
+                              촬영하신 제품은{' '}
+                              <strong style={{ fontWeight: 'bold', fontSize: '1.1em' }}>
+                                {simplifiedMatch[1].trim()}
+                              </strong>{' '}
+                              입니다.
+                            </>
+                          );
+                        }
+
+                        // 위 방법으로도 추출 실패 시 원본 텍스트 반환
                         return answer;
                       })()}
                     </p>

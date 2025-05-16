@@ -16,6 +16,7 @@ function FashionPage() {
   const imageGridRefs = useRef([]); // 아이템 스와이프
   const isDraggingRef = useRef(false);
   const [likedMap, setLikedMap] = useState({});
+  const [statusText, setStatusText] = useState('');
 
   // 이미지 그리드 참조 설정
   const setImageGridRef = (index, element) => {
@@ -124,32 +125,16 @@ function FashionPage() {
 
   // 처음부터 다시하기 (카메라 페이지로 이동)
   const handleResetAndGoCamera = () => {
-    if (!window.confirm('새로운 상품을 촬영하시겠습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/camera');
-  };
-
-  // 메인으로 돌아가기
-  const handleGoHome = () => {
-    if (!window.confirm('메인 화면으로 돌아가시겠 습니까?')) {
-      return; // 사용자가 취소를 누르면 함수 종료
-    }
-    navigate('/main');
+    setModalType('reset');
+    setModalMessage('새로운 상품을 촬영하시겠습니까?');
+    setShowModal(true);
   };
 
   // 공통 추천 요청 함수 (초기 로드 및 재요청에 모두 사용)
   const fetchRecommendation = async (isRetry = false) => {
     // 재요청인 경우에만 확인 창 표시
-    if (isRetry) {
-      const userConfirmed = window.confirm('다른 코디 추천을 진행하시겠습니까?');
-      if (!userConfirmed) {
-        return false; // 사용자가 취소를 누르면 함수 종료하고 false 반환
-      }
-    }
-
     try {
-      setIsLoading(true); // 로딩 시작
+      setIsLoading(true);
       const token = sessionStorage.getItem('accessToken');
       if (!token) {
         alert('로그인이 필요한 서비스입니다.');
@@ -160,94 +145,94 @@ function FashionPage() {
       // 재요청인 경우에만 세션 스토리지 및 상태 초기화
       if (isRetry) {
         sessionStorage.removeItem('likedItemsMap');
-        setLikedMap({}); // 상태도 초기화
+        setLikedMap({});
       }
 
       // 세션스토리지에서 이미지 URL 가져오기
       const imageUrl = sessionStorage.getItem('capturedImageUrl');
-
       if (!imageUrl) {
         alert('이미지 정보가 없습니다. 처음부터 다시 시작해주세요.');
         navigate('/camera');
         return false;
       }
 
-      // 추천 요청 보내기
-      const recommendRes = await api.post(
-        '/api/recommend/v1/generator/',
-        { image_url: imageUrl },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // 재시도 관련 변수
+      let retryCount = 0;
+      const maxRetries = 3;
+      let success = false;
+      console.log('재시도 로직 시작: 최대 시도 횟수 =', maxRetries);
 
-      // 결과 유효성 검사
-      if (!isValidRecommendationResult(recommendRes.data)) {
-        // 유효하지 않은 결과면 자동 재시도 (최대 3번)
-        let retryCount = 0;
-        const maxRetries = 3;
-        let validResult = null;
-
-        while (retryCount < maxRetries) {
-          console.log(`❌ 유효하지 않은 추천 결과, 자동 재시도 중... (${retryCount + 1}/${maxRetries})`);
-
-          // 지수 백오프 적용 (1초, 2초, 4초...)
-          const delay = 1000 * Math.pow(2, retryCount);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-
-          try {
-            const retryRes = await api.post(
-              '/api/recommend/v1/generator/',
-              { image_url: imageUrl },
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (isValidRecommendationResult(retryRes.data)) {
-              validResult = retryRes;
-              console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries})`);
-              break;
-            }
-            // 여기서 return false; 제거 (오타였고, 함수를 종료시키는 문제가 있음)
-          } catch (error) {
-            console.error(`❌ 재시도 요청 실패 (${retryCount + 1}/${maxRetries}):`, error);
+      while (retryCount <= maxRetries && !success) {
+        try {
+          // 재시도 중인 경우 메시지 표시
+          if (retryCount > 0) {
+            console.log(`재시도 ${retryCount} 진행 중... (백오프 지연: ${1000 * Math.pow(2, retryCount - 1)}ms)`);
+            setStatusText(`상품 인식 재시도 중... (${retryCount}/${maxRetries})`);
+            // 지수 백오프 적용
+            const delay = 1000 * Math.pow(2, retryCount - 1);
+            await new Promise((resolve) => setTimeout(resolve, delay));
           }
 
-          retryCount++;
-        }
+          // 추천 요청 보내기
+          const recommendRes = await api.post(
+            '/api/recommend/v1/generator/',
+            { image_url: imageUrl },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
 
-        if (validResult) {
-          // 유효한 결과를 찾았으면 그것을 사용
-          sessionStorage.setItem('recommendationData', JSON.stringify(validResult.data));
-          setRecommendations(validResult.data.product_combinations);
-          setLikedMap(new Array(validResult.data.product_combinations.length).fill(false));
-          return true; // 성공 반환
-        } else {
-          // 모든 재시도 실패 시 알림
-          alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
-          navigate('/camera'); // 카메라 페이지로 이동
-          return false; // 실패 반환
+          // 결과 유효성 검사
+          if (isValidRecommendationResult(recommendRes.data)) {
+            // 유효한 결과면 바로 사용
+            sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
+            setRecommendations(recommendRes.data.product_combinations);
+            setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
+            console.log(`✅ 유효한 추천 결과를 받았습니다. (시도: ${retryCount + 1}/${maxRetries + 1})`);
+            // setStatusText('상품 인식 성공!');
+            success = true;
+            return true;
+          } else {
+            console.log(`❌ 유효하지 않은 추천 결과, 재시도 필요... (${retryCount + 1}/${maxRetries + 1})`);
+            retryCount++;
+          }
+        } catch (error) {
+          console.error(`❌ 시도 ${retryCount + 1}/${maxRetries + 1} 실패:`, error);
+          console.log('오류 상태 코드:', error.response?.status);
+          console.log('오류 메시지:', error.message);
+
+          // 마지막 시도가 아니면 재시도
+          if (retryCount < maxRetries) {
+            retryCount++;
+          } else {
+            break;
+          }
         }
-      } else {
-        // 유효한 결과면 바로 사용
-        sessionStorage.setItem('recommendationData', JSON.stringify(recommendRes.data));
-        setRecommendations(recommendRes.data.product_combinations);
-        setLikedMap(new Array(recommendRes.data.product_combinations.length).fill(false));
-        return true; // 성공 반환
       }
+
+      // 모든 재시도 실패 시
+      if (!success) {
+        setStatusText('상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.');
+        alert('유효한 추천을 생성하지 못했습니다. 다른 이미지로 시도해보세요.');
+        navigate('/fashion');
+        return false;
+      }
+
+      return true;
     } catch (error) {
       console.error(`❌ ${isRetry ? '재추천' : '초기 추천'} 요청 실패:`, error);
-      alert(`추천을 ${isRetry ? '다시 ' : ''}받는 중 오류가 발생했습니다.`);
-      if (!isRetry) {
-        navigate('/camera'); // 초기 로드 실패 시에만 카메라 페이지로 이동
-      }
-      return false; // 실패 반환
+      alert('상품 인식에 실패했습니다. 다른 이미지로 다시 시도해주세요.');
+      navigate('/fashion');
+      return false;
     } finally {
       setIsLoading(false);
+      console.log(`재시도 로직 종료`);
     }
   };
 
   // 다른 코디 추천받기 버튼 클릭 핸들러
-  const handleRetryRecommendation = async () => {
-    await fetchRecommendation(true);
-    // 결과 처리는 fetchRecommendation 내부에서 이루어짐
+  const handleRetryRecommendation = () => {
+    setModalType('retry');
+    setModalMessage('다른 코디 추천을 진행하시겠습니까?');
+    setShowModal(true);
   };
 
   useEffect(() => {
@@ -297,10 +282,13 @@ function FashionPage() {
 
       // 찜이 되어 있는 경우에만 확인 창 표시
       if (isCurrentlyLiked) {
-        const confirmUnlike = window.confirm('찜을 해제하시겠습니까?');
-        if (!confirmUnlike) {
-          return;
-        }
+        // 현재 처리 중인 추천 ID 저장
+        sessionStorage.setItem('currentUnlikeId', recommendationId);
+        // 모달로 대체
+        setModalType('unlike');
+        setModalMessage('찜을 해제하시겠습니까?');
+        setShowModal(true);
+        return; // 모달 응답을 기다리기 위해 여기서 함수 종료
       }
 
       /// 상태 먼저 업데이트 (낙관적 UI 업데이트)
@@ -392,6 +380,90 @@ function FashionPage() {
     });
   };
 
+  // 모달 관련 상태
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(''); // 'retry', 'reset', 'unlike' 등
+  const [modalMessage, setModalMessage] = useState('');
+
+  const ConfirmModal = () => {
+    const handleConfirm = () => {
+      setShowModal(false);
+
+      // 모달 타입에 따라 다른 동작 수행
+      if (modalType === 'retry') {
+        // 다른 코디 추천받기 로직
+        fetchRecommendation(true);
+      } else if (modalType === 'reset') {
+        // 처음부터 다시하기 로직
+        navigate('/camera');
+      } else if (modalType === 'home') {
+        // 메인으로 돌아가기 로직
+        navigate('/main');
+      } else if (modalType === 'unlike') {
+        // 찜 해제 로직
+        const recommendationId = sessionStorage.getItem('currentUnlikeId');
+        if (recommendationId) {
+          // 찜 해제 로직 실행
+          const newLikedMap = { ...likedMap };
+          newLikedMap[recommendationId] = false;
+          setLikedMap(newLikedMap);
+          sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
+
+          // 서버에 찜 상태 업데이트
+          const token = sessionStorage.getItem('accessToken');
+          api
+            .post(
+              '/api/picked/v1/recommend_picked/toggle',
+              { recommendation_id: recommendationId },
+              { headers: { Authorization: `Bearer ${token}` } }
+            )
+            .catch((error) => {
+              console.error('❌ 찜 상태 업데이트 실패:', error);
+              fetchLikedItems();
+            });
+        }
+      }
+    };
+
+    // 모달이 표시될 때 body에 클래스 추가
+    useEffect(() => {
+      if (showModal) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+
+      return () => {
+        document.body.classList.remove('modal-open');
+      };
+    }, [showModal]);
+
+    return showModal ? (
+      <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>확인</h3>
+            <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+              X
+            </button>
+          </div>
+          <div className="modal-body">
+            <p>{modalMessage}</p>
+          </div>
+          <div className="modal-footer">
+            <button className="modal-cancel-btn" onClick={() => setShowModal(false)}>
+              취소
+            </button>
+            <button className="modal-confirm-btn" onClick={handleConfirm}>
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null;
+  };
+
+  //메인 랜더링 시작
   return (
     <div className="fashion-container">
       <div className="content">
@@ -454,16 +526,16 @@ function FashionPage() {
             <button className="action-button" onClick={handleResetAndGoCamera} disabled={isLoading}>
               처음부터 다시하기
             </button>
-            <button className="action-button" onClick={handleGoHome} disabled={isLoading}>
-              메인으로 돌아가기
-            </button>
             {isLoading && (
               <div className="loading-overlay">
                 <div className="spinner"></div>
                 <p>새로운 코디를 찾고 있어요...</p>
+                <br />
+                {statusText && <p className="status-message">{statusText}</p>}
               </div>
             )}
           </div>
+          <ConfirmModal />
         </div>
       </div>
     </div>
