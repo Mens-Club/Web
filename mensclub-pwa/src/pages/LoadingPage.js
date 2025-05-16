@@ -321,7 +321,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
             // 모든 재시도 실패 시 처리
             setRetryCount(0);
             setRetryMessage('');
-            setModalMessage('상품 인식에 실패했습니다. 다시한번 시도해주세요.🙏');
+            setModalMessage('상품 인식에 실패했습니다. \n다시한번 시도해주세요.🙏');
             setModalOpen(true);
 
             // 실패 시 세션 스토리지 정리 (추가)
