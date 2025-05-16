@@ -59,36 +59,37 @@ const LoadingPage = ({ isEmbedded = false }) => {
     return () => clearInterval(interval);
   }, []);
 
-  //   useEffect(() => {
-  //   if (isEmbedded) return;
+//   useEffect(() => {
+//   if (isEmbedded) return;
 
-  //   if (isFromCamera) {
-  //     analyzeImage();
-  //   } else {
-  //     // 🔥 문제 원인: returnPath가 무조건 '/' 또는 '/camera'가 될 수 있음
-  //     if (location.state?.dataToPass) {
-  //       sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
-  //     }
+//   if (isFromCamera) {
+//     analyzeImage();
+//   } else {
+//     // 🔥 문제 원인: returnPath가 무조건 '/' 또는 '/camera'가 될 수 있음
+//     if (location.state?.dataToPass) {
+//       sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
+//     }
 
-  //     // ✅ 해결: returnPath가 명확히 지정되어 있는 경우에만 타이머 작동
-  //     if (returnPath && returnPath !== '/camera') {
-  //       const timer = setTimeout(() => {
-  //         const dataToPass = sessionStorage.getItem('tempDataToPass')
-  //           ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
-  //           : {};
+//     // ✅ 해결: returnPath가 명확히 지정되어 있는 경우에만 타이머 작동
+//     if (returnPath && returnPath !== '/camera') {
+//       const timer = setTimeout(() => {
+//         const dataToPass = sessionStorage.getItem('tempDataToPass')
+//           ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
+//           : {};
 
-  //         sessionStorage.removeItem('tempDataToPass');
+//         sessionStorage.removeItem('tempDataToPass');
 
-  //         navigate(returnPath, {
-  //           state: dataToPass,
-  //           replace: true,
-  //         });
-  //       }, 1200); // 또는 loadingTime
+//         navigate(returnPath, {
+//           state: dataToPass,
+//           replace: true,
+//         });
+//       }, 1200); // 또는 loadingTime
 
-  //       return () => clearTimeout(timer);
-  //     }
-  //   }
-  // }, [navigate, isFromCamera, returnPath, location.state, location.search, isEmbedded]);
+//       return () => clearTimeout(timer);
+//     }
+//   }
+// }, [navigate, isFromCamera, returnPath, location.state, location.search, isEmbedded]);
+
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
@@ -394,7 +395,24 @@ const LoadingPage = ({ isEmbedded = false }) => {
         message={modalMessage}
       />
     </div>
-  );
+
+    {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
+  </div>
+
+  {/* 모달 */}
+  <ConfirmModal
+    isOpen={modalOpen}
+    onCancel={() => setModalOpen(false)}
+    onConfirm={() => {
+      setModalOpen(false);
+      navigate('/camera');
+    }}
+    title="추천 실패"
+    message={modalMessage}
+  />
+</div>
+
+);
 };
 
 export default LoadingPage;

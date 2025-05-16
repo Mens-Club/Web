@@ -143,7 +143,7 @@ function CameraPage() {
     <div className="container">
       <div className="camera-content">
         <div className="title-wrapper">
-          <h1>오늘 입을 옷을 촬영해주세요 📸</h1>
+          <h1>AI 스타일링 코디 추천 받기</h1>
         </div>
         <div className="upload-box">
           {/* 초기 상태: SVG 카메라 버튼 */}

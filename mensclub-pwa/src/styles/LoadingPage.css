@@ -41,7 +41,7 @@
   align-items: center;
 }
 
-.loading-title {
+.camera-title {
   font-size: 2rem;
   font-weight: 700;
   color: #111;
@@ -77,18 +77,49 @@
   opacity: 0.9;
 }
 
+.camera-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.basic-loading-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+
 @media (max-width: 480px) {
   .loading-content {
-    margin-top: 80px;
+    /* margin-top: 80px; */
+    transform: translateX(-100px) translateY(0);
   }
   .loading-title {
     font-size: 1.2rem;
   }
-  .icon-grid {
+  .icon-grid-camera {
+    grid-template-columns: repeat(3, 64px);
+    grid-template-rows: repeat(2, 64px);
+    gap: 10px;
+
+  }
+  .icon-grid-basic {
     grid-template-columns: repeat(3, 48px);
     grid-template-rows: repeat(2, 48px);
     gap: 10px;
+    transform: translateX(+100px); /* 오른쪽으로 이동 */
   }
+  .icon-grid {
+  display: grid;
+  gap: 16px;
+  background: none;
+  }
+
   .icon-cell {
     width: 48px;
     height: 48px;
@@ -97,5 +128,11 @@
   .icon-cell img {
     width: 28px;
     height: 28px;
+    
   }
+  .basic-loading-title {
+  font-size: 20px;
+  margin-top: -200px;
+  transform: translateX(+100px) translateY(0);
+}
 }
