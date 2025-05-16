@@ -217,7 +217,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
           const uploadController = new AbortController();
           const uploadTimeoutId = setTimeout(() => uploadController.abort(), 15000); // 15초 타임아웃
 
-          const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
+          const uploadRes = await fetch('https://mensclub-backend.store/api/account/v1/upload-image/', {
             method: 'POST',
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,
@@ -236,7 +236,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
           const recommendController = new AbortController();
           const recommendTimeoutId = setTimeout(() => recommendController.abort(), 20000); // 20초 타임아웃
 
-          const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
+          const recommendRes = await fetch('https://mensclub-backend.store/api/recommend/v1/generator/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

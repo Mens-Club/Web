@@ -25,4 +25,4 @@ services:
 
 networks:
   mensclub-networks:
-    external: True
+    external: true

@@ -110,7 +110,7 @@ STORAGES = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3001",  # React 개발 서버 주소
+    "https://mensclub-ai.store",  # React 개발 서버 주소
 ]
 
 CORS_ALLOW_CREDENTIALS = True
