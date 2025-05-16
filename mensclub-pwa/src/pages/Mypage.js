@@ -69,16 +69,24 @@ function MyPage() {
         if (!token) {
           console.error('❌ 토큰이 없습니다.');
           setIsLoading(false);
-          navigate('/');
+          // 수정: 토큰이 없을 때 사용자에게 알림 후 리다이렉트
+          alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+          navigate('/', { replace: true }); // replace: true로 설정하여 브라우저 히스토리에 남지 않도록 함
           return;
         }
 
         // 로딩 상태 활성화 (LoadingPage 컴포넌트 표시)
         setIsLoading(true);
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+
         const res = await api.get('/api/account/v1/user_info/', {
           headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId); // 타임아웃 제거
         setIsLoading(false);
 
         const { username, height, weight, user_id } = res.data;
@@ -355,7 +363,7 @@ function MyPage() {
   return (
     <div className="container">
       {isLoading ? (
-        <LoadingPage />
+        <LoadingPage isEmbedded={true} />
       ) : (
         <div className="main-content">
           <div className="profile-section">
