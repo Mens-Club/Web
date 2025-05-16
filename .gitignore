@@ -33,6 +33,7 @@ MANIFEST
 *.manifest
 *.spec
 
+cheorish-lab-897ce33e2b4f.json
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
