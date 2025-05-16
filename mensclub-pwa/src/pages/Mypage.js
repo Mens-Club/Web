@@ -15,7 +15,8 @@ function MyPage() {
   const [filter, setFilter] = useState({ order: 'newest', style: '' });
 
   const [likedMap, setLikedMap] = useState({});
-  const [page, setPage] = useState(0);
+  const outfitsPerPage = 4;
+  const [visibleCount, setVisibleCount] = useState(outfitsPerPage);
 
   const [aiOutfits, setAiOutfits] = useState([]);
   const [clubOutfits, setClubOutfits] = useState([]);
@@ -54,12 +55,8 @@ function MyPage() {
     }
   };
 
-  const outfitsPerPage = 4;
-  const displayedOutfits = (tab === 'ai' ? aiOutfits : clubOutfits).slice(
-    page * outfitsPerPage,
-    (page + 1) * outfitsPerPage
-  );
-  const pageCount = Math.ceil((tab === 'ai' ? aiOutfits.length : clubOutfits.length) / outfitsPerPage);
+  const allOutfits = tab === 'ai' ? aiOutfits : clubOutfits;
+  const displayedOutfits = allOutfits.slice(0, visibleCount);
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
@@ -205,7 +202,7 @@ function MyPage() {
       setIsLoading(true);
       getOutfits(tab).finally(() => {
         setIsLoading(false);
-        setPage(0);
+        setVisibleCount(outfitsPerPage);
       });
     }
   }, [userInfo.name, tab, filter]);
@@ -319,14 +316,14 @@ function MyPage() {
 
     // 스크롤 방향과 페이지 전환 로직
     if (Math.abs(scrollDifference) > scrollThreshold) {
-      if (scrollDifference > 0 && page > 0) {
+      if (scrollDifference > 0 && visibleCount > outfitsPerPage) {
         // 오른쪽으로 드래그 (이전 페이지)
         console.log('이전 페이지로 이동');
-        setPage((prev) => Math.max(0, prev - 1));
-      } else if (scrollDifference < 0 && page < pageCount - 1) {
+        setVisibleCount((prev) => Math.max(outfitsPerPage, prev - outfitsPerPage));
+      } else if (scrollDifference < 0 && visibleCount < allOutfits.length) {
         // 왼쪽으로 드래그 (다음 페이지)
         console.log('다음 페이지로 이동');
-        setPage((prev) => Math.min(pageCount - 1, prev + 1));
+        setVisibleCount((prev) => Math.min(allOutfits.length, prev + outfitsPerPage));
       }
     }
 
@@ -537,11 +534,16 @@ function MyPage() {
                   })}
                 </div>
 
-                <div className="pagination-dots">
-                  {Array.from({ length: pageCount }).map((_, i) => (
-                    <span key={i} className={`dot ${i === page ? 'active' : ''}`} onClick={() => setPage(i)}></span>
-                  ))}
-                </div>
+                {visibleCount < allOutfits.length && (
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <button
+                      className="more-button"
+                      onClick={() => setVisibleCount((prev) => Math.min(prev + outfitsPerPage, allOutfits.length))}
+                    >
+                      SHOW MORE ({Math.ceil(visibleCount / outfitsPerPage)}/{Math.ceil(allOutfits.length / outfitsPerPage)})
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <div>

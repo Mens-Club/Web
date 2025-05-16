@@ -15,8 +15,8 @@ function BottomNav() {
         <ul className="nav-items">
           <li>
             <NavLink to="/camera" className="nav-item">
-              <i className="fas fa-camera"></i>
-              <span>카메라</span>
+              <i className="fas fa-robot"></i>
+              <span>AI 스타일링</span>
             </NavLink>
           </li>
           <li>
