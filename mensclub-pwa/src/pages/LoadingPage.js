@@ -301,27 +301,35 @@ const LoadingPage = ({ isEmbedded = false }) => {
  return (
 <div className="loading-container">
   <div className="loading-content">
-    {/* 타이틀 조건 분기 */}
-    {loadingMessage ? (
-      <div className="loading-title">{loadingMessage}</div>
-    ) : isFromCamera ? (
-      <div className="camera-title">
-        <span dangerouslySetInnerHTML={{ __html: userName }}></span>님의 <br />
-        코디는…
+    {/* 🔻 여기서부터 문구 + 아이콘을 감싸는 컨테이너 분기 */}
+    {isFromCamera ? (
+      <div className="camera-loading-box">
+        <div className="camera-title">
+          <span dangerouslySetInnerHTML={{ __html: userName }}></span>님의 <br />
+          코디는…
+        </div>
+        <div className="icon-grid icon-grid-camera">
+          {icons.map((src, idx) => (
+            <div className="icon-cell" key={idx}>
+              <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+            </div>
+          ))}
+        </div>
       </div>
     ) : (
-      <div className="basic-loading-title">로딩중...</div>
+      <div className="mypage-loading-box">
+        <div className="basic-loading-title">로딩중...</div>
+        <div className="icon-grid icon-grid-basic">
+          {icons.map((src, idx) => (
+            <div className="icon-cell" key={idx}>
+              <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+            </div>
+          ))}
+        </div>
+      </div>
     )}
 
-    {/* 아이콘 그리드도 상황에 따라 클래스 분리 */}
-    <div className={`icon-grid ${isFromCamera ? 'icon-grid-camera' : 'icon-grid-basic'}`} id="iconGrid">
-      {icons.map((src, idx) => (
-        <div className="icon-cell" key={idx}>
-          <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
-        </div>
-      ))}
-    </div>
-
+    {/* 재시도 메시지 */}
     {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
   </div>
 
@@ -337,8 +345,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
     message={modalMessage}
   />
 </div>
-
-);
+ );
 };
 
 export default LoadingPage;
