@@ -8,7 +8,6 @@
   margin: 0 auto;
   width: 100%;
   height: 100vh;
-  transform: translateY(-150px);
 }
 
 .back-btn {
@@ -98,10 +97,16 @@
 @media (max-width: 480px) {
   .loading-content {
     /* margin-top: 80px; */
-    transform: translateX(-100px) translateY(100px);
+    /* 여기는 카메라 페이지 반응형  */
+    transform: translateX(-100px) translateY(0px);
   }
   .loading-title {
     font-size: 1.2rem;
+  }
+  .icon-grid {
+  display: grid;
+  gap: 16px;
+  background: none;
   }
   .icon-grid-camera {
     grid-template-columns: repeat(3, 64px);
@@ -115,12 +120,6 @@
     gap: 10px;
     transform: translateX(+100px); /* 오른쪽으로 이동 */
   }
-  .icon-grid {
-  display: grid;
-  gap: 16px;
-  background: none;
-  }
-
   .icon-cell {
     width: 48px;
     height: 48px;
