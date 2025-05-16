@@ -299,48 +299,45 @@ const LoadingPage = ({ isEmbedded = false }) => {
   };
 
  return (
-  <div className="loading-container">
-    <div className="loading-content">
-      <div
-        className={`loading-title ${
-          !loadingMessage && !isFromCamera ? 'only-loading' : ''
-        }`}
-      >
-        {loadingMessage ? (
-          loadingMessage
-        ) : isFromCamera ? (
-          <>
-            <span dangerouslySetInnerHTML={{ __html: userName }}></span>님의 <br />
-            코디는…
-          </>
-        ) : (
-          '로딩중...'
-        )}
+<div className="loading-container">
+  <div className="loading-content">
+    {/* 타이틀 조건 분기 */}
+    {loadingMessage ? (
+      <div className="loading-title">{loadingMessage}</div>
+    ) : isFromCamera ? (
+      <div className="camera-title">
+        <span dangerouslySetInnerHTML={{ __html: userName }}></span>님의 <br />
+        코디는…
       </div>
+    ) : (
+      <div className="basic-loading-title">로딩중...</div>
+    )}
 
-      <div className="icon-grid" id="iconGrid">
-        {icons.map((src, idx) => (
-          <div className="icon-cell" key={idx}>
-            <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
-          </div>
-        ))}
-      </div>
-
-      {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
+    {/* 아이콘 그리드도 상황에 따라 클래스 분리 */}
+    <div className={`icon-grid ${isFromCamera ? 'icon-grid-camera' : 'icon-grid-basic'}`} id="iconGrid">
+      {icons.map((src, idx) => (
+        <div className="icon-cell" key={idx}>
+          <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+        </div>
+      ))}
     </div>
 
-    {/* 모달 컴포넌트 */}
-    <ConfirmModal
-      isOpen={modalOpen}
-      onCancel={() => setModalOpen(false)}
-      onConfirm={() => {
-        setModalOpen(false);
-        navigate('/camera');
-      }}
-      title="추천 실패"
-      message={modalMessage}
-    />
+    {retryCount > 0 && <div className="retry-message">{retryMessage}</div>}
   </div>
+
+  {/* 모달 */}
+  <ConfirmModal
+    isOpen={modalOpen}
+    onCancel={() => setModalOpen(false)}
+    onConfirm={() => {
+      setModalOpen(false);
+      navigate('/camera');
+    }}
+    title="추천 실패"
+    message={modalMessage}
+  />
+</div>
+
 );
 };
 
