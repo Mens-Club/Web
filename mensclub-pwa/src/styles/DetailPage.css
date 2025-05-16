@@ -128,6 +128,23 @@
   margin-bottom: 20px;
 }
 
+.product-link {
+  display: inline-block;
+  padding: 8px 18px;
+  margin-top: 5px;
+  background: #a18aff; /* 연보라(라일락) */
+  color: #fff;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 350;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(161, 138, 255, 0.1);
+}
+.product-link:hover {
+  background: #7b5ff7;
+  color: #fff;
+}
+
 .brand-row {
   display: flex;
   align-items: center;

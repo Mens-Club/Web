@@ -157,7 +157,7 @@ function AppWithNav() {
               </PageWrapper>
             }
           />
-        <Route
+          <Route
             path="/loading"
             element={
               <PageWrapper>
@@ -174,7 +174,6 @@ function AppWithNav() {
             }
           />
           <Route path="/social-callback" element={<SocialLoginCallback />} />
-
         </Routes>
       </AnimatePresence>
 

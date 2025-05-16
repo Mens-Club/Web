@@ -6,17 +6,20 @@ import api from '../api/axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import LoadingPage from './LoadingPage';
 
 function MyPage() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState({ email: '', height: null, weight: null });
   const [tab, setTab] = useState('ai');
   const [filter, setFilter] = useState({ order: 'newest', style: '' });
-  const [aiOutfits, setAiOutfits] = useState([]);
-  const [clubOutfits, setClubOutfits] = useState([]);
+
   const [likedMap, setLikedMap] = useState({});
   const [page, setPage] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [aiOutfits, setAiOutfits] = useState([]);
+  const [clubOutfits, setClubOutfits] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // 초기 로딩 상태는 true로 설정
 
   const isDraggingRef = useRef(false);
   const startXRef = useRef(0);
@@ -31,8 +34,6 @@ function MyPage() {
     if (tab === 'ai') {
       // AI 탭의 경우
       const recommendationId = item.recommendation?.id;
-      console.log('클릭한 아이템:', item);
-      console.log('추천 ID:', recommendationId);
 
       if (recommendationId) {
         navigate(`/product-detail/${recommendationId}?recommendationId=${recommendationId}&source=mypage&tab=ai`);
@@ -60,92 +61,6 @@ function MyPage() {
   );
   const pageCount = Math.ceil((tab === 'ai' ? aiOutfits.length : clubOutfits.length) / outfitsPerPage);
 
-  const getOutfits = async () => {
-    const { order, style } = filter;
-    const name = userInfo.name;
-    const token = sessionStorage.getItem('accessToken');
-
-    if (!name) return;
-
-    try {
-      // 먼저 현재 사용자 정보를 가져옴
-      const userResponse = await api.get('/api/account/v1/user_info/', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const user_id = userResponse.data.user_id; // 백엔드에서 반환한 사용자 ID
-      let res;
-      const headers = { Authorization: `Bearer ${token}` };
-
-      if (tab === 'ai') {
-        // AI 탭의 경우
-
-        if (order === 'newest' || order === 'oldest') {
-          res = await api.get('/api/picked/v1/recommend_picked/by-time/', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { user_id, order },
-          });
-        } else if (order === 'high' || order === 'low') {
-          res = await api.get('/api/picked/v1/recommend_picked/by-price/', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { user_id, sort: order },
-          });
-        } else if (style === '미니멀' || style === '캐주얼') {
-          res = await api.get('/api/picked/v1/recommend_picked/by-style/', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { user_id, style },
-          });
-        } else {
-          res = await api.get('/api/picked/v1/recommend_picked/by-time/', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { user_id, order: 'newest' },
-          });
-        }
-        console.log('AI 찜 목록 응답:', res.data);
-        setAiOutfits(res.data);
-      } else {
-        // CLUB 탭의 경우
-
-        if (order === 'newest' || order === 'oldest') {
-          res = await api.get('/api/picked/v1/main_picked/by-time/', {
-            headers,
-            params: { user_id, order },
-          });
-        } else if (order === 'high' || order === 'low') {
-          res = await api.get('/api/picked/v1/main_picked/by-price/', {
-            headers,
-            params: { user_id, sort: order },
-          });
-        } else if (style === '미니멀' || style === '캐주얼') {
-          res = await api.get('/api/picked/v1/main_picked/by-style/', {
-            headers,
-            params: { user_id, style },
-          });
-        } else {
-          res = await api.get('/api/picked/v1/main_picked/by-time/', {
-            headers,
-            params: { user_id, order: 'newest' },
-          });
-
-          console.log('📦 clubOutfits 응답 구조:', res.data); // 👈 여기 추가
-          setClubOutfits(res.data);
-        }
-
-        setClubOutfits(res.data);
-      }
-
-      const newLikedMap = {};
-      res.data.forEach((item) => {
-        newLikedMap[item.uuid || item.id || item.recommendation?.id || item.main_recommendation?.id] = true;
-      });
-      setLikedMap(newLikedMap);
-    } catch (error) {
-      console.error('❌ 아웃핏 불러오기 실패:', error);
-      console.error('에러 상세:', error.response?.data || error.message);
-    }
-    setIsLoading(false); // 로딩 종료
-  };
-
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
 
@@ -158,13 +73,16 @@ function MyPage() {
           return;
         }
 
+        // 로딩 상태 활성화 (LoadingPage 컴포넌트 표시)
+        setIsLoading(true);
+
         const res = await api.get('/api/account/v1/user_info/', {
           headers: { Authorization: `Bearer ${token}` },
         });
+        setIsLoading(false);
 
         const { username, height, weight, user_id } = res.data;
         setUserInfo({ name: username, height, weight, user_id });
-        setIsLoading(false);
       } catch (e) {
         console.error('❌ 사용자 정보 불러오기 실패', e);
         setIsLoading(false); // 중요: 에러 발생 시 로딩 상태 해제
@@ -179,17 +97,109 @@ function MyPage() {
     fetchUserInfo();
   }, [navigate]);
 
-  // 로딩 컴포넌트
-  const LoadingSpinner = () => (
-    <div className="loading-overlay">
-      <div className="spinner"></div>
-      <p>로딩 중...</p>
-    </div>
-  );
+  async function getOutfits(selectedTab = tab) {
+    const { order, style } = filter;
+    const token = sessionStorage.getItem('accessToken');
+
+    if (!userInfo.name) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // 먼저 현재 사용자 정보를 가져옴
+      const userResponse = await api.get('/api/account/v1/user_info/', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const user_id = userResponse.data.user_id;
+      const headers = { Authorization: `Bearer ${token}` };
+
+      setIsLoading(true);
+
+      let aiRes = { data: [] }; // 기본값 설정
+      let clubRes = { data: [] }; // 기본값 설정
+
+      if (selectedTab === 'ai') {
+        // AI 탭의 경우
+        if (order === 'newest' || order === 'oldest') {
+          aiRes = await api.get('/api/picked/v1/recommend_picked/by-time/', {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { user_id, order },
+          });
+        } else if (order === 'high' || order === 'low') {
+          aiRes = await api.get('/api/picked/v1/recommend_picked/by-price/', {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { user_id, sort: order },
+          });
+        } else if (style === '미니멀' || style === '캐주얼') {
+          aiRes = await api.get('/api/picked/v1/recommend_picked/by-style/', {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { user_id, style },
+          });
+        } else {
+          aiRes = await api.get('/api/picked/v1/recommend_picked/by-time/', {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { user_id, order: 'newest' },
+          });
+        }
+        console.log('AI 찜 목록 응답:', aiRes.data);
+        setAiOutfits(aiRes.data);
+      } else {
+        // CLUB 탭의 경우
+        if (order === 'newest' || order === 'oldest') {
+          clubRes = await api.get('/api/picked/v1/main_picked/by-time/', {
+            headers,
+            params: { user_id, order },
+          });
+        } else if (order === 'high' || order === 'low') {
+          clubRes = await api.get('/api/picked/v1/main_picked/by-price/', {
+            headers,
+            params: { user_id, sort: order },
+          });
+        } else if (style === '미니멀' || style === '캐주얼') {
+          clubRes = await api.get('/api/picked/v1/main_picked/by-style/', {
+            headers,
+            params: { user_id, style },
+          });
+        } else {
+          clubRes = await api.get('/api/picked/v1/main_picked/by-time/', {
+            headers,
+            params: { user_id, order: 'newest' },
+          });
+        }
+        console.log('Club 찜 목록 응답:', clubRes.data);
+        setClubOutfits(clubRes.data);
+      }
+
+      // 좋아요 상태 업데이트
+      const newLikedMap = {};
+      const combinedData = [...(aiRes?.data || []), ...(clubRes?.data || [])];
+      combinedData.forEach((item) => {
+        if (item) {
+          newLikedMap[item.uuid || item.id || item.recommendation?.id || item.main_recommendation?.id] = true;
+        }
+      });
+      setLikedMap(newLikedMap);
+      sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap)); // 추가
+    } catch (error) {
+      console.error('❌ 아웃핏 불러오기 실패:', error);
+      // 에러 발생 시 빈 배열로 설정
+      setAiOutfits([]);
+      setClubOutfits([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    getOutfits();
-    setPage(0);
+    if (!isLoading && userInfo.name) {
+      setIsLoading(true);
+      getOutfits(tab).finally(() => {
+        setIsLoading(false);
+        setPage(0);
+      });
+    }
   }, [userInfo.name, tab, filter]);
 
   const toggleLike = async (item) => {
@@ -345,7 +355,7 @@ function MyPage() {
   return (
     <div className="container">
       {isLoading ? (
-        <LoadingSpinner />
+        <LoadingPage />
       ) : (
         <div className="main-content">
           <div className="profile-section">
@@ -363,7 +373,6 @@ function MyPage() {
               </Link>
             </div>
           </div>
-
           <div className="saved-outfits">
             <div className="saved-outfits-header">
               <h2>찜한 상품</h2>
@@ -457,7 +466,7 @@ function MyPage() {
                               })}
                             </div>
                           ) : (
-                            <div className="outfit-items-grid" onClick={(e) => e.stopPropagation()}>
+                            <div className="outfit-items-grid">
                               {['top', 'bottom', 'outer', 'shoes'].map((part, i) => {
                                 const s3 = item.main_recommendation?.[part]?.s3_path;
                                 return (
@@ -527,11 +536,13 @@ function MyPage() {
                 </div>
               </>
             ) : (
-              <p className="empty-message">
-                {tab === 'ai'
-                  ? 'AI가 추천한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊'
-                  : 'mens club에서 찜한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊'}
-              </p>
+              <div>
+                <p className="empty-message">
+                  {tab === 'ai'
+                    ? 'AI가 추천한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊'
+                    : 'mens club에서 찜한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊'}
+                </p>
+              </div>
             )}
           </div>
         </div>

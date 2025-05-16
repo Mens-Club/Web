@@ -7,6 +7,7 @@ import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import api from '../api/axios';
 import AutoSwiper from './AutoSwiper';
+import ConfirmModal from '../components/ConfirmModal';
 
 function MainPage() {
   const [randomRecommends, setRandomRecommends] = useState([]);
@@ -16,6 +17,9 @@ function MainPage() {
   const [styleFilter, setStyleFilter] = useState('미니멀');
   const [priceFilter, setPriceFilter] = useState('10만원대');
   const [currentImageIndexMap, setCurrentImageIndexMap] = useState({});
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const navigate = useNavigate();
 
@@ -104,8 +108,9 @@ function MainPage() {
 
       // 1. 찜 되어 있는 상태라면 삭제 확인
       if (isCurrentlyLiked) {
-        const confirm = window.confirm('찜을 해제하시겠습니까?');
-        if (!confirm) return;
+        setItemToDelete(recommendId);
+        setModalOpen(true);
+        return;
       }
 
       // 2. 서버에 토글 요청
@@ -130,6 +135,36 @@ function MainPage() {
     } catch (err) {
       console.error('❌ 찜 토글 오류:', err.response?.data || err.message);
     }
+  };
+
+  // 모달 확인 버튼 클릭 시 실행될 함수
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await api.post('/api/picked/v1/main_picked/toggle', {
+        main_recommendation_id: itemToDelete,
+      });
+
+      // 상태 업데이트
+      setLikedMap((prev) => {
+        const updated = { ...prev, [itemToDelete]: false };
+        localStorage.setItem('likedMap', JSON.stringify(updated));
+        return updated;
+      });
+
+      // 모달 닫기
+      setModalOpen(false);
+      setItemToDelete(null);
+    } catch (err) {
+      console.error('❌ 찜 토글 오류:', err.response?.data || err.message);
+      setModalOpen(false);
+      setItemToDelete(null);
+    }
+  };
+
+  // 모달 취소 버튼 클릭 시 실행될 함수
+  const handleCancelDelete = () => {
+    setModalOpen(false);
+    setItemToDelete(null);
   };
 
   // 메인 카드들 드래그 기능
@@ -304,6 +339,13 @@ function MainPage() {
         </div>
 
         <div className="coordination-section">
+          <ConfirmModal
+            isOpen={modalOpen}
+            onCancel={handleCancelDelete}
+            onConfirm={handleConfirmDelete}
+            title="찜 해제"
+            message="찜을 해제하시겠습니까?"
+          />
           <div className="section-header">
             <h2>가격대별 추천 💶</h2>
             <div className="filter-buttons">
