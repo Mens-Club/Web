@@ -186,7 +186,7 @@ const LoadingPage = () => {
             loadingMessage
           ) : isFromCamera ? (
             <>
-              <span dangerouslySetInnerHTML={{ __html: userName }}></span>의<br />
+              <span dangerouslySetInnerHTML={{ __html: userName }}></span>의 <br />
               코디는…
             </>
           ) : (
