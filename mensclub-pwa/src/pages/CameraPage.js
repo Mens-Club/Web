@@ -25,10 +25,10 @@ function CameraPage() {
 
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
   const [isGuideOpen, setIsGuideOpen] = useState(true); // 처음엔 열려 있음
-
+  const [isGuideDismissed, setIsGuideDismissed] = useState(false);
 
   const handleCloseGuide = () => {
-    setIsGuideOpen(false);
+   setIsGuideDismissed(true); // ❗ 한번 닫으면 다시 안 뜨게
   };
 
   // 카메라가 준비되면 호출하는 콜백 함수
@@ -64,21 +64,21 @@ function CameraPage() {
   }, [cameraReady]);
 
   // 초기화 함수 수정
-  // const goInit = () => {
-  //   // 상태 초기화
-  //   setImgSrc(null);
-  //   setStep('init');
-  //   setStatusText('');
-  //   setLoading(false);
+  const goInit = () => {
+    // 상태 초기화
+    setImgSrc(null);
+    setStep('init');
+    setStatusText('');
+    setLoading(false);
 
-  //   // 세션 스토리지 정리 - 더 철저하게
-  //   sessionStorage.removeItem('imgSrc');
-  //   sessionStorage.removeItem('cameraStep');
-  //   sessionStorage.removeItem('recommendResult');
-  //   sessionStorage.removeItem('capturedImageUrl');
-  //   sessionStorage.removeItem('captureSuccess'); // 추가: 캡처 성공 플래그 제거
-  //   sessionStorage.removeItem('analysisCompleted'); // 추가: 분석 완료 플래그 제거
-  // };
+    // 세션 스토리지 정리 - 더 철저하게
+    sessionStorage.removeItem('imgSrc');
+    sessionStorage.removeItem('cameraStep');
+    sessionStorage.removeItem('recommendResult');
+    sessionStorage.removeItem('capturedImageUrl');
+    sessionStorage.removeItem('captureSuccess'); // 추가: 캡처 성공 플래그 제거
+    sessionStorage.removeItem('analysisCompleted'); // 추가: 분석 완료 플래그 제거
+  };
 
   // 재촬영
   const retake = () => {
@@ -115,19 +115,11 @@ function CameraPage() {
   };
 
   useEffect(() => {
-
-    const hasSeenGuide = localStorage.getItem('hasSeenCameraGuide');
-
     const saved = sessionStorage.getItem('recommendResult');
     if (saved) {
       setRecommendResult(JSON.parse(saved));
       setStep('analyzed');
       sessionStorage.removeItem('recommendResult');
-
-    if (!hasSeenGuide) {
-    setIsGuideOpen(true);
-    localStorage.setItem('hasSeenCameraGuide', 'true');
-  }
     }
 
     // 이미지 확인 - 이 부분 추가
@@ -141,7 +133,6 @@ function CameraPage() {
       setStatusText(location.state.error);
     }
   }, [location.state]);
-
   
 
   // 패션 추천 페이지로 이동 (전체 데이터 전달)
@@ -159,8 +150,10 @@ function CameraPage() {
   return (
     <div className="container">
       <div className="camera-content">
-          {/* 모달 */}
-      <CameraGuideModal isOpen={isGuideOpen} onClose={handleCloseGuide} />
+          {/* 모달 */} 
+          {!isGuideDismissed && (
+        <CameraGuideModal isOpen={!isGuideDismissed} onClose={handleCloseGuide} />
+      )}
         <div className="title-wrapper">
           <h1>AI 스타일링 코디 추천 받기</h1>
         </div>
