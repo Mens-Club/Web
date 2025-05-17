@@ -17,7 +17,7 @@ function shuffle(array) {
 
 const LoadingPage = ({ isEmbedded = false }) => {
   const [icons, setIcons] = useState(shuffle(iconPaths));
-  const [userName, setUserName] = useState('예<sup>**</sup>');
+  const [userName, setUserName] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const isAnalyzingRef = useRef(false);

@@ -325,8 +325,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
 
-ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
-ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
+# ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
+# ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
 
 # 로그 수집
 
