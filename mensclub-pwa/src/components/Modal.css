@@ -52,26 +52,51 @@
   color: #333;
 }
 
+/* 공통 버튼 스타일 */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
 }
 
-.modal-actions button {
+/* 기본 버튼 스타일 */
+.modal-button {
   font-size: 16px;
-  border-radius: 5px;
-  border-width: 0;
-  padding: 5px 16px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: 500;
 }
 
-.modal-actions button:hover {
+/* 취소 버튼 스타일 */
+.modal-cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.modal-cancel-button:hover {
+  background-color: #e0e0e057;
+}
+
+/* 확인 버튼 스타일 */
+.modal-confirm-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.modal-confirm-button:hover {
+  background-color: #e0e0e057;
+}
+
+/* 모달 메시지 스타일 */
+.modal-message {
+  margin: 0;
+  text-align: center;
   font-size: 16px;
-  border-radius: 5px;
-  border-width: 0;
-  color: whitesmoke;
-  background-color: #333;
-  padding: 5px 16px;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre-wrap; /* 줄바꿈 처리 */
 }
 
 /* 모바일 환경에서 버튼 크기 조정 */
