@@ -25,7 +25,10 @@ function CameraPage() {
 
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
   const guideDismissedRef = useRef(false);  
-  const [isGuideOpen, setIsGuideOpen] = useState(true);
+  const [isGuideOpen, setIsGuideOpen] = useState(() => {
+  const hasSeenGuide = sessionStorage.getItem('hasSeenCameraGuide');
+  return !hasSeenGuide;
+});
 
   useEffect(() => {
   const hasSeenGuide = sessionStorage.getItem('hasSeenCameraGuide');
@@ -37,6 +40,7 @@ function CameraPage() {
 
   const handleCloseGuide = () => {
     setIsGuideOpen(false);
+    sessionStorage.setItem('hasSeenCameraGuide', 'true'); // 로그인 세션에서 한 번만
   };
 
 
@@ -163,8 +167,8 @@ function CameraPage() {
       <div className="camera-content">
           {/* 모달 */}
         {isGuideOpen && (
-  <CameraGuideModal isOpen={isGuideOpen} onClose={handleCloseGuide} />
-)}
+          <CameraGuideModal isOpen={isGuideOpen} onClose={handleCloseGuide} />
+        )}
         <div className="title-wrapper">
           <h1>AI 스타일링 코디 추천 받기</h1>
         </div>

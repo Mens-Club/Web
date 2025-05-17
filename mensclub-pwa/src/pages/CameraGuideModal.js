@@ -67,14 +67,15 @@ function CameraGuideModal({ isOpen, onClose }) {
         onMouseMove={handleMove}
         onMouseUp={handleEnd}
       >
-        <button className="guide-close-button" onClick={onClose}>×</button>
+       <button className="guide-close-button" onClick={onClose} type="button">×</button>
+
         <div className="guide-header">
           <h1>사진 촬영 가이드</h1>
         </div>
         <div className="guide-body">
           <div className="step-number">{currentStep + 1}</div>
           <h2>{currentGuide.title}</h2>
-          <p>{currentGuide.description}</p>
+          {/* <p>{currentGuide.description}</p> */}
           <div className="image-examples">
             <div className="example bad">
               <div className="label">X</div>
