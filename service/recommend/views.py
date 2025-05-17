@@ -267,8 +267,8 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("STEP 12: Celery 비동기 reasoning 요청")
             generate_reasoning_task.delay(
-                recommendation_ids=recommendation_outputs,
-                combinations=combinations,
+                recommendation_ids=[r["recommendation_id"] for r in recommendation_outputs],
+                combinations=[r["combination"] for r in recommendation_outputs],
                 season=season,
                 styles=styles,
                 original_item_info=similar_items[0]
