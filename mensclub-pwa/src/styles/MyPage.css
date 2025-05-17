@@ -511,7 +511,7 @@
   }
   
   .more-button {
-    background: #222222c5;
+    background: #666666;
     color: #fff;
     border: none;
     border-radius: 20px;
@@ -526,3 +526,13 @@
     background: #000000;
   }
   
+  @media (max-width: 480px) {
+  body {
+    padding: 0;
+    margin: 0;
+  }
+
+  .main-container {
+    padding: 12px !important;
+  }
+}
