@@ -27,10 +27,18 @@ function CameraPage() {
   const guideDismissedRef = useRef(false);  
   const [isGuideOpen, setIsGuideOpen] = useState(true);
 
+  useEffect(() => {
+  const hasSeenGuide = sessionStorage.getItem('hasSeenCameraGuide');
+  if (!hasSeenGuide) {
+    setIsGuideOpen(true);
+    sessionStorage.setItem('hasSeenCameraGuide', 'true'); // ❗ 1회 기록
+  }
+  }, []);
+
   const handleCloseGuide = () => {
-  guideDismissedRef.current = true;
-  setIsGuideOpen(false);
-};
+    setIsGuideOpen(false);
+  };
+
 
   // 카메라가 준비되면 호출하는 콜백 함수
   const handleUserMedia = useCallback(() => {
@@ -153,11 +161,10 @@ function CameraPage() {
   return (
     <div className="container">
       <div className="camera-content">
-          {/* 모달 */} 
-         {isGuideOpen && !guideDismissedRef.current && (
-            <CameraGuideModal isOpen={isGuideOpen} onClose={handleCloseGuide} />
-          )}
-
+          {/* 모달 */}
+        {isGuideOpen && (
+  <CameraGuideModal isOpen={isGuideOpen} onClose={handleCloseGuide} />
+)}
         <div className="title-wrapper">
           <h1>AI 스타일링 코디 추천 받기</h1>
         </div>
