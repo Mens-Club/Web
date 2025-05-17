@@ -34,7 +34,7 @@
 }
 
 .loading-content {
-  margin-top: 120px;
+  /* margin-top: 120px; */
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -92,7 +92,7 @@
 }
 
 .mypage-loading-box {
-  margin-top: -300px;
+  margin-top: -200px;
 }
 
 /* 📱 모바일 반응형 */
@@ -130,12 +130,12 @@
   }
 
   .camera-loading-box {
-    margin-top: -100px;
+    /* margin-top: +20px; */
     margin-left: -200px;
   }
 
   .mypage-loading-box {
-    margin-top: -50px;
+    margin-top: +100px;
     margin-left: -20px;
   }
 
