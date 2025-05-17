@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ConfirmModal from '../components/ConfirmModal';
 
 function FashionPage() {
   const navigate = useNavigate();
@@ -123,13 +124,6 @@ function FashionPage() {
     }
   };
 
-  // 처음부터 다시하기 (카메라 페이지로 이동)
-  const handleResetAndGoCamera = () => {
-    setModalType('reset');
-    setModalMessage('새로운 상품을 촬영하시겠습니까?');
-    setShowModal(true);
-  };
-
   // 공통 추천 요청 함수 (초기 로드 및 재요청에 모두 사용)
   const fetchRecommendation = async (isRetry = false) => {
     // 재요청인 경우에만 확인 창 표시
@@ -228,13 +222,6 @@ function FashionPage() {
     }
   };
 
-  // 다른 코디 추천받기 버튼 클릭 핸들러
-  const handleRetryRecommendation = () => {
-    setModalType('retry');
-    setModalMessage('다른 코디 추천을 진행하시겠습니까?');
-    setShowModal(true);
-  };
-
   useEffect(() => {
     async function fetchUserInfo() {
       try {
@@ -264,9 +251,10 @@ function FashionPage() {
   // 찜 기능 구현 부분
   //
   // 찜 토글 함수 수정 (기존 함수 대체)
+
+  // 찜 토글 함수 수정
   const toggleLike = async (e, index) => {
     e.stopPropagation();
-
     try {
       const token = sessionStorage.getItem('accessToken');
       if (!token) {
@@ -276,7 +264,6 @@ function FashionPage() {
       }
 
       const recommendationId = index;
-
       // 현재 찜 상태 확인
       const isCurrentlyLiked = likedMap[recommendationId];
 
@@ -286,6 +273,7 @@ function FashionPage() {
         sessionStorage.setItem('currentUnlikeId', recommendationId);
         // 모달로 대체
         setModalType('unlike');
+        setModalTitle('찜 해제');
         setModalMessage('찜을 해제하시겠습니까?');
         setShowModal(true);
         return; // 모달 응답을 기다리기 위해 여기서 함수 종료
@@ -323,6 +311,10 @@ function FashionPage() {
   //
 
   useEffect(() => {
+    sessionStorage.removeItem('cameraStep');
+    sessionStorage.removeItem('imgSrc'); // 추가: 이미지 데이터 정리
+    sessionStorage.removeItem('captureSuccess'); // 추가: 캡처 성공 플래그 정리
+
     try {
       const storedData = sessionStorage.getItem('recommendationData');
       if (storedData) {
@@ -384,83 +376,66 @@ function FashionPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(''); // 'retry', 'reset', 'unlike' 등
   const [modalMessage, setModalMessage] = useState('');
+  const [modalTitle, setModalTitle] = useState('');
 
-  const ConfirmModal = () => {
-    const handleConfirm = () => {
-      setShowModal(false);
+  // 모달 확인 버튼 클릭 핸들러
+  const handleConfirmModal = () => {
+    setShowModal(false);
+    // 모달 타입에 따라 다른 동작 수행
+    if (modalType === 'retry') {
+      // 다른 코디 추천받기 로직
+      fetchRecommendation(true);
+    } else if (modalType === 'reset') {
+      // 처음부터 다시하기 로직
+      navigate('/camera');
+    } else if (modalType === 'home') {
+      // 메인으로 돌아가기 로직
+      navigate('/main');
+    } else if (modalType === 'unlike') {
+      // 찜 해제 로직
+      const recommendationId = sessionStorage.getItem('currentUnlikeId');
+      if (recommendationId) {
+        // 찜 해제 로직 실행
+        const newLikedMap = { ...likedMap };
+        newLikedMap[recommendationId] = false;
+        setLikedMap(newLikedMap);
+        sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
 
-      // 모달 타입에 따라 다른 동작 수행
-      if (modalType === 'retry') {
-        // 다른 코디 추천받기 로직
-        fetchRecommendation(true);
-      } else if (modalType === 'reset') {
-        // 처음부터 다시하기 로직
-        navigate('/camera');
-      } else if (modalType === 'home') {
-        // 메인으로 돌아가기 로직
-        navigate('/main');
-      } else if (modalType === 'unlike') {
-        // 찜 해제 로직
-        const recommendationId = sessionStorage.getItem('currentUnlikeId');
-        if (recommendationId) {
-          // 찜 해제 로직 실행
-          const newLikedMap = { ...likedMap };
-          newLikedMap[recommendationId] = false;
-          setLikedMap(newLikedMap);
-          sessionStorage.setItem('likedItemsMap', JSON.stringify(newLikedMap));
-
-          // 서버에 찜 상태 업데이트
-          const token = sessionStorage.getItem('accessToken');
-          api
-            .post(
-              '/api/picked/v1/recommend_picked/toggle',
-              { recommendation_id: recommendationId },
-              { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .catch((error) => {
-              console.error('❌ 찜 상태 업데이트 실패:', error);
-              fetchLikedItems();
-            });
-        }
+        // 서버에 찜 상태 업데이트
+        const token = sessionStorage.getItem('accessToken');
+        api
+          .post(
+            '/api/picked/v1/recommend_picked/toggle',
+            { recommendation_id: recommendationId },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          .catch((error) => {
+            console.error('❌ 찜 상태 업데이트 실패:', error);
+            fetchLikedItems();
+          });
       }
-    };
+    }
+  };
 
-    // 모달이 표시될 때 body에 클래스 추가
-    useEffect(() => {
-      if (showModal) {
-        document.body.classList.add('modal-open');
-      } else {
-        document.body.classList.remove('modal-open');
-      }
+  // 모달 취소 버튼 클릭 핸들러
+  const handleCancelModal = () => {
+    setShowModal(false);
+  };
 
-      return () => {
-        document.body.classList.remove('modal-open');
-      };
-    }, [showModal]);
+  // 처음부터 다시하기 (카메라 페이지로 이동)
+  const handleResetAndGoCamera = () => {
+    setModalType('reset');
+    setModalTitle('다시 시작하기');
+    setModalMessage('새로운 상품을 촬영하시겠습니까?');
+    setShowModal(true);
+  };
 
-    return showModal ? (
-      <div className="modal-overlay" onClick={() => setShowModal(false)}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h3>확인</h3>
-            <button className="modal-close-btn" onClick={() => setShowModal(false)}>
-              X
-            </button>
-          </div>
-          <div className="modal-body">
-            <p>{modalMessage}</p>
-          </div>
-          <div className="modal-footer">
-            <button className="modal-cancel-btn" onClick={() => setShowModal(false)}>
-              취소
-            </button>
-            <button className="modal-confirm-btn" onClick={handleConfirm}>
-              확인
-            </button>
-          </div>
-        </div>
-      </div>
-    ) : null;
+  // 다른 코디 추천받기 버튼 클릭 핸들러
+  const handleRetryRecommendation = () => {
+    setModalType('retry');
+    setModalTitle('다른 코디 추천');
+    setModalMessage('다른 코디 추천을 진행하시겠습니까?');
+    setShowModal(true);
   };
 
   //메인 랜더링 시작
@@ -535,7 +510,14 @@ function FashionPage() {
               </div>
             )}
           </div>
-          <ConfirmModal />
+          {/* 커스텀 확인 모달 */}
+          <ConfirmModal
+            isOpen={showModal}
+            onCancel={handleCancelModal}
+            onConfirm={handleConfirmModal}
+            title={modalTitle}
+            message={modalMessage}
+          />
         </div>
       </div>
     </div>
