@@ -3,4 +3,5 @@ WORKDIR /app
 COPY . .
 RUN npm install && npm run build
 
+ENV WDS_SOCKET_PORT=0 
 CMD ["npm", "start"]

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import '../styles/Layout.css';
 
 function FirstPage() {
-  const backendBaseURL = 'http://localhost:8000'; // 👉 배포 시 도메인으로 수정
+  const backendBaseURL = 'https://mensclub-backend.store'; // 👉 배포 시 도메인으로 수정
 
   const handleSocialLogin = (provider) => {
     // 백엔드의 소셜 로그인 URL로 리다이렉트

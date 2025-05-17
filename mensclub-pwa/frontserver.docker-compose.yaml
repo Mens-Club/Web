@@ -1,0 +1,16 @@
+services:
+  frontend:
+    container_name: frontend
+    env_file:
+      - ./.env
+    environment:
+      - FRONT_GCR_CONTAINER=${FRONT_GCR_CONTAINER}
+    image: ${FRONT_GCR_CONTAINER}
+    ports:
+      - "3000:3000"
+    networks:
+      - mensclub-networks  
+
+networks:
+  mensclub-networks:
+    external: true
