@@ -25,6 +25,7 @@ import BodyInfoPage from './pages/BodyInfoPage.js';
 import SocialLoginCallback from './pages/SocialLoginCallback.js';
 
 import ScrollToTop from './components/ScrollToTop.js';
+import CameraGuideModal from './pages/CameraGuideModal.js';
 
 function App() {
   return (
@@ -162,6 +163,14 @@ function AppWithNav() {
             element={
               <PageWrapper>
                 <LoadingPage />
+              </PageWrapper>
+            }
+          />
+           <Route
+            path="/camera-guide"
+            element={
+              <PageWrapper>
+                <CameraGuideModal />
               </PageWrapper>
             }
           />

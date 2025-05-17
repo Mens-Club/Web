@@ -320,7 +320,6 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
 # 로그 수집
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

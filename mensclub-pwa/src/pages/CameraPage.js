@@ -3,6 +3,7 @@ import Webcam from 'react-webcam'; //웹캠 구현을 위한 라이브러리 설
 import '../styles/CameraPage.css';
 import '../styles/Layout.css';
 import { useNavigate, useLocation } from 'react-router-dom';
+import CameraGuideModal from '../pages/CameraGuideModal'; // 경로는 상황에 맞게 수정
 
 const videoConstraints = {
   width: 400,
@@ -23,6 +24,25 @@ function CameraPage() {
   const location = useLocation();
 
   const [recommendResult, setRecommendResult] = useState(null); // 추천 결과
+  const guideDismissedRef = useRef(false);  
+  const [isGuideOpen, setIsGuideOpen] = useState(() => {
+  const hasSeenGuide = sessionStorage.getItem('hasSeenCameraGuide');
+  return !hasSeenGuide;
+});
+
+  useEffect(() => {
+  const hasSeenGuide = sessionStorage.getItem('hasSeenCameraGuide');
+  if (!hasSeenGuide) {
+    setIsGuideOpen(true);
+    sessionStorage.setItem('hasSeenCameraGuide', 'true'); // ❗ 1회 기록
+  }
+  }, []);
+
+  const handleCloseGuide = () => {
+    setIsGuideOpen(false);
+    sessionStorage.setItem('hasSeenCameraGuide', 'true'); // 로그인 세션에서 한 번만
+  };
+
 
   // 카메라가 준비되면 호출하는 콜백 함수
   const handleUserMedia = useCallback(() => {
@@ -125,7 +145,10 @@ function CameraPage() {
     if (location.state?.error) {
       setStatusText(location.state.error);
     }
+
+    
   }, [location.state]);
+  
 
   // 패션 추천 페이지로 이동 (전체 데이터 전달)
   const goToFashionPage = () => {
@@ -142,6 +165,10 @@ function CameraPage() {
   return (
     <div className="container">
       <div className="camera-content">
+          {/* 모달 */}
+        {isGuideOpen && (
+          <CameraGuideModal isOpen={isGuideOpen} onClose={handleCloseGuide} />
+        )}
         <div className="title-wrapper">
           <h1>AI 스타일링 코디 추천 받기</h1>
         </div>

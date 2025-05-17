@@ -1,0 +1,176 @@
+.guide-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* background-color: rgb(192, 192, 192); */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.guide-modal-content {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+}
+
+.guide-close-button {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    padding: 0;
+}
+
+.guide-header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+}
+
+.guide-body {
+    margin-bottom: 20px;
+}
+
+.step-number {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+    background-color: #4b4b4b; /* Blue circle */
+    color: #fff;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.guide-body h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.guide-body p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.image-examples {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+}
+
+.example {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.example .label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.example.bad .label {
+    background-color: #ff3b30; /* Red */
+}
+
+.example.good .label {
+    background-color: #007aff; /* Blue */
+}
+
+.example img {
+    width: 100%;
+    height: 220px; /* Adjust as needed */
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.guide-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.guide-pagination .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #c4c4c4;
+    margin: 0 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.guide-pagination .dot.active {
+    background-color: #666666; /* Blue */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 400px) {
+    .guide-modal-content {
+        padding: 15px;
+        width: 95%;
+    }
+
+    .guide-header h1 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .step-number {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
+    }
+
+    .guide-body h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .guide-body p {
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+    .image-examples {
+        flex-direction: row;  /* ✅ row로 유지 */
+        flex-wrap: wrap;      /* ✅ 공간 부족 시 줄바꿈 허용 (선택) */
+        justify-content: center;
+    }
+
+    .example img {
+        height: 150px; /* Further reduce image size */
+        width: 120px;
+    }
+
+      .example {
+        max-width: 45%; /* 가로 두 개 나란히 */
+    }
+} 

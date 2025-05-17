@@ -109,7 +109,7 @@
   border-radius: 12px;
   text-align: center;
   width: 80%;
-  border: 1px solid #eee;
+  /* border: 1px solid #eee; */
   margin: 0 auto 24px;
 }
 
@@ -186,7 +186,7 @@
   }
 
   p {
-    font-size: 15px;
+    font-size: 12px;
     /* text-align: center; */
   }
 
