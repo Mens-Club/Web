@@ -100,7 +100,6 @@
   .loading-title {
     font-size: 1.2rem;
   }
-
   .icon-grid-camera {
     grid-template-columns: repeat(3, 64px);
     grid-template-rows: repeat(2, 64px);
@@ -139,7 +138,7 @@
     margin-top: -50px;
     margin-left: -20px;
   }
-  
+
   .retry-message {
     font-size: 14px;
     color: #888;

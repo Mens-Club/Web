@@ -8,7 +8,7 @@ function Modal({ isOpen, onClose, title, children, actions }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content">
-          {title && <h2 className="modal-title">{title}</h2>}
+          {title && <h3 className="modal-title">{title}</h3>}
           <div className="modal-body">{children}</div>
           {actions && <div className="modal-actions">{actions}</div>}
         </div>

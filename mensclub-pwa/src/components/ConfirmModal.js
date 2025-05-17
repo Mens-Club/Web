@@ -1,14 +1,14 @@
 import React from 'react';
 import Modal from './Modal';
-import './ConfirmModal.css';
+import './Modal.css';
 
 function ConfirmModal({ isOpen, onCancel, onConfirm, title, message }) {
   const actions = (
     <>
-      <button className="modal-cancel-button" onClick={onCancel}>
+      <button className="modal-button modal-cancel-button" onClick={onCancel}>
         취소
       </button>
-      <button className="modal-confirm-button" onClick={onConfirm}>
+      <button className="modal-button modal-confirm-button" onClick={onConfirm}>
         확인
       </button>
     </>
@@ -16,7 +16,7 @@ function ConfirmModal({ isOpen, onCancel, onConfirm, title, message }) {
 
   return (
     <Modal isOpen={isOpen} onClose={onCancel} title={title} actions={actions}>
-      <p className="confirm-message">{message}</p>
+      <p className="modal-message">{message}</p>
     </Modal>
   );
 }

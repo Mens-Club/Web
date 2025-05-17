@@ -39,7 +39,7 @@ function MainPage() {
     fetchPrice();
     fetchStyle(styleFilter);
 
-    const storedLiked = localStorage.getItem('likedMap');
+    const storedLiked = sessionStorage.getItem('likedMap');
     if (storedLiked) {
       setLikedMap(JSON.parse(storedLiked));
     }
@@ -120,10 +120,10 @@ function MainPage() {
 
       const status = response.status;
 
-      // 3. 상태 업데이트 (localStorage 동기화 포함)
+      // 3. 상태 업데이트 (sessionStorage 동기화 포함)
       setLikedMap((prev) => {
         const updated = { ...prev, [recommendId]: !prev[recommendId] };
-        localStorage.setItem('likedMap', JSON.stringify(updated));
+        sessionStorage.setItem('likedMap', JSON.stringify(updated));
         return updated;
       });
 
@@ -147,7 +147,7 @@ function MainPage() {
       // 상태 업데이트
       setLikedMap((prev) => {
         const updated = { ...prev, [itemToDelete]: false };
-        localStorage.setItem('likedMap', JSON.stringify(updated));
+        sessionStorage.setItem('likedMap', JSON.stringify(updated));
         return updated;
       });
 
@@ -301,7 +301,7 @@ function MainPage() {
           <AutoSwiper
             images={[
               '/images/banner1.png',
-              // '/images/banner2.png', 
+              // '/images/banner2.png',
               // '/images/banner3.png',
               // '/images/banner4.png',
               '/images/banner5.png',

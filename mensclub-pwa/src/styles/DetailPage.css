@@ -130,19 +130,23 @@
 
 .product-link {
   display: inline-block;
-  padding: 6px 18px;
+  padding: 6px 8px;
   margin-top: 5px;
-  background: #000000; /* 연보라(라일락) */
-  color: #fff;
-  border-radius: 30px;
+  background: #e2e2e281;
+  color: #4b4b4b;
+  border: 1.5px solid #c0c0c0;
+  border-radius: 7px;
   text-decoration: none;
-  font-weight: 350;
+
+  font-weight: 450;
   transition: background 0.2s;
   box-shadow: 0 2px 8px rgba(161, 138, 255, 0.1);
+  font-size: 14px;
 }
+
 .product-link:hover {
-  background: #7b5ff7;
-  color: #fff;
+  background: #afafafbe;
+  color: #575454;
 }
 
 .brand-row {
