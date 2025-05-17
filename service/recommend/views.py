@@ -29,7 +29,7 @@ from .main.validate_answer_categories import validate_answer_categories
 
 from .openai.utils import generate_reasoning_task
 from .models import Recommendation
-# from .utils.metrics import push_fashion_recommendation_metrics, machine_log_metrics
+from .utils.metrics import push_fashion_recommendation_metrics, machine_log_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -164,10 +164,10 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("STEP 8-1: 카테고리 검증")
             if not matched_categories:
                 logger.warning("유효한 카테고리가 answer_text에 포함되지 않음")
-                # push_fashion_recommendation_metrics(
-                # success=False,
-                # duration=time.time() - start_time
-                # )
+                push_fashion_recommendation_metrics(
+                success=False,
+                duration=time.time() - start_time
+                )
                 return Response(
                     {
                         "status": "error",
@@ -277,18 +277,18 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.info("추천 처리 완료")
             
             # mlflow 로깅 트레이싱
-            # machine_log_metrics(
-            #     image=pil_image,
-            #     rag_context=rag_context,
-            #     model_output=recommendation_json,
-            #     tag="inference_result"
-            # )
+            machine_log_metrics(
+                image=pil_image,
+                rag_context=rag_context,
+                model_output=recommendation_json,
+                tag="inference_result"
+            )
                 
             # 성공 매트릭 push
-            # push_fashion_recommendation_metrics(
-            #     success=True,
-            #     duration=time.time() - start_time
-            # )
+            push_fashion_recommendation_metrics(
+                success=True,
+                duration=time.time() - start_time
+            )
             
             return Response(
                 {
@@ -303,8 +303,8 @@ class IntegratedFashionRecommendAPIView(APIView):
         except Exception as e:
 
             logger.exception("처리 중 알 수 없는 예외 발생")
-            # push_fashion_recommendation_metrics(
-            #     success=False,
-            #     duration=time.time() - start_time
-            # )
+            push_fashion_recommendation_metrics(
+                success=False,
+                duration=time.time() - start_time
+            )
             return Response({"status": "error", "message": str(e)}, status=500)
