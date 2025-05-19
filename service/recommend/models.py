@@ -26,7 +26,7 @@ class Recommendation(models.Model):
 
     top = models.ForeignKey(    
         "clothes.Clothes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -34,7 +34,7 @@ class Recommendation(models.Model):
     )
     bottom = models.ForeignKey(
         "clothes.Clothes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -42,7 +42,7 @@ class Recommendation(models.Model):
     )
     outer = models.ForeignKey(
         "clothes.Clothes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -50,7 +50,7 @@ class Recommendation(models.Model):
     )
     shoes = models.ForeignKey(
         "clothes.Shoes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -112,7 +112,7 @@ class MainRecommendation(models.Model):
 
     top = models.ForeignKey(
         "clothes.Clothes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -120,7 +120,7 @@ class MainRecommendation(models.Model):
     )
     bottom = models.ForeignKey(
         "clothes.Clothes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -128,7 +128,7 @@ class MainRecommendation(models.Model):
     )
     outer = models.ForeignKey(
         "clothes.Clothes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -136,7 +136,7 @@ class MainRecommendation(models.Model):
     )
     shoes = models.ForeignKey(
         "clothes.Shoes",
-        to_field="idx",
+        to_field="id",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

@@ -14,7 +14,7 @@ class ClothesDocument(Document):
     class Django:
         model = Clothes
         fields = [
-            'idx',
+            'id',
             'color',
             'season',
             'goods_name',
@@ -27,8 +27,8 @@ class ClothesDocument(Document):
             'main_category',
             'sub_category',
             'style',           
-            # 'created_at',
-            # 'updated_at',
+            'created_at',
+            'updated_at',
             'image_id',
             's3_path'
         ]
@@ -46,7 +46,7 @@ class ShoesDocument(Document):
     class Django:
         model = Shoes
         fields = [
-            'idx',
+            'id',
             'color',
             'season',
             'goods_name',
@@ -57,8 +57,8 @@ class ShoesDocument(Document):
             'normal_price',
             'price',
             'sub_category',       
-            # 'created_at',
-            # 'updated_at',
+            'created_at',
+            'updated_at',
             'image_id',
             's3_path'
         ]

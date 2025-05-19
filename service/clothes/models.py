@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 
 class Clothes(models.Model):
-    idx = models.IntegerField(primary_key=True)  
+    id = models.IntegerField(primary_key=True)  
     style = models.TextField(null=True, blank=True)  
     season = models.TextField(null=True, blank=True)  
     fit = models.TextField(null=True, blank=True)  
@@ -29,7 +29,7 @@ class Clothes(models.Model):
         managed = False
 
 class Shoes(models.Model):
-    idx = models.IntegerField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     color = models.TextField(null=True)
     sub_category = models.TextField(null=True)
     season = models.TextField(null=True)
