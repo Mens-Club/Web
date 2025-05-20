@@ -109,9 +109,15 @@ STORAGES = {
     },
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "https://mensclub-ai.store",  # React 개발 서버 주소
+CSRF_TRUSTED_ORIGINS = [
+    "https://mensclub-api.store",
+    "https://mensclub-fashion.store",
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://mensclub-fashion.store", 
+]
+
 
 CORS_ALLOW_CREDENTIALS = True
 
