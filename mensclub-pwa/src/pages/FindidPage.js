@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/FindidPage.css'
+import '../styles/FindidPage.css';
 
 function FindidPage() {
   const [username, setName] = useState('');
@@ -15,7 +15,7 @@ function FindidPage() {
       return;
     }
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/account/v1/find_email/', {
+      const response = await fetch('https://mensclub-backend.store/api/account/v1/find_email/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,13 +51,13 @@ function FindidPage() {
             <input type="text" placeholder="이름" value={username} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="input-group">
-          <button className="find-btn" onClick={handleFindID}>
-            아이디 찾기
-          </button>
-          <div className="result_container">
-          {result && <div className="result"> {result}</div>}
-          {error && <div className="error"> {error}</div>}
-          </div>
+            <button className="find-btn" onClick={handleFindID}>
+              아이디 찾기
+            </button>
+            <div className="result_container">
+              {result && <div className="result"> {result}</div>}
+              {error && <div className="error"> {error}</div>}
+            </div>
           </div>
           <div className="bottom-links">
             <Link to="/login">로그인</Link>

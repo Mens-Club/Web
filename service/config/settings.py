@@ -2,14 +2,12 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
-from django.conf import settings
+
 import logging
 from datetime import timedelta
-
-logging.basicConfig(level=logging.DEBUG)
-
 import boto3
 
+logging.basicConfig(level=logging.DEBUG)
 boto3.set_stream_logger("", logging.DEBUG)
 
 load_dotenv()
@@ -22,7 +20,7 @@ AUTH_USER_MODEL = "members.User"
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-4#jb3(xl4yoa58ti+lhpmdgt2e6$6j68cho%*w@ge3z9qhfv#v"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -65,7 +63,7 @@ INSTALLED_APPS = [
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": os.getenv("CACHE_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -112,7 +110,7 @@ STORAGES = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React 개발 서버 주소
+    "https://mensclub-ai.store",  # React 개발 서버 주소
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -193,10 +191,14 @@ DATABASES = {
     }
 }
 
-ELASTICSEARCH_DSL = {
-    "default": {"hosts": "http://localhost:9200"},
-}
+ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 
+ELASTICSEARCH_DSL = {
+    "default": {
+        "hosts": ELASTICSEARCH_URL,
+        "http_auth":  (os.getenv("ELASTICSEARCH_KEY"),os.getenv("ELASTICSEARCH_ACCESS"))
+    },
+}
 
 # 인덱스 이름 매핑
 ELASTICSEARCH_INDEX_NAMES = {
@@ -310,13 +312,6 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-# SOCIALACCOUNT_STORE_TOKEN = True
-# LOGIN_REDIRECT_URL = "/api/account/v1/oauth/callback/"
-# SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
-# SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/api/account/v1/social-login/"
-# SOCIALACCOUNT_LOGIN_ON_GET = True
-# LOGOUT_REDIRECT_URL = "/"
-
 
 SOCIALACCOUNT_STORE_TOKEN = True
 LOGIN_REDIRECT_URL = "/api/account/v1/social-callback/"
@@ -324,41 +319,54 @@ SOCIALACCOUNT_ADAPTER = "members.token_toss.CustomSocialAccountAdapter"
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGOUT_REDIRECT_URL = "/"
 
-
-# ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
-# ELASTICSEARCH_DSL = {"default": {"hosts": os.getenv("ELASTICSEARCH_URL")}}
-
 # 로그 수집
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    
+    "formatters": {
+        "simple": { 
+            "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    
+    "root": {
+    "handlers": ["console"],
+    "level": "WARNING",
+    },
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "simple": {
-#             "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
-#             "datefmt": "%Y-%m-%d %H:%M:%S",
-#         },
-#     },
-#     "handlers": {
-#         "logstash": {
-#             "level": "INFO",
-#             "class": "logstash.TCPLogstashHandler",
-#             "host": "localhost",
-#             "port": 5000,
-#             "version": 1,
-#             "message_type": "django",
-#             "fqdn": False,
-#         },
-#         "console": {
-#             "class": "logging.StreamHandler",
-#             "formatter": "simple",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["logstash", "console"],
-#             "level": "INFO",
-#             "propagate": True,
-#         },
-#     },
-# }
+    "handlers": {
+        "logstash": {
+            "level": "INFO",
+            "class": "logstash.TCPLogstashHandler",
+            "host": os.getenv("LOGSTASH_HOST"),
+            "port": int(os.getenv("LOGSTASH_PORT")),
+            "version": 1,
+            "message_type": "django",
+            "fqdn": False,
+        },
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",  
+        },
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["logstash", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "recommend.views": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "urllib3": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    }
+}

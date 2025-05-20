@@ -16,17 +16,17 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         refresh_token = str(refresh)
 
         # 토큰을 세션에 저장해서 리다이렉트 URL에서 꺼낼 수 있게 함
-        request.session['access_token'] = access_token
-        request.session['refresh_token'] = refresh_token
-        request.session['provider'] = sociallogin.account.provider
+        request.session["access_token"] = access_token
+        request.session["refresh_token"] = refresh_token
+        request.session["provider"] = sociallogin.account.provider
 
     def get_login_redirect_url(self, request):
-        access_token = request.session.pop('access_token', None)
-        refresh_token = request.session.pop('refresh_token', None)
-        provider = request.session.pop('provider', 'kakao')
+        access_token = request.session.pop("access_token", None)
+        refresh_token = request.session.pop("refresh_token", None)
+        provider = request.session.pop("provider", "kakao")
 
         if access_token and refresh_token:
-            return f"https://localhost:3000/oauth/{provider}/callback?token={access_token}&refresh={refresh_token}"
+            return f"https://mensclub-ai.store/oauth/{provider}/callback?token={access_token}&refresh={refresh_token}"
         else:
             # 토큰이 없으면 로그인 실패 페이지 혹은 기본 리다이렉트
             return super().get_login_redirect_url(request)

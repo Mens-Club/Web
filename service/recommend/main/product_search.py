@@ -1,9 +1,12 @@
 from elasticsearch import Elasticsearch
 from django.conf import settings
+import os 
+from dotenv import load_dotenv 
 
-# Elasticsearch 연결
-es = Elasticsearch("http://localhost:9200")
-
+load_dotenv()
+es = Elasticsearch(settings.ELASTICSEARCH_URL,
+                   basic_auth=(os.getenv("ELASTICSEARCH_KEY"), os.getenv("ELASTICSEARCH_ACCESS"))
+                )
 
 def search_items_by_category(recommend_json, season, color_palette, styles):
     """각 카테고리별 아이템 검색"""

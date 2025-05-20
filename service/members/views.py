@@ -189,7 +189,7 @@ class SocialLoginCallbackView(View):
             print(f"리프레시: {refresh_token}")
 
             # 프론트엔드 리다이렉트 URL
-            frontend_url = "http://localhost:3000/social-callback"
+            frontend_url = "https://mensclub-ai.store/social-callback"
 
             # 토큰을 쿼리 파라미터로 추가하여 리다이렉트
             redirect_url = (
