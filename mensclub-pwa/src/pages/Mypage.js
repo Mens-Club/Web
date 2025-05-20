@@ -551,9 +551,9 @@ function MyPage() {
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <button
                       className="more-button"
-                      onClick={() => setVisibleCount((prev) => Math.min(prev + outfitsPerPage, allOutfits.length))}
-                    >
-                      SHOW MORE ({Math.ceil(visibleCount / outfitsPerPage)}/{Math.ceil(allOutfits.length / outfitsPerPage)})
+                      onClick={() => setVisibleCount((prev) => Math.min(prev + outfitsPerPage, allOutfits.length))}>
+                      SHOW MORE ({Math.ceil(visibleCount / outfitsPerPage)}/
+                      {Math.ceil(allOutfits.length / outfitsPerPage)})
                     </button>
                   </div>
                 )}
