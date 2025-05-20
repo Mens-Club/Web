@@ -10,9 +10,10 @@ def user_upload_path(instance, filename):
     user_id = instance.user.id
     # 파일 확장자 추출
     ext = filename.split(".")[-1]
-    # 타임스탬프 추가하여 파일명 충돌 방지
 
+    # 타임스탬프 추가하여 파일명 충돌 방지
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    
     # 새 파일명 생성
     new_filename = f"{timestamp}.{ext}"
 

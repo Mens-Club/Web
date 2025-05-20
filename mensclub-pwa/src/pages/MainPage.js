@@ -283,7 +283,8 @@ function MainPage() {
               e.stopPropagation(); // 버블링 방지 (카드 클릭 이벤트 방지)
               toggleLike(item.id);
             }}
-            aria-label={likedMap[item.id] ? '찜 해제' : '찜 추가'}>
+            aria-label={likedMap[item.id] ? '찜 해제' : '찜 추가'}
+          >
             <FontAwesomeIcon
               icon={likedMap[item.id] ? solidHeart : regularHeart}
               className={`heart-icon ${likedMap[item.id] ? 'liked' : ''}`}
@@ -353,7 +354,8 @@ function MainPage() {
                 <button
                   key={label}
                   className={`filter-btn ${priceFilter === label ? 'active' : ''}`}
-                  onClick={() => setPriceFilter(label)}>
+                  onClick={() => setPriceFilter(label)}
+                >
                   {label}
                 </button>
               ))}
@@ -372,7 +374,8 @@ function MainPage() {
                 <button
                   key={label}
                   className={`filter-btn ${styleFilter === label ? 'active' : ''}`}
-                  onClick={() => setStyleFilter(label)}>
+                  onClick={() => setStyleFilter(label)}
+                >
                   {label}
                 </button>
               ))}

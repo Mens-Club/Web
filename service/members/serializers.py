@@ -4,8 +4,9 @@ from .models import UserUpload
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-import base64
-from django.core.files.base import ContentFile
+
+from .utils.custom_base64handle import Base64ImageField
+
 
 from .utils.custom_base64handle import Base64ImageField
 

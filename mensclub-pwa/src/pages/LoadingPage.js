@@ -33,8 +33,6 @@ const LoadingPage = ({ isEmbedded = false }) => {
   const isFromCamera = location.state?.fromCamera || false;
   const returnPath = location.state?.returnPath || queryReturnPath || null; // '/' 대신 null로 수정
 
-  const loadingMessage = location.state?.message || null;
-
   // 모달 상태 관리
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -59,37 +57,6 @@ const LoadingPage = ({ isEmbedded = false }) => {
     return () => clearInterval(interval);
   }, []);
 
-  //   useEffect(() => {
-  //   if (isEmbedded) return;
-
-  //   if (isFromCamera) {
-  //     analyzeImage();
-  //   } else {
-  //     // 🔥 문제 원인: returnPath가 무조건 '/' 또는 '/camera'가 될 수 있음
-  //     if (location.state?.dataToPass) {
-  //       sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
-  //     }
-
-  //     // ✅ 해결: returnPath가 명확히 지정되어 있는 경우에만 타이머 작동
-  //     if (returnPath && returnPath !== '/camera') {
-  //       const timer = setTimeout(() => {
-  //         const dataToPass = sessionStorage.getItem('tempDataToPass')
-  //           ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
-  //           : {};
-
-  //         sessionStorage.removeItem('tempDataToPass');
-
-  //         navigate(returnPath, {
-  //           state: dataToPass,
-  //           replace: true,
-  //         });
-  //       }, 1200); // 또는 loadingTime
-
-  //       return () => clearTimeout(timer);
-  //     }
-  //   }
-  // }, [navigate, isFromCamera, returnPath, location.state, location.search, isEmbedded]);
-
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
     if (!token) return;
@@ -110,39 +77,6 @@ const LoadingPage = ({ isEmbedded = false }) => {
 
     fetchUserInfo();
   }, []);
-
-  // useEffect(() => {
-  //   if (isEmbedded) return;
-  //   // 카메라 페이지에서 넘어온 경우 이미지 분석 실행
-  //   if (isFromCamera) {
-  //     analyzeImage();
-  //   } else {
-  //     // 다른 페이지에서 넘어온 경우: 지정된 시간 후 returnPath로 이동
-
-  //     // 수정: 데이터를 세션 스토리지에 임시 저장
-  //     if (location.state?.dataToPass) {
-  //       sessionStorage.setItem('tempDataToPass', JSON.stringify(location.state.dataToPass));
-  //     }
-
-  //     const timer = setTimeout(() => {
-  //       // 수정: 세션 스토리지에서 데이터를 가져와 state로 전달
-  //       const dataToPass = sessionStorage.getItem('tempDataToPass')
-  //         ? JSON.parse(sessionStorage.getItem('tempDataToPass'))
-  //         : {};
-
-  //       // 데이터 전달 후 세션 스토리지에서 제거
-  //       sessionStorage.removeItem('tempDataToPass');
-
-  //       // 수정: replace 옵션 추가하여 불필요한 히스토리 스택 방지
-  //       navigate(returnPath, {
-  //         state: dataToPass,
-  //         replace: true,
-  //       });
-  //     }, );
-
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [navigate, isFromCamera, returnPath, , location.state, location.search, isEmbedded]);
 
   useEffect(() => {
     if (isEmbedded || !isFromCamera) return;
@@ -393,11 +327,8 @@ const LoadingPage = ({ isEmbedded = false }) => {
       {/* 모달 */}
       <ConfirmModal
         isOpen={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        onConfirm={() => {
-          setModalOpen(false);
-          navigate('/camera');
-        }}
+        onCancel={handleCloseModal}
+        onConfirm={handleCloseModal}
         title="추천 실패"
         message={modalMessage}
       />
