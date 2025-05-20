@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 import logging
 import requests
@@ -34,7 +34,7 @@ from .utils.metrics import push_fashion_recommendation_metrics, machine_log_metr
 logger = logging.getLogger(__name__)
 
 class IntegratedFashionRecommendAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_description="이미지 URL을 기반으로 패션 추천 및 구체적인 상품 제안",
