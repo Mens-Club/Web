@@ -15,7 +15,7 @@ function FindidPage() {
       return;
     }
     try {
-      const response = await fetch('https://mensclub-backend.store/api/account/v1/find_email/', {
+      const response = await fetch('https://mensclub-api.store/api/account/v1/find_email/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
