@@ -1,35 +1,29 @@
-from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import AllowAny
-from .serializers import (
-    SignupSerializer,
-    LoginSerializer,
-    UpdateSerializer,
-    ChangePasswordSerializer,
-    FindEmailSerializer,
-    UserImageUploadSerializer,
-)
-from django.contrib.auth import get_user_model
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import IsAuthenticated
-from django.core.files.storage import default_storage
 from django.conf import settings
-
-from django.views.generic import View
+from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-import requests
+from django.utils import timezone
+from django.views.generic import View
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from .serializers import (
+    ChangePasswordSerializer,
+    FindEmailSerializer,
+    LoginSerializer,
+    SignupSerializer,
+    UpdateSerializer,
+    UserImageUploadSerializer,
+)
+import json, os, redis, requests
 
-##사용자 정보 캐시 저장
-import hashlib
-from django.core.cache import cache
-from django.utils import timezone  # 로그인 시간 업데이트용
-
-from .models import UserUpload
+CACHE_URL = os.getenv("CACHE_URL", "redis://localhost:6379/0")
+redis_client = redis.from_url(CACHE_URL, decode_responses=True)
 
 User = get_user_model()
 
@@ -283,22 +277,28 @@ class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user  # ✅ 현재 로그인한 사용자
+        user = request.user
+        cache_key = f"user_info:{user.id}"
 
-        return Response(
-            {
-                "user_id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "height": user.height,
-                "weight": user.weight,
-            },
-            status=status.HTTP_200_OK,
-        )
+        # Redis에서 캐시 조회
+        cached = redis_client.get(cache_key)
+        if cached:
+            data = json.loads(cached)
+            return Response(data, status=status.HTTP_200_OK)
 
+        # 캐시 없으면 DB에서 가져오기
+        data = {
+            "user_id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "height": user.height,
+            "weight": user.weight,
+        }
 
-from rest_framework.generics import GenericAPIView
-from drf_yasg import openapi
+        # Redis에 캐시 저장 (예: 300초 = 5분)
+        redis_client.set(cache_key, json.dumps(data), ex=300)
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class UserImageUploadView(GenericAPIView):
