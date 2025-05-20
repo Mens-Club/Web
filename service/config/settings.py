@@ -110,13 +110,11 @@ STORAGES = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
     "https://mensclub-api.store",
     "https://mensclub-fashion.store",
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
     "https://mensclub-fashion.store", 
 ]
 
