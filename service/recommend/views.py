@@ -236,6 +236,8 @@ class IntegratedFashionRecommendAPIView(APIView):
                 bottom_id = bottom.get("id") if bottom else None
                 outer_id = outer.get("id") if outer else None
                 shoes_id = shoes.get("id") if shoes else None
+                items = [top, bottom, outer, shoes]
+                style = next((item.get("style") for item in items if item and item.get("style")), "")
 
                 total_price = sum(
                     [
@@ -254,6 +256,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                     shoes_id=shoes_id,
                     answer=answer_text,
                     reasoning_text="",
+                    style=style,
                     total_price=total_price,
                 )
 
