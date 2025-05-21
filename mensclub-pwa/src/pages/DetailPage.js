@@ -188,7 +188,7 @@ function DetailPage() {
               // 각 아이템에 필요한 속성 추가
               const itemsWithDetails = allItems.map((item) => ({
                 ...item,
-                thumbnail_url: item.s3_path,
+                thumbnail: item.s3_path,
                 price: item.price || 0,
                 goods_name: item.goods_name || '상품명 없음',
                 total_price: productData.total_price,
@@ -230,7 +230,7 @@ function DetailPage() {
               // 각 아이템에 필요한 속성 추가
               const itemsWithDetails = allItems.map((item) => ({
                 ...item,
-                thumbnail_url: item.s3_path,
+                thumbnail: item.s3_path,
                 price: item.price || 0,
                 goods_name: item.goods_name || '상품명 없음',
                 total_price: productData.total_price,
@@ -275,7 +275,7 @@ function DetailPage() {
               // 각 아이템에 필요한 속성 추가
               const itemsWithDetails = allItems.map((item) => ({
                 ...item,
-                thumbnail_url: item.s3_path,
+                thumbnail: item.s3_path,
                 price: item.price || 0,
                 goods_name: item.goods_name || '상품명 없음',
                 total_price: productData.total_price,
@@ -467,7 +467,7 @@ function DetailPage() {
           <div className="image-zoom-modal" onClick={() => setIsZoomed(false)}>
             <div className="zoom-image-container">
               <img
-                src={products[activeImageIndex].thumbnail_url}
+                src={products[activeImageIndex].thumbnail}
                 alt={products[activeImageIndex].goods_name}
                 className="zoomed-image"
               />
@@ -494,7 +494,7 @@ function DetailPage() {
         <div className="main-image-grid">
           {products.map((product, id) => (
             <div className="main-image-cell" key={id} onClick={() => toggleImageZoom(id)}>
-              <img src={product.thumbnail_url} alt={product.goods_name} className="main-image" draggable="false" />
+              <img src={product.s3_path} alt={product.goods_name} className="main-image" draggable="false" />
             </div>
           ))}
           {products.length % 2 !== 0 && <div className="main-image-cell empty"></div>}
@@ -525,12 +525,7 @@ function DetailPage() {
             {products.map((product, id) => (
               <div className={id === 0 ? 'product-card main-product' : 'product-card'} key={id}>
                 <div className="product-card-inner">
-                  <img
-                    src={product.thumbnail_url}
-                    alt={product.goods_name}
-                    className="product-thumb"
-                    draggable="false"
-                  />
+                  <img src={product.thumbnail} alt={product.goods_name} className="product-thumb" draggable="false" />
                   <div>
                     <p className="brand">{product.brand || '브랜드'}</p>
                     <p className="product-name">{product.goods_name}</p>
