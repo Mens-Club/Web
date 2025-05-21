@@ -147,72 +147,72 @@ function SignupPage() {
   };
 
   return (
-    <div className='signup-page'>
-    <div className="container">
-      <div className="content">
-        <div className="login-card">
-          <div className="gradient-circle"></div>
-          <div className="logo-signup">
-            <img src="/images/logo.png" alt="MEN'S CLUB" />
-          </div>
-          <h1>Sign Up</h1>
-          <form className="login-form" onSubmit={handleSubmit}>
-            <div className="input-group">
-              <input
-                type="email"
-                name="email"
-                placeholder="이메일"
-                required
-                value={formData.email}
-                onChange={handleChange}
-              />
-              {formErrors.email && (
-                <p style={{ color: 'red', paddingLeft: '10px', marginBottom: '-19px', fontSize: '1rem' }}>
-                  {formErrors.email}
-                </p>
-              )}
+    <div className="signup-page">
+      <div className="container">
+        <div className="content">
+          <div className="login-card">
+            <div className="gradient-circle"></div>
+            <div className="logo-signup">
+              <img src="/images/logo.png" alt="MEN'S CLUB" />
             </div>
-            <div className="input-group">
-              <input
-                type="text"
-                name="username"
-                placeholder="이름"
-                required
-                value={formData.username}
-                onChange={handleChange}
-              />
-              {formErrors.username && (
-                <p style={{ color: 'red', paddingLeft: '10px', marginBottom: '-19px', fontSize: '1rem' }}>
-                  {formErrors.username}
-                </p>
-              )}
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                name="password"
-                placeholder="비밀번호"
-                required
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="input-group">
-              <input
-                type="password"
-                name="confirmPw"
-                placeholder="비밀번호 확인"
-                required
-                value={formData.confirmPw}
-                onChange={handleChange}
-              />
-              {status.error && (
-                <p style={{ color: 'red', paddingLeft: '10px', marginBottom: '-19px', fontSize: '1rem' }}>
-                  {status.error}
-                </p>
-              )}
-            </div>
-            <div className="input-group">
+            <h1>Sign Up</h1>
+            <form className="login-form" onSubmit={handleSubmit}>
+              <div className="input-group">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="이메일"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {formErrors.email && (
+                  <p style={{ color: 'red', paddingLeft: '10px', marginBottom: '-19px', fontSize: '1rem' }}>
+                    {formErrors.email}
+                  </p>
+                )}
+              </div>
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="이름"
+                  required
+                  value={formData.username}
+                  onChange={handleChange}
+                />
+                {formErrors.username && (
+                  <p style={{ color: 'red', paddingLeft: '10px', marginBottom: '-19px', fontSize: '1rem' }}>
+                    {formErrors.username}
+                  </p>
+                )}
+              </div>
+              <div className="input-group">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="비밀번호"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="input-group">
+                <input
+                  type="password"
+                  name="confirmPw"
+                  placeholder="비밀번호 확인"
+                  required
+                  value={formData.confirmPw}
+                  onChange={handleChange}
+                />
+                {status.error && (
+                  <p style={{ color: 'red', paddingLeft: '10px', marginBottom: '-19px', fontSize: '1rem' }}>
+                    {status.error}
+                  </p>
+                )}
+              </div>
+              {/* <div className="input-group">
               <input
                 type="number"
                 name="height"
@@ -229,32 +229,32 @@ function SignupPage() {
                 value={formData.weight}
                 onChange={handleChange}
               />
+            </div> */}
+              <div className="input-group">
+                <input type="number" name="age" placeholder="나이" value={formData.age} onChange={handleChange} />
+              </div>
+              <div className="input-group">
+                <select value={formData.sex} name="sex" onChange={handleChange}>
+                  <option value="">성별 선택</option>
+                  <option value="M">남자</option>
+                  <option value="F">여자</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <button className="login-btn2">Sign Up</button>
+              </div>
+              {status.success && <p style={{ color: 'green' }}>{status.message}</p>}
+            </form>
+            <div className="bottom-links">
+              <Link to="/login">로그인</Link>
+              <Link to="/find-id">아이디 찾기</Link>
+              <Link to="/find-pw">비밀번호 찾기</Link>
+              <Link to="/">홈으로</Link>
             </div>
-            <div className="input-group">
-              <input type="number" name="age" placeholder="나이" value={formData.age} onChange={handleChange} />
-            </div>
-            <div className="input-group">
-              <select value={formData.sex} name="sex" onChange={handleChange}>
-                <option value="">성별 선택</option>
-                <option value="M">남자</option>
-                <option value="F">여자</option>
-              </select>
-            </div>
-            <div className="input-group">
-              <button className="login-btn2">Sign Up</button>
-            </div>
-            {status.success && <p style={{ color: 'green' }}>{status.message}</p>}
-          </form>
-          <div className="bottom-links">
-            <Link to="/login">로그인</Link>
-            <Link to="/find-id">아이디 찾기</Link>
-            <Link to="/find-pw">비밀번호 찾기</Link>
-            <Link to="/">홈으로</Link>
           </div>
         </div>
       </div>
     </div>
-  </div>
   );
 }
 
