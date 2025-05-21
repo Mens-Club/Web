@@ -301,12 +301,12 @@ function DetailPage() {
                       .filter(([_, item]) => item !== null)
                       .map(([category, item]) => ({ ...item, category }));
                     // 현재 상품 찾기
-                    const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
+                    const currentItem = allProducts.find((item) => item.id === parseInt(itemId));
                     if (currentItem) {
                       // 현재 상품을 첫 번째로 하는 전체 상품 배열 생성
                       const sortedProducts = [
                         currentItem,
-                        ...allProducts.filter((item) => item.idx !== parseInt(itemId)),
+                        ...allProducts.filter((item) => item.id !== parseInt(itemId)),
                       ];
                       setProducts(sortedProducts);
                     } else {
@@ -339,10 +339,10 @@ function DetailPage() {
                   .filter(([_, item]) => item !== null)
                   .map(([category, item]) => ({ ...item, category }));
                 // 현재 상품 찾기
-                const currentItem = allProducts.find((item) => item.idx === parseInt(itemId));
+                const currentItem = allProducts.find((item) => item.id === parseInt(itemId));
                 if (currentItem) {
                   // 현재 상품을 첫 번째로 하는 전체 상품 배열 생성
-                  const sortedProducts = [currentItem, ...allProducts.filter((item) => item.idx !== parseInt(itemId))];
+                  const sortedProducts = [currentItem, ...allProducts.filter((item) => item.id !== parseInt(itemId))];
                   setProducts(sortedProducts);
                 } else {
                   setError('현재 상품을 찾을 수 없습니다.');
@@ -458,7 +458,7 @@ function DetailPage() {
 
   return (
     <div className="detail-container">
-      <div className="content">
+      <div className="detail-content">
         <div className="back-button" onClick={() => navigate(-1)}>
           <FontAwesomeIcon icon={faChevronLeft} />
         </div>

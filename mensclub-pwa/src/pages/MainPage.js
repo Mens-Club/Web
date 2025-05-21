@@ -254,11 +254,11 @@ function MainPage() {
         style={{ cursor: 'pointer' }} // 커서 스타일 변경
       >
         <div className="image-grid-2x2">
-          {['top', 'outer', 'bottom', 'shoes'].map((key, idx) => {
+          {['top', 'outer', 'bottom', 'shoes'].map((key, id) => {
             const src = item[key]?.s3_path;
             return src ? (
               <img
-                key={idx}
+                key={id}
                 src={src}
                 alt={`${key}`}
                 className="thumbnail-grid-img"

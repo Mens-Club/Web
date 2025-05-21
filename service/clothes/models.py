@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+
 class Clothes(models.Model):
     id = models.IntegerField(primary_key=True)  
     style = models.TextField(null=True, blank=True)  
@@ -25,8 +26,9 @@ class Clothes(models.Model):
         return self.goods_name
 
     class Meta:
-        db_table = 'clothes'
+        db_table = "clothes"
         managed = False
+
 
 class Shoes(models.Model):
     id = models.IntegerField(primary_key=True)
@@ -49,5 +51,5 @@ class Shoes(models.Model):
         return self.goods_name
 
     class Meta:
-        db_table = 'shoes'
+        db_table = "shoes"
         managed = False

@@ -2,14 +2,12 @@ from django_elasticsearch_dsl import Document
 from django_elasticsearch_dsl.registries import registry
 from .models import Clothes, Shoes
 
+
 @registry.register_document
 class ClothesDocument(Document):
     class Index:
-        name = 'clothes'
-        settings = {
-            'number_of_shards': 1,
-            'number_of_replicas': 0
-        }
+        name = "clothes"
+        settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
     class Django:
         model = Clothes
@@ -37,11 +35,8 @@ class ClothesDocument(Document):
 @registry.register_document
 class ShoesDocument(Document):
     class Index:
-        name = 'shoes'
-        settings = {
-            'number_of_shards': 1,
-            'number_of_replicas': 0
-        }
+        name = "shoes"
+        settings = {"number_of_shards": 1, "number_of_replicas": 0}
 
     class Django:
         model = Shoes

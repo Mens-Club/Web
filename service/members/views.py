@@ -184,6 +184,7 @@ class SocialLoginCallbackView(View):
 
             # 프론트엔드 리다이렉트 URL
             frontend_url = "https://mensclub-fashion.store/social-callback"
+            # frontend_url = "http://localhost:3000/social-callback"
 
             # 토큰을 쿼리 파라미터로 추가하여 리다이렉트
             redirect_url = (
@@ -334,7 +335,9 @@ class UserImageUploadView(GenericAPIView):
                 {
                     "success": "이미지가 성공적으로 업로드되었습니다.",
                     "image_url": result.image.url,  # 실제 접근 가능한 URL 반환
+                    "user_id": request.user.id,
                 },
                 status=status.HTTP_200_OK,
             )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

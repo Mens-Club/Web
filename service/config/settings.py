@@ -112,10 +112,19 @@ STORAGES = {
 CSRF_TRUSTED_ORIGINS = [
     "https://mensclub-api.store",
     "https://mensclub-fashion.store",
+
+    # "http://localhost:3000"
+    # "http://localhost:8000"
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://mensclub-fashion.store",
+    # "http://localhost:3000"
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://mensclub-fashion.store", 
+
 ]
 
 
@@ -202,7 +211,10 @@ ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL")
 ELASTICSEARCH_DSL = {
     "default": {
         "hosts": ELASTICSEARCH_URL,
-        "http_auth":  (os.getenv("ELASTICSEARCH_KEY"),os.getenv("ELASTICSEARCH_ACCESS"))
+        "http_auth": (
+            os.getenv("ELASTICSEARCH_KEY"),
+            os.getenv("ELASTICSEARCH_ACCESS"),
+        ),
     },
 }
 
@@ -331,19 +343,16 @@ LOGOUT_REDIRECT_URL = "/"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    
     "formatters": {
-        "simple": { 
+        "simple": {
             "format": "[%(asctime)s] %(levelname)s %(name)s %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    
     "root": {
-    "handlers": ["console"],
-    "level": "WARNING",
+        "handlers": ["console"],
+        "level": "WARNING",
     },
-
     "handlers": {
         "logstash": {
             "level": "INFO",
@@ -356,10 +365,9 @@ LOGGING = {
         },
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "simple",  
+            "formatter": "simple",
         },
     },
-
     "loggers": {
         "django": {
             "handlers": ["logstash", "console"],
@@ -376,5 +384,5 @@ LOGGING = {
             "level": "WARNING",
             "propagate": False,
         },
-    }
+    },
 }

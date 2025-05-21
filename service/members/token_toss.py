@@ -27,6 +27,9 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         if access_token and refresh_token:
             return f"https://mensclub-fashion.store/oauth/{provider}/callback?token={access_token}&refresh={refresh_token}"
+            # return f"http://localhost:3000/oauth/{provider}/callback?token={access_token}&refresh={refresh_token}"
+
+
         else:
             # 토큰이 없으면 로그인 실패 페이지 혹은 기본 리다이렉트
             return super().get_login_redirect_url(request)

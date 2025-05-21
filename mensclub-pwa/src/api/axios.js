@@ -2,6 +2,8 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'https://mensclub-api.store', // 또는 배포된 주소
+  // baseURL: 'http://localhost:8000', // 또는 배포된 주소
+
   headers: {
     'Content-Type': 'application/json',
   },

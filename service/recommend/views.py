@@ -9,8 +9,8 @@ import logging
 import requests
 import base64
 import json
-import time 
-import io 
+import time
+import io
 from PIL import Image
 
 
@@ -33,6 +33,7 @@ from .utils.metrics import push_fashion_recommendation_metrics, machine_log_metr
 
 logger = logging.getLogger(__name__)
 
+
 class IntegratedFashionRecommendAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -49,7 +50,7 @@ class IntegratedFashionRecommendAPIView(APIView):
         responses={200: "추천 성공", 400: "이미지 처리 오류", 500: "서버 오류"},
     )
     def post(self, request):
-        start_time = time.time() # 시간 측정용 
+        start_time = time.time()  # 시간 측정용
         try:
             logger.info("추천 요청 수신")
             image_url = request.data.get("image_url")
@@ -59,17 +60,21 @@ class IntegratedFashionRecommendAPIView(APIView):
                 logger.warning("image_url 누락")
                 return Response(
                     {"status": "error", "message": "image_url은 필수 항목입니다"},
-                    status=400,     
+                    status=400,
                 )
 
             logger.info("STEP 1: 이미지 다운로드 시작")
             try:
-                # 이미지 다운로드 
+                # 이미지 다운로드
                 response = requests.get(image_url, timeout=10)
-                response.raise_for_status() # 결과 보고 
-                
-                base64_image = base64.b64encode(response.content).decode("utf-8") # RUNPOD Inference용
-                pil_image = Image.open(io.BytesIO(response.content)).convert("RGB") # RAG용 
+                response.raise_for_status()  # 결과 보고
+
+                base64_image = base64.b64encode(response.content).decode(
+                    "utf-8"
+                )  # RUNPOD Inference용
+                pil_image = Image.open(io.BytesIO(response.content)).convert(
+                    "RGB"
+                )  # RAG용
             except requests.RequestException as e:
                 logger.error("이미지 다운로드 실패: %s", str(e))
                 return Response(
@@ -165,8 +170,7 @@ class IntegratedFashionRecommendAPIView(APIView):
             if not matched_categories:
                 logger.warning("유효한 카테고리가 answer_text에 포함되지 않음")
                 push_fashion_recommendation_metrics(
-                success=False,
-                duration=time.time() - start_time
+                    success=False, duration=time.time() - start_time
                 )
                 return Response(
                     {
@@ -222,9 +226,9 @@ class IntegratedFashionRecommendAPIView(APIView):
             logger.debug("STEP 11 결과 조합들: %s", combinations)
             recommendation_outputs = []
 
-            for idx, combo in enumerate(combinations):
+            for id, combo in enumerate(combinations):
                 if combo is None:
-                    logger.warning(f"STEP 11-1: 조합 #{idx}가 None입니다. 건너뜁니다.")
+                    logger.warning(f"STEP 11-1: 조합 #{id}가 None입니다. 건너뜁니다.")
                     continue
 
                 top = combo.get("상의")
@@ -238,6 +242,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                 shoes_id = shoes.get("id") if shoes else None
                 items = [top, bottom, outer, shoes]
                 style = next((item.get("style") for item in items if item and item.get("style")), "")
+
 
                 total_price = sum(
                     [
@@ -270,29 +275,30 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.info("STEP 12: Celery 비동기 reasoning 요청")
             generate_reasoning_task.delay(
-                recommendation_ids=[r["recommendation_id"] for r in recommendation_outputs],
+                recommendation_ids=[
+                    r["recommendation_id"] for r in recommendation_outputs
+                ],
                 combinations=[r["combination"] for r in recommendation_outputs],
                 season=season,
                 styles=styles,
-                original_item_info=similar_items[0]
+                original_item_info=similar_items[0],
             )
 
             logger.info("추천 처리 완료")
-            
+
             # mlflow 로깅 트레이싱
             machine_log_metrics(
                 image=pil_image,
                 rag_context=rag_context,
                 model_output=recommendation_json,
-                tag="inference_result"
+                tag="inference_result",
             )
-                
+
             # 성공 매트릭 push
             push_fashion_recommendation_metrics(
-                success=True,
-                duration=time.time() - start_time
+                success=True, duration=time.time() - start_time
             )
-            
+
             return Response(
                 {
                     "status": "success",
@@ -307,7 +313,6 @@ class IntegratedFashionRecommendAPIView(APIView):
 
             logger.exception("처리 중 알 수 없는 예외 발생")
             push_fashion_recommendation_metrics(
-                success=False,
-                duration=time.time() - start_time
+                success=False, duration=time.time() - start_time
             )
             return Response({"status": "error", "message": str(e)}, status=500)
