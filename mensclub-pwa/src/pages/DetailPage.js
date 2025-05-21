@@ -116,7 +116,7 @@ function DetailPage() {
     slider.addEventListener('mouseleave', handleMouseLeave);
     slider.addEventListener('mouseup', handleMouseUp);
     slider.addEventListener('mousemove', handleMouseMove);
-
+  
     // a 태그 클릭 이벤트 처리
     const clickHandlers = new Map();
     const links = slider.querySelectorAll('a');
