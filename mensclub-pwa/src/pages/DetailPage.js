@@ -458,7 +458,7 @@ function DetailPage() {
 
   return (
     <div className="detail-container">
-      <div className="content">
+      <div className="detail-content">
         <div className="back-button" onClick={() => navigate(-1)}>
           <FontAwesomeIcon icon={faChevronLeft} />
         </div>
