@@ -331,7 +331,7 @@ function MainPage() {
 
         <div className="coordination-section">
           <div className="section-header">
-            <h2>오늘의 랜덤 추천</h2>
+            <h2>오늘의 랜덤 추천 으죠링</h2>
           </div>
           <div className="coordination-cards" ref={randomCardsRef}>
             {randomRecommends.map(renderCard)}
