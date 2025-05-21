@@ -15,7 +15,7 @@ services:
   celery:
     container_name: Django_Celery
     image: ${BACK_GCR_CONTAINER}
-    command: celery -A config worker --loglevel=info --autoreload
+    command: sh -c "pip install watchdog celery-worker-autoreload && celery-worker-autoreload worker -A config --loglevel=info"
     volumes:
       - ./:/usr/src/django/
     env_file:
