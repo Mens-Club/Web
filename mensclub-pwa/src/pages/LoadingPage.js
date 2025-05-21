@@ -174,6 +174,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
 
           const uploadRes = await fetch('https://mensclub-backend.store/api/account/v1/upload-image/', {
             // const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
+
             method: 'POST',
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,

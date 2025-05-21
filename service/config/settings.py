@@ -112,6 +112,7 @@ STORAGES = {
 CSRF_TRUSTED_ORIGINS = [
     "https://mensclub-api.store",
     "https://mensclub-fashion.store",
+
     # "http://localhost:3000"
     # "http://localhost:8000"
 ]
@@ -122,7 +123,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://mensclub-fashion.store",
+    "https://mensclub-fashion.store", 
+
 ]
 
 
@@ -249,7 +251,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
     "DEFAULT_PARSER_CLASSES": (
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
@@ -258,6 +262,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
 }
+
 
 
 LANGUAGE_CODE = "ko-kr"  # 국가 설정

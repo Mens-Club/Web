@@ -198,7 +198,8 @@ class IntegratedFashionRecommendAPIView(APIView):
             if missing_required:
                 logger.warning("RAG 기준 필수 카테고리 누락됨: %s", missing_required)
                 push_fashion_recommendation_metrics(
-                    success=False, duration=time.time() - start_time
+                success=False,
+                duration=time.time() - start_time
                 )
                 return Response(
                     {
@@ -240,10 +241,8 @@ class IntegratedFashionRecommendAPIView(APIView):
                 outer_id = outer.get("id") if outer else None
                 shoes_id = shoes.get("id") if shoes else None
                 items = [top, bottom, outer, shoes]
-                style = next(
-                    (item.get("style") for item in items if item and item.get("style")),
-                    "",
-                )
+                style = next((item.get("style") for item in items if item and item.get("style")), "")
+
 
                 total_price = sum(
                     [

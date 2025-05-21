@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import '../styles/Layout.css';
 
 function FirstPage() {
+
   const backendBaseURL = 'https://mensclub-api.store';
   // const backendBaseURL = 'http://localhost:8000';
 

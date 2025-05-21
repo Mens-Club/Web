@@ -198,6 +198,7 @@ class SocialLoginCallbackView(View):
         return redirect("/")
 
 
+
 class UpdateView(RetrieveUpdateAPIView):
     serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]
@@ -338,4 +339,5 @@ class UserImageUploadView(GenericAPIView):
                 },
                 status=status.HTTP_200_OK,
             )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
