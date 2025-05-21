@@ -10,7 +10,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - .:/usr/src/app # 로컬 파일 변경 시 컨테이너에 반영
+      - ./:/usr/src/app:delegated
+      - /usr/src/app/node_modules/
     networks:
       - mensclub-networks  
 
