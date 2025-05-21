@@ -1,9 +1,11 @@
 FROM node:18-alpine AS builder
 
-WORKDIR /app
-COPY . ./
+WORKDIR /usr/src/app 
+
 RUN npm install 
+
+COPY . . 
 
 ENV WDS_SOCKET_PORT=0 
 
-CMD ["npm","run","start"]
+CMD ["npm", "run", "start-watch"]
