@@ -10,4 +10,4 @@ COPY . .
 
 ENV WDS_SOCKET_PORT=0 
 
-CMD ["npm", "run", "start-watch"]
+CMD ["npm", "run", "start"]
