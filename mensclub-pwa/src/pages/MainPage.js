@@ -313,7 +313,7 @@ function MainPage() {
             ]}
           />
           <div className="service-box desktop-only">
-            <h2>남성 맞춤 패션 스타일링 서비스 으죠링</h2>
+            <h2>남성 맞춤 패션 스타일링 서비스 테스트2</h2>
             <p>스타일, 서비스 고객 맞춤 특별 구매하세요!</p>
             <Link to="/camera">
               <button>1분만에 쇼핑 추천받기</button>
@@ -331,7 +331,7 @@ function MainPage() {
 
         <div className="coordination-section">
           <div className="section-header">
-            <h2>오늘의 랜덤 추천 으죠링</h2>
+            <h2>오늘의 랜덤 추천 테스트2</h2>
           </div>
           <div className="coordination-cards" ref={randomCardsRef}>
             {randomRecommends.map(renderCard)}
