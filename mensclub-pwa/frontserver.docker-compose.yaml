@@ -5,11 +5,12 @@ services:
       - ./.env
     environment:
       - FRONT_GCR_CONTAINER=${FRONT_GCR_CONTAINER}
+      - WATCHPACK_POLLING=true
     image: ${FRONT_GCR_CONTAINER}
     ports:
       - "3000:3000"
     volumes:
-      - ./src:/app_base/src
+      - ./src:/app/src
     networks:
       - mensclub-networks  
 
