@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Clothes",
             fields=[
-                ("idx", models.IntegerField(primary_key=True, serialize=False)),
+                ("id", models.IntegerField(primary_key=True, serialize=False)),
                 ("style", models.TextField(blank=True, null=True)),
                 ("season", models.TextField(blank=True, null=True)),
                 ("fit", models.TextField(blank=True, null=True)),
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Shoes",
             fields=[
-                ("idx", models.IntegerField(primary_key=True, serialize=False)),
+                ("id", models.IntegerField(primary_key=True, serialize=False)),
                 ("color", models.TextField(null=True)),
                 ("sub_category", models.TextField(null=True)),
                 ("season", models.TextField(null=True)),

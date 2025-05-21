@@ -119,7 +119,7 @@ function FashionPage() {
 
       // 상세 페이지로 이동 (API 경로 포함)
       navigate(
-        `/product-detail/${items[0].idx}?recommendationId=${recommendationId}&source=fashion&apiPath=/api/picked/v1/recommend_picked/${recommendationId}`
+        `/product-detail/${items[0].id}?recommendationId=${recommendationId}&source=fashion&apiPath=/api/picked/v1/recommend_picked/${recommendationId}`
       );
     }
   };
@@ -465,11 +465,9 @@ function FashionPage() {
                       className={`image-grid images-${items.length}`}
                       ref={(el) => setImageGridRef(index, el)}
                       style={{ cursor: 'grab' }}>
-                      {items.map((item, idx) => (
-                        <div key={idx} className="item-image-group">
-                          {item.thumbnail_url && (
-                            <img src={item.thumbnail_url} alt={item.goods_name} className="thumbnail-img" />
-                          )}
+                      {items.map((item, id) => (
+                        <div key={id} className="item-image-group">
+                          {item.s3_path && <img src={item.s3_path} alt={item.goods_name} className="thumbnail-img" />}
                           <div className="item-info">
                             <div className="sub-category-label">{item.sub_category || item.category}</div>
                             <div className="item-price">{item.price?.toLocaleString()}원</div>

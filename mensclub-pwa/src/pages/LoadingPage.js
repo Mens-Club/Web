@@ -172,7 +172,8 @@ const LoadingPage = ({ isEmbedded = false }) => {
           const uploadController = new AbortController();
           const uploadTimeoutId = setTimeout(() => uploadController.abort(), 15000); // 15초 타임아웃
 
-          const uploadRes = await fetch('https://mensclub-backend.store/api/account/v1/upload-image/', {
+          // const uploadRes = await fetch('https://mensclub-backend.store/api/account/v1/upload-image/', {
+          const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
             method: 'POST',
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData,
@@ -194,7 +195,8 @@ const LoadingPage = ({ isEmbedded = false }) => {
           const recommendController = new AbortController();
           const recommendTimeoutId = setTimeout(() => recommendController.abort(), 20000); // 20초 타임아웃
 
-          const recommendRes = await fetch('https://mensclub-backend.store/api/recommend/v1/generator/', {
+          // const recommendRes = await fetch('https://mensclub-backend.store/api/recommend/v1/generator/', {
+          const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -300,9 +302,9 @@ const LoadingPage = ({ isEmbedded = false }) => {
               코디는…
             </div>
             <div className="icon-grid icon-grid-camera">
-              {icons.map((src, idx) => (
-                <div className="icon-cell" key={idx}>
-                  <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+              {icons.map((src, id) => (
+                <div className="icon-cell" key={id}>
+                  <img src={src} alt={`아이콘 ${id + 1}`} width="38" height="38" />
                 </div>
               ))}
             </div>
@@ -311,9 +313,9 @@ const LoadingPage = ({ isEmbedded = false }) => {
           <div className="mypage-loading-box">
             <div className="basic-loading-title">로딩중...</div>
             <div className="icon-grid icon-grid-basic">
-              {icons.map((src, idx) => (
-                <div className="icon-cell" key={idx}>
-                  <img src={src} alt={`아이콘 ${idx + 1}`} width="38" height="38" />
+              {icons.map((src, id) => (
+                <div className="icon-cell" key={id}>
+                  <img src={src} alt={`아이콘 ${id + 1}`} width="38" height="38" />
                 </div>
               ))}
             </div>
