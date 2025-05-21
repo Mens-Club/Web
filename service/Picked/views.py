@@ -167,20 +167,9 @@ class MainRandomAPIView(APIView):
     )
     def get(self, request):
         count = int(request.query_params.get("count", 3))
-        cache_key = f"main_random_recommendations_{count}"
 
-        # Redis에서 캐시된 데이터 조회
-        cached_data = cache.get(cache_key)
-        if cached_data:
-            print(f"[REDIS] Cache hit for key: {cache_key}")
-            return Response(cached_data)
-
-        print(f"[REDIS] Cache miss for key: {cache_key}")
         items = MainRecommendation.objects.order_by("?")[:count]
         serialized_data = MainRecommendationSerializer(items, many=True).data
-
-        # Redis에 저장 (예: 5분간 캐시)
-        cache.set(cache_key, serialized_data, timeout=300)
 
         return Response(serialized_data)
 

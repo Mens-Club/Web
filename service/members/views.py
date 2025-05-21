@@ -197,21 +197,26 @@ class SocialLoginCallbackView(View):
         return redirect("/")
 
 
+
 class UpdateView(RetrieveUpdateAPIView):
     serializer_class = UpdateSerializer
-    permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        # JWT 토큰에서 인증된 사용자 반환
         return self.request.user
 
     @swagger_auto_schema(request_body=UpdateSerializer)
     def put(self, request):
-        user = request.user  # JWT 토큰을 통해 로그인된 사용자 정보 가져오기
+        user = request.user
         serializer = UpdateSerializer(user, data=request.data)
 
         if serializer.is_valid():
-            serializer.save()  # 데이터 업데이트
+            serializer.save()
+
+            # 캐시 삭제
+            cache_key = f"user_info:{user.id}"
+            redis_client.delete(cache_key)
+
             return Response(
                 {
                     "message": "회원 정보가 성공적으로 수정되었습니다.",
