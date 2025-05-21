@@ -9,9 +9,6 @@ services:
     image: ${FRONT_GCR_CONTAINER}
     ports:
       - "3000:3000"
-    volumes:
-      - ./:/usr/src/app:delegated
-      - /usr/src/app/node_modules/
     networks:
       - mensclub-networks  
 
