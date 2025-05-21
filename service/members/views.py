@@ -1,35 +1,29 @@
-from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import AllowAny
-from .serializers import (
-    SignupSerializer,
-    LoginSerializer,
-    UpdateSerializer,
-    ChangePasswordSerializer,
-    FindEmailSerializer,
-    UserImageUploadSerializer,
-)
-from django.contrib.auth import get_user_model
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.generics import RetrieveUpdateAPIView
-from rest_framework.permissions import IsAuthenticated
-from django.core.files.storage import default_storage
 from django.conf import settings
-
-from django.views.generic import View
+from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-import requests
+from django.utils import timezone
+from django.views.generic import View
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from .serializers import (
+    ChangePasswordSerializer,
+    FindEmailSerializer,
+    LoginSerializer,
+    SignupSerializer,
+    UpdateSerializer,
+    UserImageUploadSerializer,
+)
+import json, os, redis, requests
 
-##사용자 정보 캐시 저장
-import hashlib
-from django.core.cache import cache
-from django.utils import timezone  # 로그인 시간 업데이트용
-
-from .models import UserUpload
+CACHE_URL = os.getenv("CACHE_URL", "redis://localhost:6379/0")
+redis_client = redis.from_url(CACHE_URL, decode_responses=True)
 
 User = get_user_model()
 
@@ -189,8 +183,8 @@ class SocialLoginCallbackView(View):
             print(f"리프레시: {refresh_token}")
 
             # 프론트엔드 리다이렉트 URL
-            # frontend_url = "https://mensclub-fashion.store/social-callback"
-            frontend_url = "http://localhost:3000/social-callback"
+            frontend_url = "https://mensclub-fashion.store/social-callback"
+            # frontend_url = "http://localhost:3000/social-callback"
 
             # 토큰을 쿼리 파라미터로 추가하여 리다이렉트
             redirect_url = (
@@ -206,19 +200,23 @@ class SocialLoginCallbackView(View):
 
 class UpdateView(RetrieveUpdateAPIView):
     serializer_class = UpdateSerializer
-    permission_classes = [IsAuthenticated]  # 로그인한 사용자만 접근 가능
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        # JWT 토큰에서 인증된 사용자 반환
         return self.request.user
 
     @swagger_auto_schema(request_body=UpdateSerializer)
     def put(self, request):
-        user = request.user  # JWT 토큰을 통해 로그인된 사용자 정보 가져오기
+        user = request.user
         serializer = UpdateSerializer(user, data=request.data)
 
         if serializer.is_valid():
-            serializer.save()  # 데이터 업데이트
+            serializer.save()
+
+            # 캐시 삭제
+            cache_key = f"user_info:{user.id}"
+            redis_client.delete(cache_key)
+
             return Response(
                 {
                     "message": "회원 정보가 성공적으로 수정되었습니다.",
@@ -284,22 +282,28 @@ class UserInfoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user  # ✅ 현재 로그인한 사용자
+        user = request.user
+        cache_key = f"user_info:{user.id}"
 
-        return Response(
-            {
-                "user_id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "height": user.height,
-                "weight": user.weight,
-            },
-            status=status.HTTP_200_OK,
-        )
+        # Redis에서 캐시 조회
+        cached = redis_client.get(cache_key)
+        if cached:
+            data = json.loads(cached)
+            return Response(data, status=status.HTTP_200_OK)
 
+        # 캐시 없으면 DB에서 가져오기
+        data = {
+            "user_id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "height": user.height,
+            "weight": user.weight,
+        }
 
-from rest_framework.generics import GenericAPIView
-from drf_yasg import openapi
+        # Redis에 캐시 저장 (예: 300초 = 5분)
+        redis_client.set(cache_key, json.dumps(data), ex=300)
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class UserImageUploadView(GenericAPIView):

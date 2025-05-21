@@ -153,7 +153,6 @@ class MainRecommendation(models.Model):
 
     class Meta:
         db_table = "recommend_main_recommendation"
-        managed = False  # Django가 이 테이블을 관리하지 않도록 설정
         ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
@@ -182,7 +181,6 @@ class MainRecommendationBookmark(models.Model):
 
     class Meta:
         db_table = "recommend_main_bookmark"
-        managed = False  # Django가 이 테이블을 관리하지 않도록 설정
         unique_together = ("user", "main_recommendation")
         ordering = ["-created_at"]
 

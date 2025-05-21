@@ -47,6 +47,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
         if item is None:
             return None
         return {
+            "id": item.id,
             "category": item.sub_category,
             "goods_name": item.goods_name,
             "goods_url": item.goods_url,

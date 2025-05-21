@@ -1,11 +1,12 @@
-from django.utils import timezone
-from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from django.core.cache import cache
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from recommend.models import Recommendation, RecommendationBookmark, MainRecommendation, MainRecommendationBookmark
 from .serializers import RecommendationSerializer, MainRecommendationSerializer, RecommendationBookmarkSerializer, MainRecommendationBookmarkSerializer
 
@@ -41,22 +42,40 @@ class RecommendPicked(APIView):
         except Recommendation.DoesNotExist:
             return Response({"error": "Recommendation not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # 기존 북마크가 있는지 확인
         try:
             bookmark = RecommendationBookmark.objects.get(user=user, recommendation=recommendation)
-            # 북마크가 있으면 삭제
             bookmark.delete()
+
+            # Redis 캐시 무효화
+            cache.delete(f"bookmark_user_{user.id}_newest")
+            cache.delete(f"bookmark_user_{user.id}_oldest")
+            cache.delete(f"bookmark_user_{user.id}_price_high")
+            cache.delete(f"bookmark_user_{user.id}_price_low")
+            cache.delete(f"bookmark_user_{user.id}_style_미니멀")
+            cache.delete(f"bookmark_user_{user.id}_style_캐주얼")
+            print("Redis 캐시 삭제됨 (북마크 삭제됨)")
+
             return Response({
                 "message": "Bookmark deleted.",
                 "status": "deleted"
             }, status=status.HTTP_200_OK)
+
         except RecommendationBookmark.DoesNotExist:
-            # 북마크가 없으면 생성
             RecommendationBookmark.objects.create(
                 user=user,
                 recommendation=recommendation,
                 created_at=timezone.now()
             )
+
+            # Redis 캐시 무효화
+            cache.delete(f"bookmark_user_{user.id}_newest")
+            cache.delete(f"bookmark_user_{user.id}_oldest")
+            cache.delete(f"bookmark_user_{user.id}_price_high")
+            cache.delete(f"bookmark_user_{user.id}_price_low")
+            cache.delete(f"bookmark_user_{user.id}_style_미니멀")
+            cache.delete(f"bookmark_user_{user.id}_style_캐주얼")
+            print("Redis 캐시 삭제됨 (북마크 생성됨)")
+
             return Response({
                 "message": "Bookmark created.",
                 "status": "created"
@@ -94,11 +113,19 @@ class MainPicked(APIView):
         except MainRecommendation.DoesNotExist:
             return Response({"error": "MainRecommendation not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # 기존 북마크가 있는지 확인
         try:
             bookmark = MainRecommendationBookmark.objects.get(user=user, main_recommendation=main_recommendation)
             # 북마크가 있으면 삭제
             bookmark.delete()
+
+            # Redis 캐시 무효화
+            cache.delete(f"mainbookmark_user_{user.id}_newest")
+            cache.delete(f"mainbookmark_user_{user.id}_oldest")
+            cache.delete(f"mainbookmark_user_{user.id}_price_high")
+            cache.delete(f"mainbookmark_user_{user.id}_price_low")
+            cache.delete(f"mainbookmark_user_{user.id}_style_미니멀")
+            cache.delete(f"mainbookmark_user_{user.id}_style_캐주얼")
+
             return Response({
                 "message": "Bookmark deleted.",
                 "status": "deleted"
@@ -110,6 +137,15 @@ class MainPicked(APIView):
                 main_recommendation=main_recommendation,
                 created_at=timezone.now()
             )
+
+            # Redis 캐시 무효화
+            cache.delete(f"mainbookmark_user_{user.id}_newest")
+            cache.delete(f"mainbookmark_user_{user.id}_oldest")
+            cache.delete(f"mainbookmark_user_{user.id}_price_high")
+            cache.delete(f"mainbookmark_user_{user.id}_price_low")
+            cache.delete(f"mainbookmark_user_{user.id}_style_미니멀")
+            cache.delete(f"mainbookmark_user_{user.id}_style_캐주얼")
+
             return Response({
                 "message": "Bookmark created.",
                 "status": "created"
@@ -130,9 +166,12 @@ class MainRandomAPIView(APIView):
         ]
     )
     def get(self, request):
-        count = int(request.query_params.get("count", 3))  # count가 없으면 기본값 3
+        count = int(request.query_params.get("count", 3))
+
         items = MainRecommendation.objects.order_by("?")[:count]
-        return Response(MainRecommendationSerializer(items, many=True).data)
+        serialized_data = MainRecommendationSerializer(items, many=True).data
+
+        return Response(serialized_data)
 
 class MainByPriceAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -233,24 +272,35 @@ class RecommendBookmarkByTimeAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get("user_id")
         order = request.query_params.get("order", "newest")
-        
+
         if not user_id:
             return Response(
                 {"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # user_id로 필터링된 북마크 데이터 가져오기
-        qs = RecommendationBookmark.objects.filter(user_id=user_id).select_related('recommendation')
+        # 캐시 키 생성
+        cache_key = f"bookmark_user_{user_id}_{order}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("✅ From Redis")
+            return Response(cached_data)
 
-        # 정렬 방식 처리
+        # DB 조회
+        qs = RecommendationBookmark.objects.filter(
+            user_id=user_id
+        ).select_related('recommendation')
+
         if order == 'newest':
             qs = qs.order_by('-created_at')
         else:
             qs = qs.order_by('created_at')
 
-        # 직렬화
         serializer = RecommendationBookmarkSerializer(qs, many=True)
-        return Response(serializer.data)  
+        data = serializer.data
+
+        # Redis에 저장 (TTL: 5분)
+        cache.set(cache_key, data, timeout=300)
+        return Response(data)
 
 class RecommendBookmarkByPriceAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -276,24 +326,33 @@ class RecommendBookmarkByPriceAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get("user_id")
         sort = request.query_params.get("sort")
-        
+
         if not user_id or sort not in ["high", "low"]:
             return Response(
                 {"detail": "user_id 및 sort(high/low) 필요"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # 북마크된 추천 아이템 가져오기
+        # 캐시 키 생성
+        cache_key = f"bookmark_user_{user_id}_price_{sort}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print(f"✅ From Redis")
+            return Response(cached_data)
+
+        # 북마크 데이터 쿼리
         qs = RecommendationBookmark.objects.filter(user_id=user_id).select_related('recommendation')
 
-        # 가격에 따른 정렬
         if sort == 'high':
-            qs = qs.order_by('-recommendation__total_price')  # 가격이 높은 순
+            qs = qs.order_by('-recommendation__total_price')
         else:
-            qs = qs.order_by('recommendation__total_price')  # 가격이 낮은 순
+            qs = qs.order_by('recommendation__total_price')
 
-        # 직렬화 후 응답
         serializer = RecommendationBookmarkSerializer(qs, many=True)
+
+        # 캐시 저장
+        cache.set(cache_key, serializer.data, timeout=60 * 5)
+
         return Response(serializer.data)
     
 class RecommendBookmarkByStyleAPIView(APIView):
@@ -321,15 +380,23 @@ class RecommendBookmarkByStyleAPIView(APIView):
         user_id = request.query_params.get('user_id')
         style = request.query_params.get('style')
         
-        # 필수 파라미터 확인
         if not user_id or style not in ['미니멀', '캐주얼']:
             return Response({"detail": "user_id 및 style(미니멀/캐주얼) 필요"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # recommendation__style로 스타일 필터링
-        qs = RecommendationBookmark.objects.filter(user_id=user_id, recommendation__style=style).select_related('recommendation')
+        cache_key = f"bookmark_user_{user_id}_style_{style}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print("✅ From Redis")
+            return Response(cached_data)
 
-        # 직렬화 후 응답
+        qs = RecommendationBookmark.objects.filter(
+            user_id=user_id,
+            recommendation__style=style
+        ).select_related('recommendation')
+
         serializer = RecommendationBookmarkSerializer(qs, many=True)
+        cache.set(cache_key, serializer.data, timeout=60 * 5)  # 5분 캐시
+
         return Response(serializer.data)
 
 class MainRecommendBookmarkByTimeAPIView(APIView):
@@ -344,23 +411,30 @@ class MainRecommendBookmarkByTimeAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get("user_id")
         order = request.query_params.get("order", "newest")
-        
+
         if not user_id:
             return Response(
                 {"detail": "user_id 필요"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # MainRecommendationBookmark에서 필터링하여 가져옵니다.
+
+        cache_key = f"mainbookmark_user_{user_id}_{order}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print(f"✅ From Redis")
+            return Response(cached_data)
+
         qs = MainRecommendationBookmark.objects.filter(user_id=user_id).select_related('main_recommendation')
-        
-        # 정렬 방식 처리 (newest 또는 oldest)
+
         if order == 'newest':
             qs = qs.order_by('-created_at')
         else:
             qs = qs.order_by('created_at')
 
-        # 직렬화 후 응답
         serializer = MainRecommendationBookmarkSerializer(qs, many=True)
+
+        # Redis 캐시에 5분간 저장
+        cache.set(cache_key, serializer.data, timeout=60 * 5)
+
         return Response(serializer.data)
 
 class MainRecommendBookmarkByPriceAPIView(APIView):
@@ -375,23 +449,30 @@ class MainRecommendBookmarkByPriceAPIView(APIView):
     def get(self, request):
         user_id = request.query_params.get("user_id")
         sort = request.query_params.get("sort")
+
         if not user_id or sort not in ["high", "low"]:
             return Response(
                 {"detail": "user_id 및 sort(high/low) 필요"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # MainRecommendationBookmark에서 user_id로 필터링하여 관련 데이터를 가져옵니다.
+        cache_key = f"mainbookmark_user_{user_id}_price_{sort}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print(f"✅ From Redis")
+            return Response(cached_data)
+
         qs = MainRecommendationBookmark.objects.filter(user_id=user_id).select_related('main_recommendation')
 
-        # 'high'로 정렬하면 total_price가 높은 순서대로, 'low'로 정렬하면 낮은 순서대로 정렬
         if sort == 'high':
             qs = qs.order_by('-main_recommendation__total_price')
         else:
             qs = qs.order_by('main_recommendation__total_price')
 
-        # 직렬화 후 응답
         serializer = MainRecommendationBookmarkSerializer(qs, many=True)
+
+        cache.set(cache_key, serializer.data, timeout=60 * 5)
+
         return Response(serializer.data)
 
 class MainRecommendBookmarkByStyleAPIView(APIView):
@@ -421,11 +502,20 @@ class MainRecommendBookmarkByStyleAPIView(APIView):
         if not user_id or style not in ['미니멀', '캐주얼']:
             return Response({"detail": "user_id 및 style(미니멀/캐주얼) 필요"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # MainRecommendationBookmark에서 스타일로 필터링하여 관련 데이터를 가져옵니다.
-        qs = MainRecommendationBookmark.objects.filter(user_id=user_id, main_recommendation__style=style).select_related('main_recommendation')
+        cache_key = f"mainbookmark_user_{user_id}_style_{style}"
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            print(f"✅ From Redis")
+            return Response(cached_data)
 
-        # 직렬화 후 응답
+        qs = MainRecommendationBookmark.objects.filter(
+            user_id=user_id, main_recommendation__style=style
+        ).select_related('main_recommendation')
+
         serializer = MainRecommendationBookmarkSerializer(qs, many=True)
+
+        cache.set(cache_key, serializer.data, timeout=60 * 5)
+
         return Response(serializer.data)
     
 class RecommendationDetailView(RetrieveAPIView):

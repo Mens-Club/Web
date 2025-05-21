@@ -25,8 +25,8 @@ class ClothesDocument(Document):
             "main_category",
             "sub_category",
             "style",
-            # 'created_at',
-            # 'updated_at',
+            "created_at",
+            "updated_at",
             "image_id",
             "s3_path",
         ]
@@ -52,8 +52,8 @@ class ShoesDocument(Document):
             "normal_price",
             "price",
             "sub_category",
-            # 'created_at',
-            # 'updated_at',
+            "created_at",
+            "updated_at",
             "image_id",
             "s3_path",
         ]

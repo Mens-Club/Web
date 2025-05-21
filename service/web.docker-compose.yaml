@@ -2,7 +2,7 @@ services:
   django:
     image: ${BACK_GCR_CONTAINER}
     container_name: backends
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --reload
     volumes:
       - ./:/usr/src/django/
     ports:
@@ -15,7 +15,7 @@ services:
   celery:
     container_name: Django_Celery
     image: ${BACK_GCR_CONTAINER}
-    command: celery -A config worker --loglevel=info
+    command: celery -A config worker --loglevel=info --autoreload
     volumes:
       - ./:/usr/src/django/
     env_file:

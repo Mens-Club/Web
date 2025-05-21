@@ -5,8 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 es = Elasticsearch(settings.ELASTICSEARCH_URL,
-                   basic_auth=(os.getenv("ELASTICSEARCH_KEY"), os.getenv("ELASTICSEARCH_ACCESS"))
-                )
+                   basic_auth=(os.getenv("ELASTICSEARCH_KEY"), os.getenv("ELASTICSEARCH_ACCESS")))
 
 def search_items_by_category(recommend_json, season, color_palette, styles):
     """각 카테고리별 아이템 검색"""
@@ -49,6 +48,7 @@ def search_items_by_category(recommend_json, season, color_palette, styles):
                                         "minimum_should_match": 1,
                                     }
                                 },
+                                {"range": {"price": {"lte": 200000}}},  
                             ]
                         }
                     },
@@ -68,7 +68,6 @@ def search_items_by_category(recommend_json, season, color_palette, styles):
                 hits = res.get("hits", {}).get("hits", [])
 
                 if hits:
-                    # 숏팬츠 서브카테고리에 추가
                     for sub in subcategories:
                         if "숏" in sub or "반바지" in sub:
                             all_items[category].setdefault(sub, []).extend(
@@ -96,6 +95,7 @@ def search_items_by_category(recommend_json, season, color_palette, styles):
                                     }
                                 },
                                 {"wildcard": {"season": f"*{season}*"}},
+                                {"range": {"price": {"lte": 200000}}},  
                             ]
                         }
                     },
@@ -115,7 +115,6 @@ def search_items_by_category(recommend_json, season, color_palette, styles):
                 hits = res.get("hits", {}).get("hits", [])
 
                 if hits:
-                    # 모든 숏팬츠 서브카테고리에 추가 결과를 분배
                     extra_items = [hit["_source"] for hit in hits]
                     for sub in subcategories:
                         all_items[category].setdefault(sub, []).extend(extra_items)
@@ -137,6 +136,7 @@ def search_items_by_category(recommend_json, season, color_palette, styles):
                             "minimum_should_match": 1,
                         }
                     },
+                    {"range": {"price": {"lte": 200000}}},  # ✅ 적용됨
                 ]
             else:
                 # 의류는 스타일별로 개별 검색
@@ -157,6 +157,7 @@ def search_items_by_category(recommend_json, season, color_palette, styles):
                             "minimum_should_match": 1,
                         }
                     },
+                    {"range": {"price": {"lte": 200000}}},  # ✅ 추가
                 ]
 
             query = {

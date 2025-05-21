@@ -8,6 +8,8 @@ services:
     image: ${FRONT_GCR_CONTAINER}
     ports:
       - "3000:3000"
+    volumes:
+      - ./:/app
     networks:
       - mensclub-networks  
 

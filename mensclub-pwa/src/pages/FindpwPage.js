@@ -17,7 +17,7 @@ function FindpwPage() {
       return;
     }
     try {
-      const response = await fetch('https://mensclub-backend.store/api/account/v1/find_password/', {
+      const response = await fetch('https://mensclub-api.store/api/account/v1/find_password/', {
         method: 'POST',
         headers: {
           'content-Type': 'application/json',

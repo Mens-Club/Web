@@ -110,7 +110,7 @@ function SignupPage() {
         }
       );
 
-      console.log('✅ 회원가입 성공:', response.data);
+      console.log(' 회원가입 성공:', response.data);
 
       const countdownTime = 3;
       setStatus((prevStatus) => ({
