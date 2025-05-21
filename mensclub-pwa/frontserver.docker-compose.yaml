@@ -11,7 +11,6 @@ services:
       - "3000:3000"
     volumes:
       - .:/usr/src/app # 로컬 파일 변경 시 컨테이너에 반영
-      - /usr/src/app/node_modules # node_modules는 볼륨 매핑 제외
     networks:
       - mensclub-networks  
 
