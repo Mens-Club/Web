@@ -433,6 +433,11 @@ h1 {
 }
 
 @media (max-width: 600px) {
+  .main-content {
+    padding-left: 6vw;
+    padding-right: 6vw;
+  }
+
   .card {
     min-width: 180px;
   }
