@@ -35,6 +35,7 @@ def get_recommendation(base64_image, rag_context):
     3) 이미지에 나타난 **주요 아이템은 해당 카테고리에서 제외**하고, 나머지 카테고리에서는 추천을 제공합니다.
     4) "recommend" 항목에는 **season**, **sub_category**, **main_category** 등의 필드를 추가하지 마세요.
     5) 참고 가이드라인에서 특정 카테고리가 빈 리스트([])일 경우, **임의로 항목을 추가하지 말고 빈 리스트 그대로 출력**해야 합니다.
+    6) JSON 외의 설명은 출력하지 마세요.
     """
     
     payload = {
