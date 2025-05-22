@@ -7,8 +7,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path('recommend_picked/toggle', RecommendPicked.as_view(), name='picked_view'),
-    path('main_picked/toggle', MainPicked.as_view(), name='main_picked_view'),
+    path('recommend_picked/toggle/', RecommendPicked.as_view(), name='picked_view'),
+    path('main_picked/toggle/', MainPicked.as_view(), name='main_picked_view'),
     path('main/random/', MainRandomAPIView.as_view(), name='main_random'),
     path('main/by-price/', MainByPriceAPIView.as_view(), name='main_by_price'),
     path('main/by-style/', MainByStyleAPIView.as_view(), name='main_by_style'),

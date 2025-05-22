@@ -420,7 +420,7 @@ class MainRecommendBookmarkByTimeAPIView(APIView):
         cache_key = f"mainbookmark_user_{user_id}_{order}"
         cached_data = cache.get(cache_key)
         if cached_data:
-            print(f"✅ From Redis")
+            print(f"From Redis")
             return Response(cached_data)
 
         qs = MainRecommendationBookmark.objects.filter(user_id=user_id).select_related('main_recommendation')
