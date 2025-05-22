@@ -105,6 +105,9 @@ jobs:
             docker logs proxy
             echo "프론트 서버 초기 로그 확인"
 
+            sleep 3 
+            echo "Docker dangling 이미지 정리"
+            docker image prune -f
 
             echo "전체 서비스 배포 완료 - 황의철 작품ㅋ"
 
