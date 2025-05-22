@@ -216,26 +216,34 @@ function CameraPage() {
               </button>
             </>
           )}
-          {step === 'preview' && (
-            <>
-              <button className="camera-upload-text-btn" onClick={retake}>
-                다시 찍기
-              </button>
-              <button className="camera-upload-text-btn" onClick={sendToServer} disabled={!imgSrc}>
-                추천 시작하기
-              </button>
-            </>
-          )}
-          {step === 'analyzed' && (
-            <>
-              <button className="camera-upload-text-btn" onClick={retake}>
-                다시 찍기
-              </button>
-              <button className="camera-upload-text-btn" onClick={goToFashionPage}>
-                추천 코디보기
-              </button>
-            </>
-          )}
+        {step === 'preview' && (
+        <>
+          <button className="camera-upload-text-btn" onClick={retake}>
+            다시 찍기
+          </button>
+          <button
+            className="camera-upload-text-btn start-recommend-btn" // ✅ 새 클래스
+            onClick={sendToServer}
+            disabled={!imgSrc}
+          >
+            추천 시작하기
+          </button>
+        </>
+      )}
+      {step === 'analyzed' && (
+        <>
+          <button className="camera-upload-text-btn" onClick={retake}>
+            다시 찍기
+          </button>
+          <button
+            className="camera-upload-text-btn show-recommend-btn" // ✅ 새 클래스
+            onClick={goToFashionPage}
+          >
+            추천 코디보기
+          </button>
+        </>
+      )}
+
         </div>
         {/* 상태/로딩 메시지 */}
         {step !== 'init' && (
