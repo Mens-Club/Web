@@ -508,16 +508,16 @@ function FashionPage() {
               </div>
             )}
           </div>
-          {/* 커스텀 확인 모달 */}
-          <ConfirmModal
-            isOpen={showModal}
-            onCancel={handleCancelModal}
-            onConfirm={handleConfirmModal}
-            title={modalTitle}
-            message={modalMessage}
-          />
         </div>
       </div>
+      {/* 커스텀 확인 모달 */}
+      <ConfirmModal
+        isOpen={showModal}
+        onCancel={handleCancelModal}
+        onConfirm={handleConfirmModal}
+        title={modalTitle}
+        message={modalMessage}
+      />
     </div>
   );
 }
