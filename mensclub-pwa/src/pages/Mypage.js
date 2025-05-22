@@ -343,23 +343,7 @@ function MyPage() {
 
             {displayedOutfits.length > 0 ? (
               <>
-                <div
-                  className="outfit-grid"
-                  ref={outfitGridRef}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleDragEnd}
-                  onMouseLeave={handleDragEnd}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove} // 이 부분 추가
-                  onTouchEnd={handleDragEnd}
-                  style={{
-                    cursor: 'grab',
-                    overflowX: 'hidden',
-                    whiteSpace: 'nowrap',
-                    userSelect: 'none',
-                    touchAction: 'pan-y', // 수직 스크롤은 허용하고 수평만 제어
-                  }}>
+                <div className="outfit-grid">
                   {displayedOutfits.map((item) => {
                     const data = tab === 'club' ? item.main_recommendation || item.combination || item : item;
                     return (
