@@ -116,9 +116,10 @@ const LoadingPage = ({ isEmbedded = false }) => {
       const token = sessionStorage.getItem('accessToken');
       const imgSrc = sessionStorage.getItem('imgSrc');
 
-      // 이미지 유효성 검사 강화
+      // 이미지 유효성 검사
       if (!imgSrc || imgSrc === 'null' || imgSrc === 'undefined') {
         alert('이미지를 찾을 수 없습니다. 카메라 페이지로 이동합니다.');
+
         // 세션 스토리지 정리 (잘못된 이미지 데이터 삭제)
         sessionStorage.removeItem('imgSrc');
         sessionStorage.removeItem('cameraStep');
@@ -141,7 +142,39 @@ const LoadingPage = ({ isEmbedded = false }) => {
         }
       }
 
-      // 재시도 관련 변수
+      // 이미지 업로드가 이미 완료되었는지 확인
+      let imageUrl = sessionStorage.getItem('capturedImageUrl');
+      let uploadData;
+
+      // 이미지 업로드가 아직 안 된 경우만 업로드 (추가 이미지 업로드 방지)
+      if (!imageUrl) {
+        // 1. Blob 변환
+        const res = await fetch(imgSrc);
+        const blob = await res.blob();
+        const formData = new FormData();
+        formData.append('image', blob, 'photo.jpg');
+
+        // 2. 업로드 - 타임아웃 설정 추가
+        const uploadController = new AbortController();
+        const uploadTimeoutId = setTimeout(() => uploadController.abort(), 15000);
+
+        const uploadRes = await api.post('/api/account/v1/upload-image/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          signal: uploadController.signal,
+        });
+        clearTimeout(uploadTimeoutId);
+
+        // 이미지 업로드 후 세션스토리지에 저장
+        // 이 작업이 완료되면 다시 실행되지 않음
+        uploadData = uploadRes.data;
+        imageUrl = uploadData.image_url;
+        sessionStorage.setItem('capturedImageUrl', imageUrl);
+      }
+
+      // 업로드 완려되면, 추천 요청만 보냄
       let currentRetryCount = 0;
       const maxRetries = 3;
       let success = false;
@@ -162,50 +195,23 @@ const LoadingPage = ({ isEmbedded = false }) => {
             await new Promise((resolve) => setTimeout(resolve, delay));
           }
 
-          // 1. Blob 변환
-          const res = await fetch(imgSrc);
-          const blob = await res.blob();
-          const formData = new FormData();
-          formData.append('image', blob, 'photo.jpg');
-
-          // 2. 업로드 - 타임아웃 설정 추가
-          const uploadController = new AbortController();
-          const uploadTimeoutId = setTimeout(() => uploadController.abort(), 15000); // 15초 타임아웃
-
-          const uploadRes = await fetch('https://mensclub-api.store/api/account/v1/upload-image/', {
-            // const uploadRes = await fetch('http://localhost:8000/api/account/v1/upload-image/', {
-
-            method: 'POST',
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-            body: formData,
-            signal: uploadController.signal,
-          });
-
-          clearTimeout(uploadTimeoutId);
-
-          if (!uploadRes.ok) {
-            const uploadData = await uploadRes.json();
-            throw new Error(uploadData.detail || '이미지 업로드 실패');
-          }
-
-          const uploadData = await uploadRes.json();
-          const imageUrl = uploadData.image_url;
-          sessionStorage.setItem('capturedImageUrl', imageUrl);
-
           // 3. 분석 요청 - 타임아웃 설정 추가
           const recommendController = new AbortController();
-          const recommendTimeoutId = setTimeout(() => recommendController.abort(), 20000); // 20초 타임아웃
+          const recommendTimeoutId = setTimeout(() => recommendController.abort(), 25000); // 25초 타임아웃
 
-          const recommendRes = await fetch('https://mensclub-api.store/api/recommend/v1/generator/', {
-            // const recommendRes = await fetch('http://localhost:8000/api/recommend/v1/generator/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { Authorization: `Bearer ${token}` }),
+          const recommendRes = await api.post(
+            '/api/recommend/v1/generator/',
+            {
+              image_url: imageUrl,
             },
-            body: JSON.stringify({ image_url: imageUrl }),
-            signal: recommendController.signal,
-          });
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token && { Authorization: `Bearer ${token}` }),
+              },
+              signal: recommendController.signal,
+            }
+          );
 
           clearTimeout(recommendTimeoutId);
 
@@ -214,12 +220,8 @@ const LoadingPage = ({ isEmbedded = false }) => {
             throw new Error(`서버 오류 (${recommendRes.status})`);
           }
 
-          if (!recommendRes.ok) {
-            const recommendData = await recommendRes.json();
-            throw new Error(recommendData.detail || '추천 요청 실패');
-          }
-
-          const recommendData = await recommendRes.json();
+          // axios에는 ok 속성이 없으므로, status로 판단
+          const recommendData = recommendRes.data;
 
           // 결과 유효성 검사 (빈 결과인지 확인)
           if (
@@ -241,9 +243,9 @@ const LoadingPage = ({ isEmbedded = false }) => {
           success = true; // 성공 플래그 설정
           setRetryCount(0);
           setRetryMessage('');
-
           // 5. 이동 경로 조건부 처리
           navigate('/camera', { replace: true }); // 항상 패션 페이지로 이동하도록 수정
+
           break; // 성공했으므로 반복문 종료
         } catch (err) {
           console.error(`시도 ${currentRetryCount + 1}/${maxRetries + 1} 실패:`, err);

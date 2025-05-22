@@ -17,7 +17,6 @@ import FindPWPage from './pages/FindpwPage.js';
 import LoadingPage from './pages/LoadingPage.js';
 
 import SettingPage from './pages/SettingPage.js';
-import ResetSetPage from './pages/ResetPwPage.js';
 import DetailPage from './pages/DetailPage.js';
 import EditProfilePage from './pages/EditProfilePage.js';
 import SetPasswordPage from './pages/SetPasswordPage.js';
@@ -166,7 +165,7 @@ function AppWithNav() {
               </PageWrapper>
             }
           />
-           <Route
+          <Route
             path="/camera-guide"
             element={
               <PageWrapper>

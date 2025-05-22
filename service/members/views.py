@@ -198,7 +198,6 @@ class SocialLoginCallbackView(View):
         return redirect("/")
 
 
-
 class UpdateView(RetrieveUpdateAPIView):
     serializer_class = UpdateSerializer
     permission_classes = [IsAuthenticated]

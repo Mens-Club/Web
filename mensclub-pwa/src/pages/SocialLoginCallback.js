@@ -16,10 +16,7 @@ function SocialLoginCallback() {
         // 토큰 저장
         sessionStorage.setItem('accessToken', token);
         sessionStorage.setItem('refreshToken', refresh);
-
-        // 저장 확인
         const savedToken = sessionStorage.getItem('accessToken');
-        console.log('저장된 토큰 확인:', savedToken);
 
         if (savedToken) {
           setTimeout(() => {
@@ -33,12 +30,6 @@ function SocialLoginCallback() {
         // 토큰이 없으면 로그인 페이지로
         navigate('/');
       }
-      // 직접 URL 변경으로 시도 (navigate 대신)
-      //   window.location.href = '/main';
-      // } else {
-      //   console.log('토큰 없음, 로그인 페이지로 이동');
-      //   window.location.href = '/';
-      // }
     };
 
     handleSocialLogin();
