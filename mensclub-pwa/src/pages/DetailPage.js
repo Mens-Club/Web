@@ -116,7 +116,7 @@ function DetailPage() {
     slider.addEventListener('mouseleave', handleMouseLeave);
     slider.addEventListener('mouseup', handleMouseUp);
     slider.addEventListener('mousemove', handleMouseMove);
-  
+
     // a 태그 클릭 이벤트 처리
     const clickHandlers = new Map();
     const links = slider.querySelectorAll('a');
@@ -476,7 +476,8 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(-1);
-                }}>
+                }}
+              >
                 <FontAwesomeIcon icon={faChevronLeft} />
               </div>
               <div
@@ -484,7 +485,8 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(1);
-                }}>
+                }}
+              >
                 <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
@@ -534,7 +536,8 @@ function DetailPage() {
                       href={product.goods_url || '#'}
                       className="product-link"
                       target="_blank"
-                      rel="noopener noreferrer">
+                      rel="noopener noreferrer"
+                    >
                       상품 구매하기
                     </a>
                   </div>

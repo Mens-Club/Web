@@ -311,7 +311,8 @@ function MyPage() {
                       setFilter({ style: value, order: null });
                     }
                   }}
-                  value={filter.style ? `style:${filter.style}` : `order:${filter.order}`}>
+                  value={filter.style ? `style:${filter.style}` : `order:${filter.order}`}
+                >
                   <option value="order:newest">최신순</option>
                   <option value="order:oldest">오래된순</option>
                   <option value="order:high">높은가격순</option>
@@ -328,7 +329,8 @@ function MyPage() {
                   setTab('ai');
                   setFilter({ order: 'newest', style: null });
                 }}
-                className={tab === 'ai' ? 'active' : ''}>
+                className={tab === 'ai' ? 'active' : ''}
+              >
                 AI 추천 아웃핏
               </button>
               <button
@@ -336,7 +338,8 @@ function MyPage() {
                   setTab('club');
                   setFilter({ order: 'newest', style: null });
                 }}
-                className={tab === 'club' ? 'active' : ''}>
+                className={tab === 'club' ? 'active' : ''}
+              >
                 MEN'S CLUB 아웃핏
               </button>
             </div>
@@ -351,7 +354,8 @@ function MyPage() {
                         key={item.uuid || item.id}
                         className="outfit-card"
                         onClick={() => handleCardClick(item)}
-                        style={{ cursor: 'pointer' }}>
+                        style={{ cursor: 'pointer' }}
+                      >
                         <div className="image-container">
                           {tab === 'ai' ? (
                             <div className="outfit-items-grid items-4">
@@ -425,7 +429,8 @@ function MyPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleLike(item);
-                              }}>
+                              }}
+                            >
                               <FontAwesomeIcon
                                 icon={likedMap[item.uuid || item.id] ? solidHeart : regularHeart}
                                 className={`heart-icon ${likedMap[item.uuid || item.id] ? 'liked' : ''}`}
@@ -442,7 +447,8 @@ function MyPage() {
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <button
                       className="more-button"
-                      onClick={() => setVisibleCount((prev) => Math.min(prev + outfitsPerPage, allOutfits.length))}>
+                      onClick={() => setVisibleCount((prev) => Math.min(prev + outfitsPerPage, allOutfits.length))}
+                    >
                       SHOW MORE ({Math.ceil(visibleCount / outfitsPerPage)}/
                       {Math.ceil(allOutfits.length / outfitsPerPage)})
                     </button>
