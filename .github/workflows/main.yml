@@ -57,14 +57,42 @@ jobs:
           docker push ${{ secrets.PROXY_REPO_NAME }}
           echo "프록시 서버 이미지 Push 완료"
 
-      - name: Connect to server and check directory 
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "서버 접속 성공"
-            pwd
-            ls -la
-            echo "현재 디렉토리 확인 완료"
+            set -e
+            echo "서버 배포 시작 (코드 직접 pull 방식)"
+            
+            # Git 최신화
+            cd /home/ubuntu/mensclub-web
+            echo "git pull로 수정내역 반영"
+            git pull origin main
+
+            ## 프론트엔드
+            echo "프론트 배포 시작"
+            cd /home/ubuntu/mensclub-web/mensclub-pwa
+            docker-compose -f frontserver.docker-compose.yaml pull
+            docker-compose -f frontserver.docker-compose.yaml down
+            docker-compose -f frontserver.docker-compose.yaml up --build -d
+
+            ## 백엔드
+            echo "백엔드 배포 시작"
+            cd /home/ubuntu/mensclub-web/service
+            docker-compose -f web.docker-compose.yaml pull
+            docker-compose -f web.docker-compose.yaml down
+            docker-compose -f web.docker-compose.yaml up --build -d
+
+            ## 프록시
+            echo "프록시 배포 시작"
+            cd /home/ubuntu/mensclub-web/nginx
+            docker-compose -f proxy.server.docker-compose.yaml pull
+            docker-compose -f proxy.server.docker-compose.yaml down
+            docker-compose -f proxy.server.docker-compose.yaml up --build -d
+
+            echo "전체 서비스 배포 완료 - 황의철 작품ㅋ"
+
+
