@@ -49,7 +49,7 @@ jobs:
           echo "백엔드 서버 이미지 Push 완료"
 
       - name: Proxy Server Push
-        working-directory: ./service
+        working-directory: ./nginx
         run: |
           set -e
           echo "프록시 서버 이미지 빌딩 중..."
@@ -57,7 +57,7 @@ jobs:
           docker push ${{ secrets.PROXY_REPO_NAME }}
           echo "프록시 서버 이미지 Push 완료"
 
-      - name: Connect to server and check directory
+      - name: Connect to server and check directory 
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
