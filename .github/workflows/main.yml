@@ -79,6 +79,9 @@ jobs:
             docker-compose -f frontserver.docker-compose.yaml down
             docker-compose -f frontserver.docker-compose.yaml up --build -d
 
+            docker logs frontend
+            echo "프론트 서버 초기 로그 확인"
+
             ## 백엔드
             echo "백엔드 배포 시작"
             cd /home/ubuntu/mensclub-web/service
@@ -86,12 +89,20 @@ jobs:
             docker-compose -f web.docker-compose.yaml down
             docker-compose -f web.docker-compose.yaml up --build -d
 
+            docker logs backends
+            echo "백엔드서버 초기 로그 확인"
+
             ## 프록시
             echo "프록시 배포 시작"
             cd /home/ubuntu/mensclub-web/nginx
             docker-compose -f proxy.server.docker-compose.yaml pull
             docker-compose -f proxy.server.docker-compose.yaml down
             docker-compose -f proxy.server.docker-compose.yaml up --build -d
+
+            
+            docker logs proxy
+            echo "프론트 서버 초기 로그 확인"
+
 
             echo "전체 서비스 배포 완료 - 황의철 작품ㅋ"
 
