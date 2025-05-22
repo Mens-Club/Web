@@ -79,6 +79,7 @@ jobs:
             docker-compose -f frontserver.docker-compose.yaml down
             docker-compose -f frontserver.docker-compose.yaml up --build -d
 
+            sleep 3
             docker logs frontend
             echo "프론트 서버 초기 로그 확인"
 
@@ -89,6 +90,7 @@ jobs:
             docker-compose -f web.docker-compose.yaml down
             docker-compose -f web.docker-compose.yaml up --build -d
 
+            sleep 3
             docker logs backends
             echo "백엔드서버 초기 로그 확인"
 
@@ -99,7 +101,7 @@ jobs:
             docker-compose -f proxy.server.docker-compose.yaml down
             docker-compose -f proxy.server.docker-compose.yaml up --build -d
 
-            
+            sleep 3
             docker logs proxy
             echo "프론트 서버 초기 로그 확인"
 
