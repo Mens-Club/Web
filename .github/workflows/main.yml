@@ -6,45 +6,106 @@ on:
 
 jobs:
   build-and-cloud-connect:
-    runs-on: ubuntu-latest 
-  
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code 
+      - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
-      - name: Configure Google Cloud SDK
-        uses: 'google-github-actions/auth@v1'
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
-      - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v1'
-      
-      - name: Login to GCR
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Docker Login to GAR
         run: |
-          # GCP 서비스 계정 키를 임시 파일로 저장
           echo '${{ secrets.GCP_SA_KEY }}' > gcp-key.json
-          
-          # GCR에 로그인
           cat gcp-key.json | docker login -u _json_key --password-stdin https://asia-northeast3-docker.pkg.dev
-          
-          # 로그인 성공 확인
-          echo "GCR 로그인 성공"
-          
-          # 보안을 위해 임시 파일 삭제
-          rm gcp-key.json
-      
-      - name: Connect to server and check directory
+          echo "GAR 로그인 성공"
+          rm gcp-key.json # 보안을 위해 삭제
+
+      - name: Front Server Push
+        working-directory: ./mensclub-pwa
+        run: |
+          set -e
+          echo "프론트 서버 이미지 빌딩 중..."
+          docker build -t ${{ secrets.FRONT_REPO_NAME }} . -f Dockerfile.React
+          docker push ${{ secrets.FRONT_REPO_NAME }}
+          echo "프론트 서버 이미지 Push 완료"
+
+      - name: Back Server Push
+        working-directory: ./service
+        run: |
+          set -e
+          echo "백엔드 서버 이미지 빌딩 중..."
+          docker build -t ${{ secrets.BACK_REPO_NAME }} . -f Dockerfile.django
+          docker push ${{ secrets.BACK_REPO_NAME }}
+          echo "백엔드 서버 이미지 Push 완료"
+
+      - name: Proxy Server Push
+        working-directory: ./nginx
+        run: |
+          set -e
+          echo "프록시 서버 이미지 빌딩 중..."
+          docker build -t ${{ secrets.PROXY_REPO_NAME }} . -f Dockerfile.proxy
+          docker push ${{ secrets.PROXY_REPO_NAME }}
+          echo "프록시 서버 이미지 Push 완료"
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "서버 접속 성공"
-            pwd
-            ls -la
-            echo "현재 디렉토리 확인 완료"
+            set -e
+            echo "서버 배포 시작 (코드 직접 pull 방식)"
+            
+            # Git 최신화
+            cd /home/ubuntu/mensclub-web
+            echo "git pull로 수정내역 반영"
+            git pull origin main
+
+            ## 프론트엔드
+            echo "프론트 배포 시작"
+            cd /home/ubuntu/mensclub-web/mensclub-pwa
+            docker-compose -f frontserver.docker-compose.yaml pull
+            docker-compose -f frontserver.docker-compose.yaml down
+            docker-compose -f frontserver.docker-compose.yaml up --build -d
+
+            sleep 3
+            docker logs frontend
+            echo "프론트 서버 초기 로그 확인"
+
+            ## 백엔드
+            echo "백엔드 배포 시작"
+            cd /home/ubuntu/mensclub-web/service
+            docker-compose -f web.docker-compose.yaml pull
+            docker-compose -f web.docker-compose.yaml down
+            docker-compose -f web.docker-compose.yaml up --build -d
+
+            sleep 3
+            docker logs backends
+            echo "백엔드서버 초기 로그 확인"
+
+            ## 프록시
+            echo "프록시 배포 시작"
+            cd /home/ubuntu/mensclub-web/nginx
+            docker-compose -f proxy.server.docker-compose.yaml pull
+            docker-compose -f proxy.server.docker-compose.yaml down
+            docker-compose -f proxy.server.docker-compose.yaml up --build -d
+
+            sleep 3
+            docker logs proxy
+            echo "프론트 서버 초기 로그 확인"
+
+
+            echo "전체 서비스 배포 완료 - 황의철 작품ㅋ"
+
+
