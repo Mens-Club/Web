@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/FindidPage.css';
+import api from '../api/axios'; // ✅ axios 인스턴스
 
 function FindidPage() {
   const [username, setName] = useState('');
@@ -15,14 +16,8 @@ function FindidPage() {
       return;
     }
     try {
-      const response = await fetch('https://mensclub-api.store/api/account/v1/find_email/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username }),
-      });
-      const data = await response.json();
+      const response = await api.post('/api/account/v1/find_email/', { username });
+      const data = response.data;
       if (response.ok) {
         if (data.email && data.email.length > 0) {
           setResult(`ID : ${data.email}`);

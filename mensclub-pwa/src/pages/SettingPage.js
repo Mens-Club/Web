@@ -37,9 +37,10 @@ function SettingPage() {
         navigate('/set-password');
       } else if (currentAction === 'preferences') {
         navigate('/set-body');
-      } else if (currentAction === 'profile') {
-        navigate('/profile');
       }
+      // else if (currentAction === 'profile') {
+      //   navigate('/profile');
+      // }
     }, 500); // ✅ 팝업 닫는 애니메이션 고려
   };
 
@@ -113,13 +114,13 @@ function SettingPage() {
               <span className="setting-arrow">→</span>
             </div>
           </div>
-          <div className="setting-menu-item" onClick={() => showPopup('profile')}>
+          {/* <div className="setting-menu-item" onClick={() => showPopup('profile')}>
             <span>프로필 설정</span>
             <div className="setting-profile-code">
               <img src="/images/logo.png" alt="프로필" className="setting-small-profile" />
               <span className="setting-arrow">→</span>
             </div>
-          </div>
+          </div> */}
           <div className="setting-menu-item" onClick={() => showPopup('logout')}>
             <span>로그아웃</span>
             <span className="setting-arrow">→</span>

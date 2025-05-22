@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/FindpwPage.css'; // CSS 파일 분리해서 import
+import api from '../api/axios';
 
 function FindpwPage() {
   const [email, setEmail] = useState('');
@@ -17,14 +18,8 @@ function FindpwPage() {
       return;
     }
     try {
-      const response = await fetch('https://mensclub-api.store/api/account/v1/find_password/', {
-        method: 'POST',
-        headers: {
-          'content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email }),
-      });
-      const data = await response.json();
+      const response = await api.post('/api/account/v1/find_password/', { username, email });
+      const data = response.data;
       if (response.ok && data.success) {
         navigate(`/reset-password?username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`);
       } else {

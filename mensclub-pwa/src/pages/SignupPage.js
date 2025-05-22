@@ -243,7 +243,7 @@ function SignupPage() {
               <div className="input-group">
                 <button className="login-btn2">Sign Up</button>
               </div>
-              {status.success && <p style={{ color: 'green' }}>{status.message}</p>}
+              {status.success && <p style={{ color: 'green', textAlign: 'center', width: '100%' }}>{status.message}</p>}
             </form>
             <div className="bottom-links">
               <Link to="/login">로그인</Link>
