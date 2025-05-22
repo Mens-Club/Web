@@ -114,7 +114,7 @@ function MainPage() {
       }
 
       // 2. 서버에 토글 요청
-      const response = await api.post('/api/picked/v1/main_picked/toggle', {
+      const response = await api.post('/api/picked/v1/main_picked/toggle/', {
         main_recommendation_id: recommendId,
       });
 
@@ -140,7 +140,7 @@ function MainPage() {
   // 모달 확인 버튼 클릭 시 실행될 함수
   const handleConfirmDelete = async () => {
     try {
-      const response = await api.post('/api/picked/v1/main_picked/toggle', {
+      const response = await api.post('/api/picked/v1/main_picked/toggle/', {
         main_recommendation_id: itemToDelete,
       });
 

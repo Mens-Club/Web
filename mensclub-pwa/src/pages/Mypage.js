@@ -227,7 +227,7 @@ function MyPage() {
       if (tab === 'ai') {
         // AI 추천 아웃핏인 경우 토글 API 사용
         await api.post(
-          '/api/picked/v1/recommend_picked/toggle',
+          '/api/picked/v1/recommend_picked/toggle/',
           { recommendation_id: item.recommendation?.id || item.id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -236,7 +236,7 @@ function MyPage() {
       } else {
         // CLUB 아웃핏인 경우 토글 API 사용
         await api.post(
-          '/api/picked/v1/main_picked/toggle',
+          '/api/picked/v1/main_picked/toggle/',
           { main_recommendation_id: item.main_recommendation?.id || item.id },
           { headers: { Authorization: `Bearer ${token}` } }
         );

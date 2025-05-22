@@ -379,7 +379,7 @@ function DetailPage() {
       }
 
       await api.post(
-        '/api/picked/v1/recommend_picked/toggle',
+        '/api/picked/v1/recommend_picked/toggle/',
         { recommendation_id: parseInt(recommendationId) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
