@@ -388,6 +388,13 @@ function FashionPage() {
     } else if (modalType === 'reset') {
       // 처음부터 다시하기 로직
       navigate('/camera');
+      // 세션 스토리지 정리 - 더 철저하게
+      sessionStorage.removeItem('imgSrc');
+      sessionStorage.removeItem('cameraStep');
+      sessionStorage.removeItem('recommendResult');
+      sessionStorage.removeItem('capturedImageUrl');
+      sessionStorage.removeItem('captureSuccess');
+      sessionStorage.removeItem('analysisCompleted');
     } else if (modalType === 'home') {
       // 메인으로 돌아가기 로직
       navigate('/main');
@@ -428,14 +435,6 @@ function FashionPage() {
     setModalTitle('다시 시작하기');
     setModalMessage('새로운 상품을 촬영하시겠습니까?');
     setShowModal(true);
-
-    // 세션 스토리지 정리 - 더 철저하게
-    sessionStorage.removeItem('imgSrc');
-    sessionStorage.removeItem('cameraStep');
-    sessionStorage.removeItem('recommendResult');
-    sessionStorage.removeItem('capturedImageUrl');
-    sessionStorage.removeItem('captureSuccess');
-    sessionStorage.removeItem('analysisCompleted');
   };
 
   // 다른 코디 추천받기 버튼 클릭 핸들러

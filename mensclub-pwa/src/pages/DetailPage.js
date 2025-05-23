@@ -391,7 +391,9 @@ function DetailPage() {
         data = { main_picked_id: parseInt(recommendationId) }; // 실제 파라미터명 확인 필요
         storageKey = 'likedItemsMap_club';
       } else {
-        throw new Error('지원되지 않는 탭입니다.');
+        endpoint = '/api/picked/v1/recommend_picked/toggle/';
+        data = { recommendation_id: parseInt(recommendationId) };
+        storageKey = 'likedItemsMap_ai';
       }
 
       await api.post(endpoint, data, { headers: { Authorization: `Bearer ${token}` } });
