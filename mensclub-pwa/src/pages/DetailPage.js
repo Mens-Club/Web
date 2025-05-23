@@ -393,7 +393,7 @@ function DetailPage() {
       } else {
         endpoint = '/api/picked/v1/recommend_picked/toggle/';
         data = { recommendation_id: parseInt(recommendationId) };
-        storageKey = 'likedItemsMap_ai';
+        storageKey = 'likedItemsMap';
       }
 
       await api.post(endpoint, data, { headers: { Authorization: `Bearer ${token}` } });
