@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     "www.mensclub-api.store",
     "mensclub-fashion.store",
     "www.mensclub-fashion.store",
+    os.getenv("MAIN_HOST")
 ]
 
 MEDIA_URL = "/media/"
