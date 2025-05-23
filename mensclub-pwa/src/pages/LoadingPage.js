@@ -268,6 +268,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
             sessionStorage.removeItem('cameraStep');
             sessionStorage.removeItem('captureSuccess');
             sessionStorage.removeItem('analysisCompleted');
+            sessionStorage.removeItem('capturedImageUrl');
 
             break; // 최대 재시도 횟수 도달, 반복문 종료
           }
@@ -288,6 +289,7 @@ const LoadingPage = ({ isEmbedded = false }) => {
       sessionStorage.removeItem('cameraStep');
       sessionStorage.removeItem('captureSuccess');
       sessionStorage.removeItem('analysisCompleted');
+      sessionStorage.removeItem('capturedImageUrl');
     } finally {
       // 분석 완료 후 플래그 해제
       isAnalyzingRef.current = false;
