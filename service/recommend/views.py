@@ -222,10 +222,11 @@ class IntegratedFashionRecommendAPIView(APIView):
             
             required_categories = SEASONAL_REQUIRED_CATEGORIES.get(season, VALIDATION_MAIN_CATEGORIES)
             
-                        
+            other_required_categories = [cat for cat in required_categories if cat != input_category]
+            
             missing_required_main_categories = [
-                cat for cat in required_categories
-                if cat != input_category and (cat not in recommend_json or not recommend_json[cat])
+                cat for cat in other_required_categories
+                if cat not in recommend_json or not recommend_json[cat]
             ]
             
             if missing_required_main_categories:
