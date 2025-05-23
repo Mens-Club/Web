@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import '../styles/Layout.css';
 
 function FirstPage() {
-  const backendBaseURL = process.env.BACKEND_API_URL;
+  const backendBaseURL = process.env.REACT_APP_BACKEND_API_URL;
 
   const handleSocialLogin = (provider) => {
     // 백엔드의 소셜 로그인 URL로 리다이렉트
@@ -28,7 +28,7 @@ function FirstPage() {
               <br />
               바로 찾아볼 수 있는
               <br />
-              mens club을 이용해보세요!
+              Men's club을 이용해보세요!
               <br />
             </p>
           </div>
