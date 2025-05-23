@@ -74,7 +74,7 @@
 }
 
 .camera-upload-text-btn {
-  background-color: #666666;
+  background-color: #88898e;
   color: white;
   border: none;
   padding: 12px 20px;
@@ -130,6 +130,16 @@
   margin-bottom: 8px;
 }
 
+  /* ✅ 추천 시작하기 버튼 색상 */
+.start-recommend-btn {
+  background-color: #2bbaee;
+}
+
+/* ✅ 추천 코디보기 버튼 색상 */
+.show-recommend-btn {
+  background-color: #2bbaee;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -176,12 +186,12 @@
 
   /* ✅ 추천 시작하기 버튼 색상 (파랑) */
 .start-recommend-btn {
-  background-color: #6f748e;
+  background-color: #2bbaee;
 }
 
 /* ✅ 추천 코디보기 버튼 색상 (초록) */
 .show-recommend-btn {
-  background-color: #6f748e;
+  background-color: #2bbaee;
 }
   .title-wrapper h1 {
     font-size: 18px;
