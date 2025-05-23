@@ -67,7 +67,7 @@ jobs:
             set -e
             echo "서버 배포 시작 (코드 직접 pull 방식)"
             
-            # Git 최신화
+            # Git 최신화 
             cd /home/ubuntu/mensclub-web
             echo "git pull로 수정내역 반영"
             git pull origin main
@@ -105,6 +105,9 @@ jobs:
             docker logs proxy
             echo "프론트 서버 초기 로그 확인"
 
+            sleep 3 
+            echo "Docker dangling 이미지 정리"
+            docker image prune -f
 
             echo "전체 서비스 배포 완료 - 황의철 작품ㅋ"
 

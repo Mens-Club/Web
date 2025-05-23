@@ -1,9 +1,12 @@
-from .categorical_data import CATEGORY
+from .categorical_data import SEASON_COLABORATION_CATEGORY
+import logging 
+
+logger = logging.getLogger(__name__)
 
 def filter_recommendation_by_season(recommendation_json, season):
     """계절별 허용된 아이템으로 추천 결과 필터링"""
     # 카테고리 데이터 가져오기
-    allowed_items = CATEGORY.get(season, {})
+    allowed_items = SEASON_COLABORATION_CATEGORY.get(season, {})
     filtered_recommend = {}
     
     for category, items in recommendation_json.get("recommend", {}).items():
@@ -38,6 +41,7 @@ def filter_recommendation_by_season(recommendation_json, season):
             
             # 필터링 후 항목이 3개 미만이면 허용 목록에서 추가
             if len(filtered_items) < 3 and allowed:
+                logger.warning(f"{category} 필터링 결과가 3개 미만입니다: {filtered_items}")
                 for candidate in allowed:
                     if candidate not in filtered_items:
                         filtered_items.append(candidate)

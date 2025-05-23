@@ -377,3 +377,18 @@ LOGGING = {
         },
     },
 }
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') # swagger https 고정
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_API_URL': 'https://mensclub-api.store',
+    'USE_SESSION_AUTH': False,
+    'VALIDATOR_URL': None,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}

@@ -289,7 +289,7 @@ function FashionPage() {
 
       // 서버에 찜 상태 업데이트
       const response = await api.post(
-        '/api/picked/v1/recommend_picked/toggle',
+        '/api/picked/v1/recommend_picked/toggle/',
         { recommendation_id: recommendationId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -405,7 +405,7 @@ function FashionPage() {
         const token = sessionStorage.getItem('accessToken');
         api
           .post(
-            '/api/picked/v1/recommend_picked/toggle',
+            '/api/picked/v1/recommend_picked/toggle/',
             { recommendation_id: recommendationId },
             { headers: { Authorization: `Bearer ${token}` } }
           )
@@ -457,14 +457,16 @@ function FashionPage() {
                     key={index}
                     className="recommend-card"
                     onClick={() => handleCardClick(items, recommendation.recommendation_id)}
-                    style={{ cursor: 'pointer' }}>
+                    style={{ cursor: 'pointer' }}
+                  >
                     <h3>추천 코디 #{index + 1}</h3>
                     <div className="total-price">총 가격: {recommendation.total_price.toLocaleString()}원</div>
 
                     <div
                       className={`image-grid images-${items.length}`}
                       ref={(el) => setImageGridRef(index, el)}
-                      style={{ cursor: 'grab' }}>
+                      style={{ cursor: 'grab' }}
+                    >
                       {items.map((item, id) => (
                         <div key={id} className="item-image-group">
                           {item.s3_path && <img src={item.s3_path} alt={item.goods_name} className="thumbnail-img" />}
@@ -478,7 +480,8 @@ function FashionPage() {
                     <button
                       className="heart-button"
                       onClick={(e) => toggleLike(e, recommendation.recommendation_id)}
-                      aria-label={likedMap[recommendation.recommendation_id] ? '찜 해제' : '찜 추가'}>
+                      aria-label={likedMap[recommendation.recommendation_id] ? '찜 해제' : '찜 추가'}
+                    >
                       <FontAwesomeIcon
                         icon={likedMap[recommendation.recommendation_id] ? solidHeart : regularHeart}
                         className={`heart-icon ${likedMap[recommendation.recommendation_id] ? 'liked' : ''}`}
