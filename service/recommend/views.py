@@ -20,7 +20,7 @@ from .RAG.encoding_clip import get_clip_embedding
 from .connect.connect_to_database import PGVecProcess
 
 from .main.recommendation_item import get_recommendation
-from .main.categorical_data import COLOR_PALETTE_BY_SEASON, SEASONAL_REQUIRED_CATEGORIES, VALIDATION_SUB_CATEGORY, VALIDATION_MAIN_CATEGORIES
+from .main.categorical_data import COLOR_PALETTE_BY_SEASON, SEASONAL_REQUIRED_CATEGORIES, VALIDATION_SUB_CATEGORY, VALIDATION_MAIN_CATEGORIES, SEASON_COLABORATION_CATEGORY
 from .main.recommendation_filter import filter_recommendation_by_season
 from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
@@ -216,16 +216,31 @@ class IntegratedFashionRecommendAPIView(APIView):
             )
 
             logger.info("STEP 10: 입력된 카테고리 외 누락 검증")
-            # 입력 카테고리 제대로 들어갔는지 확인
-            input_category = matched_categories[0] # 입력 카테고리 
-            recommend_json = filtered_recommendation.get("recommend", {})
+            input_category = matched_categories[0]  # 예: "데님 팬츠"
+            logger.info(f"감지된 서브 카테고리: {input_category}")
+
+            # 서브 카테고리를 메인 카테고리로 매핑
+            for season_data in SEASON_COLABORATION_CATEGORY.values():
+                for main, subs in season_data.items():
+                    if input_category in subs:
+                        logger.info(f"서브 카테고리 '{input_category}'를 메인 카테고리 '{main}'으로 매핑")
+                        input_category = main
+                        break
+                if input_category != matched_categories[0]:  # 이미 메인 카테고리를 찾았으면 루프 종료
+                    break
+                        
+            logger.info(f"최종 사용 카테고리: {input_category}")
             
+            recommend_json = filtered_recommendation.get("recommend", {})
             required_categories = SEASONAL_REQUIRED_CATEGORIES.get(season, VALIDATION_MAIN_CATEGORIES)
             
-                        
+            # 입력 카테고리(메인 카테고리로 매핑된) 제외한 다른 필수 카테고리만 검증
+            other_required_categories = [cat for cat in required_categories if cat != input_category]
+            logger.info(f"입력 카테고리({input_category})를 제외한 필수 카테고리: {other_required_categories}")
+            
             missing_required_main_categories = [
-                cat for cat in required_categories
-                if cat != input_category and (cat not in recommend_json or not recommend_json[cat])
+                cat for cat in other_required_categories
+                if cat not in recommend_json or not recommend_json[cat]
             ]
             
             if missing_required_main_categories:
@@ -242,12 +257,11 @@ class IntegratedFashionRecommendAPIView(APIView):
                     status=500,
                 )
                 
-            # RAG Context 검증
-                    
+            # RAG Context 검증도 수정 - 입력 카테고리 제외
             missing_required = [
                 category
                 for category, expected_items in expected_recommend.items()
-                if expected_items and not recommend_json.get(category)
+                if category != input_category and expected_items and not recommend_json.get(category)
             ]
 
             if missing_required:
