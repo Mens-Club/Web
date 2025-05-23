@@ -200,6 +200,7 @@
 .logo-signup img {
   width: 120px;
   height: auto;
+  margin-top: 50px;
 }
 
 /* 모바일 대응 강화 */
@@ -270,6 +271,12 @@
     font-size: 13px;
     height: 40px;
   }
+
+  .logo-signup img {
+  width: 120px;
+  height: auto;
+  /* margin-top: 50px; */
+}
 }
 
 @media screen and (max-width: 375px) {
