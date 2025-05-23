@@ -231,6 +231,13 @@ class IntegratedFashionRecommendAPIView(APIView):
             
             if missing_required_main_categories:
                 logger.warning("입력값 외 필수 카테고리 누락: %s", missing_required_main_categories)
+                logger.debug(f"입력 카테고리: {input_category}")
+                logger.debug(f"필수 카테고리 목록: {required_categories}")
+                logger.debug(f"다른 필수 카테고리: {other_required_categories}")
+                logger.debug(f"추천 결과: {recommend_json}")
+            
+            if missing_required_main_categories:
+                logger.warning("입력값 외 필수 카테고리 누락: %s", missing_required_main_categories)
                 push_fashion_recommendation_metrics(
                     success=False, duration=time.time() - start_time
                 )
