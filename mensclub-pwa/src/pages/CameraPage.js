@@ -99,6 +99,14 @@ function CameraPage() {
     setStep('capture');
     setStatusText('');
     setRecommendResult(null);
+
+    // 세션 스토리지 정리 - 더 철저하게
+    sessionStorage.removeItem('imgSrc');
+    sessionStorage.removeItem('cameraStep');
+    sessionStorage.removeItem('recommendResult');
+    sessionStorage.removeItem('capturedImageUrl');
+    sessionStorage.removeItem('captureSuccess'); // 추가: 캡처 성공 플래그 제거
+    sessionStorage.removeItem('analysisCompleted'); // 추가: 분석 완료 플래그 제거
   };
 
   // 사진을 서버에 전송 및 분석 결과 받기
@@ -211,34 +219,31 @@ function CameraPage() {
               </button>
             </>
           )}
-        {step === 'preview' && (
-        <>
-          <button className="camera-upload-text-btn" onClick={retake}>
-            다시 찍기
-          </button>
-          <button
-            className="camera-upload-text-btn start-recommend-btn" // ✅ 새 클래스
-            onClick={sendToServer}
-            disabled={!imgSrc}
-          >
-            추천 시작하기
-          </button>
-        </>
-      )}
-      {step === 'analyzed' && (
-        <>
-          <button className="camera-upload-text-btn" onClick={retake}>
-            다시 찍기
-          </button>
-          <button
-            className="camera-upload-text-btn show-recommend-btn" // ✅ 새 클래스
-            onClick={goToFashionPage}
-          >
-            추천 코디보기
-          </button>
-        </>
-      )}
-
+          {step === 'preview' && (
+            <>
+              <button className="camera-upload-text-btn" onClick={retake}>
+                다시 찍기
+              </button>
+              <button
+                className="camera-upload-text-btn start-recommend-btn" // ✅ 새 클래스
+                onClick={sendToServer}
+                disabled={!imgSrc}>
+                추천 시작하기
+              </button>
+            </>
+          )}
+          {step === 'analyzed' && (
+            <>
+              <button className="camera-upload-text-btn" onClick={retake}>
+                다시 찍기
+              </button>
+              <button
+                className="camera-upload-text-btn show-recommend-btn" // ✅ 새 클래스
+                onClick={goToFashionPage}>
+                추천 코디보기
+              </button>
+            </>
+          )}
         </div>
         {/* 상태/로딩 메시지 */}
         {step !== 'init' && (
