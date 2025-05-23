@@ -387,8 +387,8 @@ function DetailPage() {
         data = { recommendation_id: parseInt(recommendationId) };
         storageKey = 'likedItemsMap_ai';
       } else if (tab === 'club') {
-        endpoint = '/api/picked/v1/main_picked/toggle/'; // 예시: 실제 엔드포인트명 확인 필요
-        data = { main_picked_id: parseInt(recommendationId) }; // 실제 파라미터명 확인 필요
+        endpoint = '/api/picked/v1/main_picked/toggle/';
+        data = { main_recommendation_id: parseInt(recommendationId) };
         storageKey = 'likedItemsMap_club';
       } else {
         endpoint = '/api/picked/v1/recommend_picked/toggle/';
