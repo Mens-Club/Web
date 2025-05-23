@@ -20,7 +20,7 @@ from .RAG.encoding_clip import get_clip_embedding
 from .connect.connect_to_database import PGVecProcess
 
 from .main.recommendation_item import get_recommendation
-from .main.categorical_data import COLOR_PALETTE_BY_SEASON, VALIDATION_MAIN_CATEGORIES, VALIDATION_SUB_CATEGORY
+from .main.categorical_data import COLOR_PALETTE_BY_SEASON, SEASONAL_REQUIRED_CATEGORIES, VALIDATION_SUB_CATEGORY, VALIDATION_MAIN_CATEGORIES
 from .main.recommendation_filter import filter_recommendation_by_season
 from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
@@ -220,9 +220,12 @@ class IntegratedFashionRecommendAPIView(APIView):
             input_category = matched_categories[0] # 입력 카테고리 
             recommend_json = filtered_recommendation.get("recommend", {})
             
+            required_categories = SEASONAL_REQUIRED_CATEGORIES.get(season, VALIDATION_MAIN_CATEGORIES)
+            
+                        
             missing_required_main_categories = [
-                cat for cat in VALIDATION_MAIN_CATEGORIES 
-                if cat != input_category and not recommend_json.get(cat)
+                cat for cat in required_categories
+                if cat != input_category and (cat not in recommend_json or not recommend_json[cat])
             ]
             
             if missing_required_main_categories:
