@@ -460,7 +460,7 @@ function MyPage() {
                 <p className="empty-message">
                   {tab === 'ai'
                     ? 'AI가 추천한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊'
-                    : 'mens club에서 찜한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊'}
+                    : "men's club에서 찜한 아웃핏이 없습니다. 새로운 스타일을 찾아보세요! 😊"}
                 </p>
               </div>
             )}
