@@ -20,7 +20,7 @@ from .RAG.encoding_clip import get_clip_embedding
 from .connect.connect_to_database import PGVecProcess
 
 from .main.recommendation_item import get_recommendation
-from .main.categorical_data import COLOR_PALETTE_BY_SEASON, VALIDATION_CATEGORY
+from .main.categorical_data import COLOR_PALETTE_BY_SEASON, VALIDATION_MAIN_CATEGORIES, VALIDATION_SUB_CATEGORY
 from .main.recommendation_filter import filter_recommendation_by_season
 from .main.product_search import search_items_by_category
 from .main.combination_generator import generate_proper_combinations
@@ -30,6 +30,8 @@ from .main.validate_answer_categories import validate_answer_categories
 from .openai.utils import generate_reasoning_task
 from .models import Recommendation
 from .utils.metrics import push_fashion_recommendation_metrics, machine_log_metrics
+
+from .serializers import RecommendationResultSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -43,12 +45,20 @@ class IntegratedFashionRecommendAPIView(APIView):
             type=openapi.TYPE_OBJECT,
             required=["image_url"],
             properties={
-                "image_url": openapi.Schema(type=openapi.TYPE_STRING),
+                "image_url": openapi.Schema(type=openapi.TYPE_STRING, format="uri"),
                 "top_k": openapi.Schema(type=openapi.TYPE_INTEGER, default=5),
             },
         ),
-        responses={200: "추천 성공", 400: "이미지 처리 오류", 500: "서버 오류"},
+            responses={
+                200: openapi.Response(
+                    description="추천 성공",
+                    schema=RecommendationResultSerializer
+                ),
+                400: "이미지 처리 오류",
+                500: "서버 오류"
+            }
     )
+    
     def post(self, request):
         start_time = time.time()  # 시간 측정용
         try:
@@ -141,7 +151,7 @@ class IntegratedFashionRecommendAPIView(APIView):
                     {"status": "error", "message": "추천 생성에 실패했습니다"},
                     status=500,
                 )
-
+            
             logger.info("STEP 7: 추천 JSON 파싱")
             try:
                 raw_output = recommendation_result.get("generated_text", "")
@@ -158,13 +168,31 @@ class IntegratedFashionRecommendAPIView(APIView):
                     },
                     status=500,
                 )
+                
+            # 시리얼라이저 = 데이터 타입 검증
+            logger.info("STEP 7-1: 데이터 타입 검증")
+            serializer = RecommendationResultSerializer(data=recommendation_json)
+            
+            if not serializer.is_valid():
+                logger.error("시리얼라이저 검증 실패: %s", serializer.errors)
+                return Response(
+                    {
+                        "status": "error",
+                        "message": "추천 데이터 형식이 올바르지 않습니다.",
+                        "errors": serializer.errors
+                    },
+                    status=400,
+                )
 
             logger.info("STEP 8: 계절 추출")
-            answer_text = recommendation_json.get("answer", "")
+            answer_text = serializer.validated_data["answer"]
             season = extract_season_from_text(answer_text)
+            
             matched_categories = validate_answer_categories(
-                answer_text, VALIDATION_CATEGORY
+                answer_text, VALIDATION_SUB_CATEGORY
             )
+            
+            # 입력 카테고리 제외하고 아이템 매칭 
 
             logger.info("STEP 8-1: 카테고리 검증")
             if not matched_categories:
@@ -180,15 +208,39 @@ class IntegratedFashionRecommendAPIView(APIView):
                     },
                     status=500,
                 )
+            
 
             logger.info("STEP 9: 계절 필터링 적용")
             filtered_recommendation = filter_recommendation_by_season(
                 recommendation_json, season
             )
 
-            logger.info("STEP 10: 상품 검색 시작")
+            logger.info("STEP 10: 입력된 카테고리 외 누락 검증")
+            # 입력 카테고리 제대로 들어갔는지 확인
+            input_category = matched_categories[0] # 입력 카테고리 
             recommend_json = filtered_recommendation.get("recommend", {})
-
+            
+            missing_required_main_categories = [
+                cat for cat in VALIDATION_MAIN_CATEGORIES 
+                if cat != input_category and not recommend_json.get(cat)
+            ]
+            
+            if missing_required_main_categories:
+                logger.warning("입력값 외 필수 카테고리 누락: %s", missing_required_main_categories)
+                push_fashion_recommendation_metrics(
+                    success=False, duration=time.time() - start_time
+                )
+                return Response(
+                    {
+                        "status": "error",
+                        "message": f"추천 결과에서 필수 카테고리({', '.join(missing_required_main_categories)})가 누락되었습니다. 다시 시도해주세요.",
+                        "filtered_recommendation": recommend_json,
+                    },
+                    status=500,
+                )
+                
+            # RAG Context 검증
+                    
             missing_required = [
                 category
                 for category, expected_items in expected_recommend.items()

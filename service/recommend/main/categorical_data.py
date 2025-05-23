@@ -1,4 +1,4 @@
-CATEGORY = {
+SEASON_COLABORATION_CATEGORY = {
   "봄": {
     "상의": [
       "셔츠&블라우스 - 긴소매",
@@ -182,7 +182,7 @@ COLOR_PALETTE_BY_SEASON = {
     "겨울": ['화이트', '그레이', '블랙', '네이비', '카키', "흑청", "진청", "중청"]
 }
 
-VALIDATION_CATEGORY = [
+VALIDATION_SUB_CATEGORY = [
   "데님 팬츠",
   "슈트 팬츠&슬랙스",
   "니트&스웨터 - 긴소매",
@@ -229,3 +229,5 @@ VALIDATION_CATEGORY = [
   "아노락 재킷",
   "숏팬츠"
 ]
+
+VALIDATION_MAIN_CATEGORIES = ["상의", "아우터", "하의", "신발"]
