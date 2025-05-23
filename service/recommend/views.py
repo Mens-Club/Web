@@ -216,23 +216,20 @@ class IntegratedFashionRecommendAPIView(APIView):
             )
 
             logger.info("STEP 10: 입력된 카테고리 외 누락 검증")
+            input_category = matched_categories[0]  # 예: "데님 팬츠"
+            logger.info(f"감지된 서브 카테고리: {input_category}")
+
             # 서브 카테고리를 메인 카테고리로 매핑
-            subcategory = matched_categories[0]
-            logger.info(f"감지된 서브 카테고리: {subcategory}")
-            
-            # 서브 카테고리를 메인 카테고리로 매핑
-            input_category = subcategory  # 기본값으로 원래 카테고리 설정
-            
-            # 모든 계절 데이터를 순회하며 서브 카테고리가 어느 메인 카테고리에 속하는지 확인
             for season_data in SEASON_COLABORATION_CATEGORY.values():
                 for main, subs in season_data.items():
-                    if subcategory in subs:
+                    if input_category in subs:
+                        logger.info(f"서브 카테고리 '{input_category}'를 메인 카테고리 '{main}'으로 매핑")
                         input_category = main
                         break
-                if input_category != subcategory:  # 이미 메인 카테고리를 찾았으면 루프 종료
+                if input_category != matched_categories[0]:  # 이미 메인 카테고리를 찾았으면 루프 종료
                     break
-            
-            logger.info(f"매핑된 메인 카테고리: {input_category}")
+                        
+            logger.info(f"최종 사용 카테고리: {input_category}")
             
             recommend_json = filtered_recommendation.get("recommend", {})
             required_categories = SEASONAL_REQUIRED_CATEGORIES.get(season, VALIDATION_MAIN_CATEGORIES)
