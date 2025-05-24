@@ -26,7 +26,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "localhost",
     "mensclub-api.store",
     "www.mensclub-api.store",
     "mensclub-fashion.store",
@@ -119,13 +118,13 @@ STORAGES = {
 CSRF_TRUSTED_ORIGINS = [
     "https://mensclub-api.store",
     "https://mensclub-fashion.store",
-    "http://localhost:3000",
-    "http://localhost:8000"
+    # "http://localhost:3000"
+    # "http://localhost:8000"
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://mensclub-fashion.store",
-    "http://localhost:3000"
+    # "http://localhost:3000"
 ]
 
 
