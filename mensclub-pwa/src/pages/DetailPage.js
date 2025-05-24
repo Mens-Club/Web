@@ -379,14 +379,20 @@ function DetailPage() {
       }
 
       const tab = new URLSearchParams(location.search).get('tab');
+      const source = queryParams.get('source');
+
       let endpoint, data;
-      let storageKey; // 탭별로 sessionStorage 설정
+      let storageKey;
 
       if (tab === 'ai') {
         endpoint = '/api/picked/v1/recommend_picked/toggle/';
         data = { recommendation_id: parseInt(recommendationId) };
         storageKey = 'likedItemsMap_ai';
       } else if (tab === 'club') {
+        endpoint = '/api/picked/v1/main_picked/toggle/';
+        data = { main_recommendation_id: parseInt(recommendationId) };
+        storageKey = 'likedItemsMap_club';
+      } else if (source == 'main'){
         endpoint = '/api/picked/v1/main_picked/toggle/';
         data = { main_recommendation_id: parseInt(recommendationId) };
         storageKey = 'likedItemsMap_club';
@@ -401,7 +407,6 @@ function DetailPage() {
       const newIsLiked = !isLiked;
       setIsLiked(newIsLiked);
 
-      // 탭별로 sessionStorage에 저장
       const likedMap = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
       likedMap[recommendationId] = newIsLiked;
       sessionStorage.setItem(storageKey, JSON.stringify(likedMap));
