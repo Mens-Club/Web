@@ -25,7 +25,13 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "mensclub-api.store",
+    "www.mensclub-api.store",
+    "mensclub-fashion.store",
+    "www.mensclub-fashion.store",
+    os.getenv("MAIN_HOST")
+]
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

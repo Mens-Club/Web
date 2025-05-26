@@ -378,20 +378,45 @@ function DetailPage() {
         return;
       }
 
-      await api.post(
-        '/api/picked/v1/recommend_picked/toggle/',
-        { recommendation_id: parseInt(recommendationId) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const tab = new URLSearchParams(location.search).get('tab');
+      const source = queryParams.get('source');
+
+      let endpoint, data;
+      let storageKey;
+
+      if (tab === 'ai') {
+        endpoint = '/api/picked/v1/recommend_picked/toggle/';
+        data = { recommendation_id: parseInt(recommendationId) };
+        storageKey = 'likedItemsMap_ai';
+      } else if (tab === 'club') {
+        endpoint = '/api/picked/v1/main_picked/toggle/';
+        data = { main_recommendation_id: parseInt(recommendationId) };
+        storageKey = 'likedItemsMap_club';
+      } else if (source == 'main'){
+        endpoint = '/api/picked/v1/main_picked/toggle/';
+        data = { main_recommendation_id: parseInt(recommendationId) };
+        storageKey = 'likedItemsMap_club';
+      } else {
+        endpoint = '/api/picked/v1/recommend_picked/toggle/';
+        data = { recommendation_id: parseInt(recommendationId) };
+        storageKey = 'likedItemsMap';
+      }
+
+      await api.post(endpoint, data, { headers: { Authorization: `Bearer ${token}` } });
 
       const newIsLiked = !isLiked;
       setIsLiked(newIsLiked);
-      const likedMap = JSON.parse(sessionStorage.getItem('likedItemsMap') || '{}');
+
+      const likedMap = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
       likedMap[recommendationId] = newIsLiked;
-      sessionStorage.setItem('likedItemsMap', JSON.stringify(likedMap));
+      sessionStorage.setItem(storageKey, JSON.stringify(likedMap));
     } catch (error) {
-      console.error('❌ 찜 상태 업데이트 실패:', error);
-      alert('찜 기능 처리 중 오류가 발생했습니다.');
+      if (error.message === '지원되지 않는 탭입니다.') {
+        alert(error.message);
+      } else {
+        console.error('❌ 찜 상태 업데이트 실패:', error);
+        alert('찜 기능 처리 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -476,8 +501,7 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(-1);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faChevronLeft} />
               </div>
               <div
@@ -485,8 +509,7 @@ function DetailPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage(1);
-                }}
-              >
+                }}>
                 <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
@@ -536,8 +559,7 @@ function DetailPage() {
                       href={product.goods_url || '#'}
                       className="product-link"
                       target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                      rel="noopener noreferrer">
                       상품 구매하기
                     </a>
                   </div>

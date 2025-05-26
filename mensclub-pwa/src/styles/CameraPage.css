@@ -135,9 +135,16 @@
   background-color: #2bbaee;
 }
 
+.start-recommend-btn:hover {
+  background-color: #199fd0; /* 더 진한 하늘색 */
+}
+
 /* ✅ 추천 코디보기 버튼 색상 */
 .show-recommend-btn {
   background-color: #2bbaee;
+}
+.show-recommend-btn:hover {
+  background-color: #199fd0; /* 더 진한 하늘색 */
 }
 
 @keyframes spin {
@@ -188,10 +195,17 @@
 .start-recommend-btn {
   background-color: #2bbaee;
 }
+.start-recommend-btn:hover {
+  background-color: #199fd0; /* 더 진한 하늘색 */
+}
 
 /* ✅ 추천 코디보기 버튼 색상 (초록) */
 .show-recommend-btn {
   background-color: #2bbaee;
+}
+
+.show-recommend-btn:hover {
+  background-color: #199fd0; /* 더 진한 하늘색 */
 }
   .title-wrapper h1 {
     font-size: 18px;
