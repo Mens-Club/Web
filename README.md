@@ -38,7 +38,6 @@ PostgreSQL
 ```
 React (PWA)
 Redux Toolkit
-Tailwind CSS
 Axios
 ```
 
