@@ -20,10 +20,6 @@
 - **Reverse Proxy**: Nginx를 통한 요청 라우팅
 - **컨테이너화**: Docker 기반 마이크로서비스 아키텍처
 
-## 시스템 아키텍처 
-![image](https://github.com/user-attachments/assets/4d5e2549-a724-4f9e-831d-53076d611144)
-
-
 ## 기술 스택
 
 ### Backend
