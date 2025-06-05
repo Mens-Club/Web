@@ -2,6 +2,10 @@
 
 > AI 패션 추천 서비스의 웹 애플리케이션
 
+## 서비스의 전체 설명
+
+> https://github.com/Mens-Club
+
 ## 서비스 아키텍처
 
 ### Backend (Django)
